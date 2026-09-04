@@ -35,6 +35,9 @@ jobs:
           cp reports/TEST_SET_CREDIBILITY_AUDIT_2026-09-03.md _site/reports/
           cp reports/SCORE_OVERLAP_AND_HETEROGENEOUS_RESCUE_2026-09-03.md _site/reports/
           cp reports/CANONICAL_CORRECTIVE_BENCHMARK_2026-09-03.md _site/reports/
+          cp reports/DATA_SUFFICIENCY_AND_PUBLIC_SOURCE_REVIEW.html _site/reports/
+          cp reports/PRIOR_METHOD_CODE_ALIGNMENT_AUDIT_2026-09-03.md _site/reports/
+          cp reports/EVIDENCE_GATE_CROSS_DATASET_IMU_2026-09-03.md _site/reports/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
