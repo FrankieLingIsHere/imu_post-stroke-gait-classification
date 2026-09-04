@@ -31,7 +31,7 @@ jobs:
           cp reports/DEMOGRAPHIC_CLINICAL_POPULATION_COVERAGE.html _site/reports/
           cp reports/WEEK_01_PRESENTATION.html _site/reports/
           cp reports/LOWER_BACK_VS_THREE_CHANNEL_BENCHMARK.html _site/reports/
-          cp slides/experiments-2026-08-27-to-present.pdf _site/reports/WEEK_02_PRESENTATION.pdf
+          cp slides/Week2_Sprint_Report_Post-Stroke_Gait_IMU.pdf _site/reports/Week2_Sprint_Report_Post-Stroke_Gait_IMU.pdf
           cp reports/WEEK_2_MODEL_IMPROVEMENT_GATE.html _site/reports/
           cp reports/WEEK_2_TEST_SET_CREDIBILITY.html _site/reports/
           cp reports/WEEK_2_SCORE_OVERLAP.html _site/reports/

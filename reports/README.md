@@ -7,7 +7,7 @@ This folder contains human-readable research outputs. HTML files are intended fo
 - `POPULATION_ROBUSTNESS_MATRIX.html` — source- and population-level robustness view.
 - `DEMOGRAPHIC_CLINICAL_POPULATION_COVERAGE.html` — documented demographic and clinical coverage.
 - `WEEK_01_PRESENTATION.html` — presentation-ready baseline summary.
-- `WEEK_02_PRESENTATION.pdf` — current Week 2 sprint presentation, covering 18 experiments and the 34-notebook evidence record.
+- `Week2_Sprint_Report_Post-Stroke_Gait_IMU.pdf` — current 10-page Week 2 sprint progress report, covering 18 experiments and the 34-notebook evidence record.
 - `FULL_EXPANDED_PROTOTYPE_BENCHMARK.md` — benchmark record for the expanded prototype.
 - `MODEL_IMPROVEMENT_GATE_2026-09-03.md` — accepted lower-back ensemble, exact development metrics, and three-channel confirmation.
 - `TEST_SET_CREDIBILITY_AUDIT_2026-09-03.md` — participant-level FP/FN evidence and the required final-test contract.
