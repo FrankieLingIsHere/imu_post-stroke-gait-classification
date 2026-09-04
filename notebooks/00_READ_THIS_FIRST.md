@@ -1,5 +1,10 @@
 # Notebook entry point
 
+**Current as of 4 September 2026:** the Week 2 sprint report covers 18
+leakage-safe experiments and 3 candidate external datasets. The repository has
+34 active numbered notebooks, all executed through the current evidence stage.
+The public presentation is available as the [Week 2 sprint PDF](../reports/WEEK_02_PRESENTATION.pdf).
+
 You do **not** need to read all 34 notebooks to understand the project. The
 numbered notebooks preserve the full research and rejection history; the five
 notebooks below are the shortest reliable route through the current evidence.

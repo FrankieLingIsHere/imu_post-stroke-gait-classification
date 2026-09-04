@@ -1,5 +1,10 @@
 # Notebook guide
 
+Current through 4 September 2026: 34 active numbered notebooks and 18 Week 2
+experiments are represented in the public sprint presentation. The three
+candidate external datasets identified in that presentation are listed in the
+[dataset access guide](../reports/DATASET_ACCESS_GUIDE.html).
+
 Start with [00_READ_THIS_FIRST.md](00_READ_THIS_FIRST.md). The 34 numbered
 notebooks are an auditable research record, not a 34-step onboarding tutorial.
 Only five are required for a first reading: **01, 02, 29, 30, and 34**.
