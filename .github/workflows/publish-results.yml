@@ -1,0 +1,39 @@
+name: Publish results portal
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Assemble the reader-facing portal
+        run: |
+          mkdir -p _site/reports
+          cp site/index.html _site/index.html
+          cp reports/POPULATION_ROBUSTNESS_MATRIX.html _site/reports/
+          cp reports/DEMOGRAPHIC_CLINICAL_POPULATION_COVERAGE.html _site/reports/
+          cp reports/WEEK_01_PRESENTATION.html _site/reports/
+          cp reports/LOWER_BACK_VS_THREE_CHANNEL_BENCHMARK.html _site/reports/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+

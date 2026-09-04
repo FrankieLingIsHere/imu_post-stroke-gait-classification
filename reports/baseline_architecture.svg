@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#315A70"/></marker>
+  <marker id="redarrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#A74646"/></marker>
+  <style>
+    .title{font:700 29px Arial;fill:#173042}.subtitle{font:16px Arial;fill:#607D8B}.head{font:700 17px Arial;fill:#173042}.body{font:14px Arial;fill:#263238}.small{font:13px Arial;fill:#607D8B}.box{stroke:#315A70;stroke-width:2.5}.redbox{stroke:#A74646;stroke-width:2.5}.greenbox{stroke:#2F7659;stroke-width:2.5}.line{fill:none;stroke:#315A70;stroke-width:3;marker-end:url(#arrow)}.redline{fill:none;stroke:#A74646;stroke-width:3;stroke-dasharray:9 7;marker-end:url(#redarrow)}
+  </style>
+</defs>
+<rect width="1600" height="1000" fill="#fff"/>
+<text x="800" y="48" text-anchor="middle" class="title">Stroke Gait Classification — Model Development Architecture</text>
+<text x="800" y="77" text-anchor="middle" class="subtitle">Training, leakage control, validation, and release boundary</text>
+
+<!-- source layer -->
+<rect x="60" y="120" width="300" height="120" rx="14" fill="#E8F3F8" class="box"/><text x="210" y="158" text-anchor="middle" class="head">Felius</text><text x="210" y="188" text-anchor="middle" class="body">Stroke + healthy</text><text x="210" y="211" text-anchor="middle" class="body">participant-labelled gait</text>
+<rect x="390" y="120" width="300" height="120" rx="14" fill="#E8F3F8" class="box"/><text x="540" y="158" text-anchor="middle" class="head">Voisard</text><text x="540" y="188" text-anchor="middle" class="body">Stroke + healthy</text><text x="540" y="211" text-anchor="middle" class="body">participant-labelled gait</text>
+<rect x="720" y="120" width="300" height="120" rx="14" fill="#FCE8E8" class="redbox"/><text x="870" y="158" text-anchor="middle" class="head">RevalExo</text><text x="870" y="188" text-anchor="middle" class="body">External stroke cohort</text><text x="870" y="211" text-anchor="middle" class="body">frozen before development</text>
+<rect x="1050" y="120" width="490" height="120" rx="14" fill="#F3F6F8" class="box"/><text x="1295" y="158" text-anchor="middle" class="head">Healthy age / OOD datasets</text><text x="1295" y="188" text-anchor="middle" class="body">DUO-Gait and OxWalk</text><text x="1295" y="211" text-anchor="middle" class="body">secondary analysis only</text>
+
+<!-- preprocessing -->
+<rect x="150" y="330" width="520" height="140" rx="14" fill="#EAF4EC" class="box"/><text x="410" y="372" text-anchor="middle" class="head">1. Signal harmonisation</text><text x="410" y="405" text-anchor="middle" class="body">Sensor mapping • resampling</text><text x="410" y="430" text-anchor="middle" class="body">5-second windows • LB / LF / RF magnitude</text>
+<rect x="730" y="330" width="620" height="140" rx="14" fill="#EAF4EC" class="box"/><text x="1040" y="372" text-anchor="middle" class="head">2. Leakage-controlled partitioning</text><text x="1040" y="405" text-anchor="middle" class="body">Participant-disjoint folds • source-balanced training</text><text x="1040" y="430" text-anchor="middle" class="body">normalisation fitted on training participants only</text>
+
+<!-- model/evaluation -->
+<rect x="100" y="565" width="430" height="150" rx="14" fill="#E9E6F7" class="box"/><text x="315" y="608" text-anchor="middle" class="head">3. Training branch</text><text x="315" y="642" text-anchor="middle" class="body">Inception-style 1D CNN</text><text x="315" y="670" text-anchor="middle" class="body">binary stroke-gait classifier</text><text x="315" y="696" text-anchor="middle" class="body">GPU training • early stopping</text>
+<rect x="585" y="565" width="430" height="150" rx="14" fill="#FFF3D6" class="box"/><text x="800" y="608" text-anchor="middle" class="head">4. Internal validation</text><text x="800" y="642" text-anchor="middle" class="body">Participant-level held-out folds</text><text x="800" y="670" text-anchor="middle" class="body">AUROC • sensitivity • specificity</text><text x="800" y="696" text-anchor="middle" class="body">calibration and subgroup checks</text>
+<rect x="1070" y="565" width="430" height="150" rx="14" fill="#FFF3D6" class="redbox"/><text x="1285" y="608" text-anchor="middle" class="head">5. External validation</text><text x="1285" y="642" text-anchor="middle" class="body">RevalExo untouched test cohort</text><text x="1285" y="670" text-anchor="middle" class="body">AUROC • Brier score</text><text x="1285" y="696" text-anchor="middle" class="body">locked operating-point check</text>
+
+<!-- release -->
+<rect x="410" y="825" width="780" height="105" rx="14" fill="#DDEFE7" class="greenbox"/><text x="800" y="867" text-anchor="middle" class="head">Release candidate boundary</text><text x="800" y="900" text-anchor="middle" class="body">Primary model + preprocessing contract + locked evaluation report</text>
+
+<!-- orthogonal connectors in clear lanes -->
+<path d="M210 240 V285 H410 V330" class="line"/><path d="M540 240 V285 H410 V330" class="line"/>
+<path d="M670 400 H730" class="line"/>
+<path d="M1040 470 V510 H315 V565" class="line"/><path d="M1040 470 V565" class="line"/>
+<path d="M870 240 V285 H1285 V565" class="redline"/><path d="M1295 240 V285 H1450 V500 H1285 V565" class="redline"/>
+<path d="M315 715 V775 H800 V825" class="line"/><path d="M800 715 V825" class="line"/><path d="M1285 715 V775 H800 V825" class="redline"/>
+
+<text x="60" y="970" class="small">Solid = primary development path</text><text x="1540" y="970" text-anchor="end" class="small">Dashed red = evaluation-only / secondary analysis</text>
+</svg>

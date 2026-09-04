@@ -1,0 +1,23 @@
+name: Repository hygiene
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  source-and-data-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject protected local artefacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          blocked='^(data/(raw|interim|processed)/|data/archive/(?!README\.md$)|\.claude/|\.agents/|docs/.*\.docx$|docs/HANDOFF_ZED\.md$|slides/node_modules/)'
+          if git ls-files | grep -P "$blocked"; then
+            echo 'Protected local artefact found in tracked files.' >&2
+            exit 1
+          fi
+      - name: Check Python syntax without requiring private data
+        run: python -m compileall -q src scripts
+

@@ -1,0 +1,60 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Population Robustness Matrix</title><style>body{font-family:Segoe UI,Arial;background:#f5f7fa;color:#172b4d;margin:48px}h1{color:#102a43}.lead{font-size:18px;max-width:900px}table{border-collapse:collapse;background:white;box-shadow:0 4px 18px #ccd6e0;margin-top:28px}th,td{padding:14px 18px;border-bottom:1px solid #dfe5eb;text-align:right}th:first-child,td:first-child{text-align:left}th{background:#173f5f;color:white}tr:last-child{background:#fff3cd;font-weight:700}.note{margin-top:24px;background:#e8f1f8;border-left:5px solid #1976a3;padding:16px;max-width:900px}</style></head><body><h1>Population Robustness Matrix</h1><p class="lead">Expanded Felius + Voisard + Sint Inception model. Internal values are participant-level out-of-fold estimates; RevalExo is the untouched external benchmark.</p><table border="1" class="dataframe metrics">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Population / evaluation</th>
+      <th>Participants</th>
+      <th>Healthy</th>
+      <th>Stroke</th>
+      <th>AUROC</th>
+      <th>Brier score</th>
+      <th>Balanced accuracy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>expanded_internal_oof</td>
+      <td>314</td>
+      <td>126</td>
+      <td>188</td>
+      <td>0.965</td>
+      <td>0.069</td>
+      <td>0.915</td>
+    </tr>
+    <tr>
+      <td>felius_2024</td>
+      <td>163</td>
+      <td>34</td>
+      <td>129</td>
+      <td>0.925</td>
+      <td>0.083</td>
+      <td>0.884</td>
+    </tr>
+    <tr>
+      <td>sint_maartenskliniek</td>
+      <td>30</td>
+      <td>20</td>
+      <td>10</td>
+      <td>0.945</td>
+      <td>0.050</td>
+      <td>0.950</td>
+    </tr>
+    <tr>
+      <td>voisard_2025</td>
+      <td>121</td>
+      <td>72</td>
+      <td>49</td>
+      <td>0.983</td>
+      <td>0.054</td>
+      <td>0.914</td>
+    </tr>
+    <tr>
+      <td>revalexo_external</td>
+      <td>17</td>
+      <td>7</td>
+      <td>10</td>
+      <td>0.914</td>
+      <td>0.161</td>
+      <td>0.714</td>
+    </tr>
+  </tbody>
+</table><div class="note"><b>Interpretation:</b> RevalExo remains the most important generalisation result. The source-specific rows are not independent external validation, and the small RevalExo cohort limits clinical conclusions.</div></body></html>

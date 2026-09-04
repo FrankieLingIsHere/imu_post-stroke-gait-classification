@@ -1,0 +1,52 @@
+# --- Data and derived research artefacts (never publish) ---
+/data/raw/**
+/data/interim/**
+/data/processed/**
+/data/archive/**
+!/data/README.md
+!/data/archive/README.md
+/models/checkpoints/**
+!/models/checkpoints/README.md
+
+# --- Local/private working material ---
+/.agents/
+/.claude/
+/wiki/.obsidian/
+/CLAUDE.md
+/tmp_ssrsg.txt
+/CLEANUP_MANIFEST_*.md
+/docs/*.docx
+/docs/HANDOFF_ZED.md
+
+# --- Reports and generated runtime logs ---
+/reports/archive/download_logs/
+*.log
+
+# --- Python environments, caches, and secrets ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.so
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+.env.*
+!.env.example
+
+# --- JavaScript / Slidev build output ---
+/slides/node_modules/
+/slides/.vite/
+/slides/.slidev/
+/slides/dist/
+
+# --- OS and editor noise ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo

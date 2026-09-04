@@ -1,0 +1,27 @@
+{
+  "name": "slides",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "slidev build slides.md",
+    "build:experiments": "slidev build experiments-2026-08-27-to-present.md --out dist-experiments",
+    "build:all": "npm run build && npm run build:experiments",
+    "dev": "slidev slides.md --open",
+    "dev:experiments": "slidev experiments-2026-08-27-to-present.md --open",
+    "export": "slidev export slides.md",
+    "export:experiments": "slidev export experiments-2026-08-27-to-present.md --output experiments-2026-08-27-to-present.pdf",
+    "capture": "node scripts/capture-slides.mjs dist .captures/core 18",
+    "capture:experiments": "node scripts/capture-slides.mjs dist-experiments .captures/experiments 18",
+    "capture:all": "npm run capture && npm run capture:experiments"
+  },
+  "dependencies": {
+    "@slidev/cli": "^52.19.1",
+    "@slidev/theme-default": "latest",
+    "@slidev/theme-seriph": "latest",
+    "vue": "^3.5.33"
+  },
+  "devDependencies": {
+    "katex": "^0.18.4",
+    "playwright-chromium": "^1.62.1"
+  }
+}

@@ -1,0 +1,13 @@
+pandas
+numpy
+scipy
+scikit-learn
+matplotlib
+requests
+jupyter
+ipykernel
+mat-io
+joblib
+# Install the CUDA-compatible wheel separately when GPU training is required:
+# https://pytorch.org/get-started/locally/
+torch
