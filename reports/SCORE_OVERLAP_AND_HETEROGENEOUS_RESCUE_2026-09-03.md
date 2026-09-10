@@ -2,6 +2,10 @@
 
 Date: 2026-09-03
 
+Historical experiment record. The MIL step proposed below was subsequently
+completed and rejected in notebook 32; notebook 34 closed architecture rotation.
+Consult [the evidence map](../docs/CLASSIFICATION_EVIDENCE_MAP.md) before continuing.
+
 ## Threshold feasibility
 
 The selected lower-back deep ensemble cannot reach near-zero FP and FN by

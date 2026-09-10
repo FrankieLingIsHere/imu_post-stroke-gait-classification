@@ -1,5 +1,9 @@
 # Specificity-first strategy for false positives
 
+Historical three-channel prototype record. The immediate experiment below was
+completed in the later sections of this document. Its 0.78 operating threshold
+is not the selected lower-back ensemble's threshold. See [the evidence map](../docs/CLASSIFICATION_EVIDENCE_MAP.md).
+
 ## Current evidence
 
 On the frozen 17-person RevalExo cohort, the current full expanded model assigns probabilities from 0.311 to 0.895 to healthy participants and 0.762 to 0.989 to stroke participants. The highest healthy score is 0.895; four stroke participants are below that score. Thus, a threshold high enough to produce zero observed false positives on this cohort would classify only 6/10 stroke participants as positive. Zero false positives and high stroke sensitivity cannot both be achieved with the current score separation.
