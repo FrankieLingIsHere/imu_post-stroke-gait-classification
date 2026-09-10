@@ -280,3 +280,10 @@ removed after dependency checks; original source-byte hashes verified against
 notebook audit cells. Shared experiment helpers and utilities remain Python.
 No new model run, dataset acquisition or clinical evaluation. See the notebook
 guide for the current reading path.
+
+
+Full script inventory (2026-09-10), notebook 38: 139 scripts checked structurally,
+27 with Python consumers, 20 utility candidates and 92 notebook-migration
+candidates. Eight missing-path flags, six with archive counterparts and two
+Mobilise-D paths unresolved. No deletion approval or experiment completion is
+implied by these counts. Source/data/evaluation states are unchanged.

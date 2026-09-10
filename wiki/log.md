@@ -2431,3 +2431,17 @@ the removed modules were found. Shared training helpers and utilities remain
 Python pending dependency-preserving migration. Notebook guide, script guide,
 workspace guide, wiki and local page updated. Metadata/raw acquisition,
 preprocessing, model predictions and clinical evaluation unchanged. No push.
+
+
+## [2026-09-10] Complete script structural inventory
+
+Notebook 38 records all 139 scripts, importing consumers, exact notebook-path
+mentions, literal artifact paths and source hashes. Parsed 216 tracked Python
+files without syntax errors and scanned 54 existing notebooks including archives.
+Triage: 27 shared-dependency scripts, 20 utility candidates, 92 notebook-migration
+candidates. Eight missing-path flags: six scripts have archive counterparts and
+two Mobilise-D scripts do not have the checked data paths. No exact duplicate
+scripts. These are structural checks, not a full semantic review, saved-output
+coverage proof or permission to delete. No code removal, training or download.
+Metadata/raw acquisition, preprocessing and evaluation unchanged. Reading guides,
+wiki and local progress page updated; no push.

@@ -140,3 +140,17 @@ contains full orchestration, executed artifact checks, stored cohort/exclusion
 tables and an embedded six-channel plot. Reading requires no rerun. The original
 pilot runner was removed after migration. Other historical runners have not yet
 been migrated and must not be deleted blindly.
+
+
+## Complete script inventory (2026-09-10)
+
+[Notebook 38: every script and dependency](38_script_dependency_inventory.ipynb) stores the full
+139-script inventory. Structural triage: 27 have Python consumers, 20 are utility
+candidates, and 92 require notebook-migration evidence review. All 216 tracked
+Python files parsed; 54 existing notebooks (including archives) were scanned.
+Only 11 scripts have exact path mentions in notebooks; this is not output coverage.
+Eight scripts have missing literal paths: six have existing archive counterparts;
+two Mobilise-D scripts lack the checked paths. No byte-identical scripts found.
+Dynamic imports/calls and filename-based utility labels require manual review.
+This is a complete structural inventory, not a full semantic review or deletion
+approval. No experiments were run or scripts deleted by this check.
