@@ -3,7 +3,7 @@ from pathlib import Path
 import base64
 import html
 import json
-import pandas as pd
+import csv
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -15,12 +15,14 @@ def table(headers, rows):
 def main():
     result = ROOT / 'data/processed/vga_regularization_v1'
     assert json.loads((result/'verification.json').read_text())['fits'] == 27
-    m = pd.read_csv(result/'metrics.csv')
+    with (result/'metrics.csv').open(newline='', encoding='utf-8') as handle:
+        m = list(csv.DictReader(handle))
     rows = [['Earlier VGA recipes', '.790–.797', '14–18 / 84', '88–105 / 164', '6–9 / 65']]
     for arm, label in [('fixed','Cosine control'),('decay','Weight decay .01'),('warmup','Five-epoch warm-up')]:
-        g = m[m.scope.eq('full') & m.arm.eq(arm)]
-        span = lambda c: f'{g[c].min()}–{g[c].max()}'
-        rows.append([label, f'{g.auroc.min():.3f}–{g.auroc.max():.3f}', span('normal_alerts')+' / 84',span('impaired_alerts')+' / 164',span('healthy_normal_alerts')+' / 65'])
+        g = [row for row in m if row['scope'] == 'full' and row['arm'] == arm]
+        values = lambda column: [float(row[column]) for row in g]
+        span = lambda c: f'{min(values(c)):g}–{max(values(c)):g}'
+        rows.append([label, f"{min(values('auroc')):.3f}–{max(values('auroc')):.3f}", span('normal_alerts')+' / 84',span('impaired_alerts')+' / 164',span('healthy_normal_alerts')+' / 65'])
     vga = table(['Setting','AUROC','Normal false alerts','Impaired detected','Healthy VGA 0 alerts'],rows)
     stroke = table(['Scope / model','AUROC','Stroke detected','Healthy FP','Other-pathology FP'],[
         ['Full baseline','.798','44 / 49','12 / 72','61 / 138'],
@@ -73,7 +75,7 @@ def main():
     completed += """<p>Representation-specific epoch selection differs. The earlier .965 pooled benchmark and .8882 source-held-out benchmark used different validation protocols; their difference cannot be attributed solely to removing foot channels. Five seeds quantify training variability, not five independent clinical cohorts.</p>
 <h3>Healthy-generation and transfer results</h3><p>The historical generators produced healthy gait. Repeated native-window diffusion enrichment achieved AUROC .9731 versus .9777 without enrichment and failed its utility gate. GAITEX virtual-signal SSL transfer achieved .9632 versus .9646 for scratch training and was not adopted. These are separate experiments, not stroke-synthesis results. RevalExo is reported as historical evidence only.</p>
 <h3>Gait-cycle consistency implementation</h3><p>Five tests passed for coupled speed, cadence, step lengths and contact/support timing. The tests verify algebraic consistency, not clinical phenotype realism.</p>
-<h3>Six-channel virtual IMU pilot</h3><p><strong>18 healthy GAITEX participants, 55 windows, 500 samples and six channels per window.</strong> The calculation includes sensor orientation, gravity and attachment offsets. Six physics tests passed, covering gravity, free fall, rotating attachment acceleration, angular acceleration, frame invariance and invalid inputs.</p><p>The pilot used existing motion recordings, taking the first valid run per annotated normal segment. One of 19 inventoried parent directories lacked required source files and was recorded in coverage. Parent development roles were assigned before generation: 14 available build participants and four holdout participants. Output shape, finite values, index mapping and parent-role checks passed.</p><p>Signals are expressed in a pelvis marker frame, not validated L5 or hardware IMU axes. The pilot is a completed healthy sensor-generation component; it does not demonstrate a stroke transformation, clinical validation or improved classifier performance. No new classifier training occurred.</p></section>"""
+<h3>Six-channel virtual IMU pilot</h3><p><strong>18 healthy GAITEX participants, 55 windows, 500 samples and six channels per window.</strong> The calculation includes sensor orientation, gravity and attachment offsets. Six physics tests passed, covering gravity, free fall, rotating attachment acceleration, angular acceleration, frame invariance and invalid inputs.</p><p>The pilot used existing motion recordings, taking the first valid run per annotated normal segment. One of 19 inventoried parent directories lacked required source files and was recorded in coverage. Parent development roles were assigned before generation: 14 available build participants and four holdout participants. Output shape, finite values, index mapping and parent-role checks passed.</p><p>Signals are expressed in a pelvis marker frame, not validated L5 or hardware IMU axes. The pilot is a completed healthy sensor-generation component; it does not demonstrate a stroke transformation, clinical validation or improved classifier performance. No new classifier training occurred.</p><h3>Workspace cleanup</h3><p>Pending work was organized into local review commits by purpose on 10 September. This housekeeping does not change experimental results.</p><p>Ten completed experiment reviews/results were archived, reducing the active documentation folder from 25 files to 15. Repeated status text and stale acquisition summaries were cleaned up; historical evidence and reproducibility protocols were preserved.</p><p>The virtual-IMU experiment was migrated to a notebook with saved cohort tables, artifact checks and an embedded six-channel plot. Its duplicate runner was removed; this was a read-only replay, not new generation or training.</p></section>"""
     page = page.replace('<section id="history">', completed+'<section id="history">')
     page = page.replace('<a href="#history">Previous weeks</a>', '<a href="#completed">Completed follow-through</a><a href="#history">Previous weeks</a>')
     for key,value in [('__STROKE__',stroke),('__VGA__',vga),('__CNN__',cnn),('__CURVE__',curve)]:
