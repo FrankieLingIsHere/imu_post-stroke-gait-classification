@@ -6,6 +6,10 @@ type: synthesis
 
 The top-level narrative page. Mirrors the manuscript's Discussion and Conclusion, but as a living, linkable document. Start here, then follow links out to whatever's relevant.
 
+## Classification implementation status
+
+The separate model-development continuation is tracked in [[classification-project-status]] and [[mobilise-d-tvs]]. TVS metadata intake is complete for 40 participants, selected raw signals were acquired for 36, and preprocessing/evaluation covered 34 participants and 117 windows, with six explicit exclusions. This does not alter the manuscript findings or establish improved clinical accuracy.
+
 ## The core contribution
 
 No existing review connects three threads at once: which features discriminate post-stroke gait ([[discriminative-features]]), which classification methods exploit them and how well ([[classification-methods]]), and how placement practicality affects real-world deployability ([[sensor-placement]], [[placement-vs-practicality]]). [[jiao-2024]], [[da-silva-2024]], [[prisco-2024]], [[boukhennoufa-2022]], and [[jourdan-2021]] each cover pieces of this. None combines them within a stroke-specific scope.

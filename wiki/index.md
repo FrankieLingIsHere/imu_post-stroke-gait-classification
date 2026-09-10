@@ -4,9 +4,16 @@ type: index
 
 # Index
 
+Current implementation: [workspace guide](../docs/classification/README.md) and [weekly progress](../docs/classification/WEEKLY_PROGRESS_2026-09-07.md). Completed public results are in Week 3 commit `b462795`; remaining local files include both completed work and active research.
+
 Catalog of every page in this wiki. Read this first when answering a query — drill into specific pages from here rather than grepping the vault blind.
 
 ## Start here
+
+- [[classification-methodology]] - experiment evidence and prototype limits. Stroke feature prototype packaged and held-out benchmark verified: [classification workspace guide](../docs/classification/README.md).
+
+- [[classification-project-status]] - current handoff, completed TVS pilots, hallway transfer failure, completed differential training experiment, input-validity implementation and remaining specificity gap.
+- [[mobilise-d-tvs]] - raw-download ledger, pilot outcomes and confirmed absence of turn-reference information.
 
 - [[synthesis]] — top-level narrative, the review's headline findings and open questions.
 - `CLAUDE.md` — the schema for this vault: page conventions, linking rules, session-start protocol, and the **Skill Map** (Ingest, Sync, Source Search & Enrichment, Draft Assist, Query, Lint). Read this every session before editing anything.
@@ -15,7 +22,7 @@ Catalog of every page in this wiki. Read this first when answering a query — d
 - `raw/` — staging inbox for candidate sources not yet resolved into a real page. Should normally be near-empty; see `raw/README.md`.
 - `numbers-registry.md` — every load-bearing number restated in more than one manuscript location, with all its locations listed. Check and update this in the same edit batch as any change to a Section 4.2 or Table 6 figure — this is the tool meant to stop the "fix landed in one paragraph, not its siblings" pattern that has been this project's single most common recurring bug across the `journal-critic` review-loop rounds (see `log.md`).
 
-## Concepts (12)
+## Concepts
 
 - [[research-questions]] — the three RQs anchoring the review (RQ3 and RQ4 merged 2026-07-23).
 - [[eligibility-criteria]] — IC1/IC4/IC5 pathways and EC1/EC2 exclusions; which studies qualify and why.
@@ -28,7 +35,7 @@ Catalog of every page in this wiki. Read this first when answering a query — d
 - [[age-and-stroke-gait]] — age confounding, age-by-stroke interactions, age-overlap performance and the parallel age-model decision.
 - [[external-validation-cohort]] — screening and ranking of candidate external cohorts for frozen model validation.
 - [[concepts/evidence-gate-cross-dataset-imu]] — mandatory paper/code/task/split audit before any new pooling, normalization, domain-generalization, SSL, or synthesis experiment.
-- [[concepts/evidence-gated-model-improvement]] — five-seed source-held-out result admitting a complementary-error lower-back ensemble and defining the final-test requirement.
+- [[concepts/evidence-gated-model-improvement]] — five-seed source-held-out result, verified local 15-member weight freeze, completed non-stroke stress result, and final-test requirements.
 
 **Stale count fixed 2026-08-05** (seven studies ingested across two passes; see `log.md`'s 2026-08-05 ingest entries): the manuscript's Table 3 caption reads "26 included studies," Table 4 (quality assessment) covers 22. **Six studies with unresolved status, found but not investigated**: the same source folder that supplied this pass's seven PDFs also contains six LeMoyne & Mastroianni papers (2018-2021) not mentioned anywhere in the current manuscript at all — unclear whether these were ever screened and excluded, or are a genuine unscreened gap. Flagged for the user to clarify before any further ingest.
 
@@ -63,10 +70,16 @@ Catalog of every page in this wiki. Read this first when answering a query — d
 | [[yang-2026]] | IC4 | LDA, single shank IMU vs. MoCap — added 2026-08-05 |
 | [[igarashi-2024]] | IC5 | Threshold/AUC analysis, no trained classifier — strongest external trunk-RMS corroboration, added 2026-08-05 |
 
-## Datasets audited in hands-on mining (10)
+## Dataset and acquisition pages
 
 | Dataset | Role |
 |---|---|
+| [[gaitex-2026]] | virtual-IMU synthesis history, rejected enrichment candidates |
+| [[kiel-validation-dataset]] | inspected healthy-only local subset, not a public stroke cohort |
+| [[nonan-gaitprint]] | healthy reference and completed enrichment experiments |
+| [[triaxial-older-healthy]] | inspected healthy stress data, not stroke validation |
+| [[online-data-expansion]] | historical acquisition strategy; current actions in classification-project-status |
+| [[mobilise-d-tvs]] | non-stroke specificity candidate - metadata for 40, raw signals for two development participants only |
 | [[voisard-2025]] | primary — real paired stroke/healthy |
 | [[carpinella-2026]] | external healthy controlled 6MWT lower-back IMU — 60 participants, acquired and validated |
 | [[soangra-john-2022]] | paired lower-back naturalistic-activity IMU — raw release acquired; not gait-labelled; decoder pending |
@@ -76,7 +89,7 @@ Catalog of every page in this wiki. Read this first when answering a query — d
 | [[duo-gait]] | healthy-only reference |
 | [[oxwalk]] | healthy-only reference |
 | [[marea]] | healthy-only reference |
-| [[camargo-2021]] | healthy-only reference (unparseable format) |
+| [[camargo-2021]] | healthy-only reference (format access unblocked, see dataset page) |
 
 ## Prior reviews (5)
 
@@ -92,6 +105,12 @@ Catalog of every page in this wiki. Read this first when answering a query — d
 - `../docs/Sources_Search_Log_and_Datasets.docx` — search log and dataset registry.
 - `../notebooks/01_post_stroke_gait_baseline.ipynb` — hands-on data-mining notebook.
 ## Current next action
+
+Follow [[classification-project-status]]: lock a common-task TVS pilot, acquire only selected additional raw laboratory recordings, then check duration and quality before frozen participant-level evaluation. Metadata intake and the two-sample adapter/inference check are complete. No larger cohort is selected or scored.
+
+## Historical implementation notes
+
+The dated decisions below preserve earlier experiments. Their next-step wording is historical and is superseded by [[classification-project-status]].
 
 For repository navigation, start at
 `../notebooks/00_READ_THIS_FIRST.md`. The complete notebook archive remains
@@ -173,7 +192,7 @@ The requested binary-only hard-negative exposure experiment is complete. It reta
 
 Binary data readiness was reassessed after the specificity and hard-negative experiments. The 314-person real development pool is sufficient for a research prototype, but not for a clinical-ready binary decision rule: RevalExo contains only 7 external healthy people, the OOF high-specificity threshold loses substantial sensitivity, demographic linkage is incomplete, and non-stroke Voisard cohorts expose differential-specificity failure. No newly screened public release is a direct drop-in three-channel paired stroke/healthy expansion. Soangra/John's CC-BY paired 100-Hz DynaPort 6-axis L5/S1 release was acquired, but audit shows it is naturalistic ADL rather than gait-labelled and therefore cannot fill that gap; WearGait-PD is a large age-matched healthy/PD hard-negative IMU source; the 60-person 100-Hz 6MWT lower-back IMU release is age-balanced healthy normative data. Full decision and links: `../reports/BINARY_DATA_READINESS_AND_PUBLIC_RECRUITMENT_2026-09-01.md`.
 
-The Soangra/John raw release was subsequently downloaded interactively and normalised into `data/raw/soangra_john_2022/`: 13 CK stroke and 19 SUP healthy lower-back DynaPort recordings, each with 100 Hz accelerometer and gyroscope header settings. The release is three-day naturalistic ADL data and its supplied code yields group-labelled movement windows, not verified gait labels. It is therefore a ready **raw activity-domain context source**, not a gait external-validation cohort. The vendor-specific OMX format still needs a validated decoder before any model input is produced; the three-channel gait baseline remains unchanged. See [[soangra-john-2022]].
+The Soangra/John raw release was subsequently downloaded interactively and normalised into `data/archive/raw/soangra_john_2022/`: 13 CK stroke and 19 SUP healthy lower-back DynaPort recordings, each with 100 Hz accelerometer and gyroscope header settings. The release is three-day naturalistic ADL data and its supplied code yields group-labelled movement windows, not verified gait labels. It is therefore a ready **raw activity-domain context source**, not a gait external-validation cohort. The vendor-specific OMX format still needs a validated decoder before any model input is produced; the three-channel gait baseline remains unchanged. See [[soangra-john-2022]].
 
 The acquired Carpinella 6MWT cohort supplies the missing controlled, age-diverse healthy **gait** check for the lower-back track. A frozen lower-back-only baseline was evaluated on 60 fully external healthy participants (6,109 author-segmented straight-walking windows) and made 0 false-positive stroke calls at the unchanged 0.50 reference; the 95% Wilson upper bound is 6.0%. This is strong but one-sided healthy specificity evidence—not paired external stroke validation, not a basis for retuning, and not a reason to replace the three-channel prototype. See [[carpinella-2026]].
 
@@ -188,3 +207,18 @@ The current RevalExo checkpoint result was re-executed and provenance-locked on 
 A second frozen lower-back healthy audit on the locally acquired Terrier/Piergiovanni older cohort (59 people aged 65–88) yielded 53/59 false positives. Its median lower-back magnitude is 0.578 g, far below the model contract (training mean 1.016 g), so this is an unresolvable data-representation mismatch rather than defensible evidence of age bias. It must not be pooled, rescaled by guesswork, or used for threshold selection. See [[datasets/triaxial-older-healthy]].
 
 For an online-only project, follow [[datasets/online-data-expansion]] and assign each public dataset to binary training, pretraining, specificity testing, or context before downloading or pooling it.
+
+Historical DUO-GAIT inventory is superseded by the completed magnitude test linked above; directional transfer remains pending.
+
+
+Experiment records now use notebooks with saved outputs. Notebook 35 contains the
+virtual-IMU pilot code, artifact replay tables and embedded plot; its duplicate
+runner was removed. Reusable physics modules/tests remain Python. This migration
+does not rerun generation or change any clinical/model result.
+
+
+Local Git organization (2026-09-10): pending work is preserved on the local
+`work/classification-local-2026-09-10` review branch in commits grouped by purpose.
+A clean working tree does not mean all research is complete or published.
+Experiment-notebook migration remains partial. Published main stays at b462795;
+review each group before any future publication.

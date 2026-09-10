@@ -17,3 +17,11 @@ DUO-GAIT (Zhou et al., 2023), *DUO-GAIT: A gait dataset for walking under dual-t
 ## Links
 
 Anchors [[sensor-placement]]'s "feet carry raw dynamic range, trunk carries discriminative signal" distinction, contrasted against [[voisard-2025]] and [[felius-dataset]]'s actual pathology-discrimination findings.
+
+
+Historical DUO-GAIT inventory is superseded by the completed magnitude test linked above; directional transfer remains pending.
+
+
+Latest experiment (2026-09-09): [Controlled regularization and warm-up](../../docs/classification/VGA_REGULARIZATION_RESULT.md) completed and verified: 27 fits, all 40 epochs, same 248-person VGA impairment-screening target. Control normal false alerts16-17/84 and impairment detections91-101/164; decay16-18 and87-102; warm-up15-19 and89-103. Warm-up slightly improves paired full AUROC but increases false alerts in two seeds. All settings fail the prototype gate. Only2/27 runs improve after simulated patience8 stopping, best epochs1-24, none at40. No consistent specificity fix, no model promotion. Schedule/optimizer tests and source/label/split/threshold/metric/checkpoint verification passed. Metadata and raw acquisition unchanged, preprocessing reused, evaluation complete. DUO-GAIT remains a reused alert stress test without VGA labels. Do not rerun this completed comparison.
+
+This week: [progress, benchmark tables and model structures](../../docs/classification/WEEKLY_PROGRESS_2026-09-07.md) (2026-09-07 through 2026-09-09). Separates the packaged stroke logistic model, stroke CNN comparisons and six-channel VGA screening reference. No new training or promotion. [Week 3 GitHub Pages report](https://frankielingishere.github.io/imu_post-stroke-gait-classification/reports/WEEK_03_PROGRESS.html) published and live-verified on 2026-09-09.

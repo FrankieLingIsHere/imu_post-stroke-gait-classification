@@ -16,7 +16,7 @@ in addition to lacking left/right foot channels.
 ## Local acquisition audit — 2026-09-01
 
 - The raw release is organised at
-  `data/raw/soangra_john_2022/data/{stroke,healthy}/<participant>/DATA0000.OMX`.
+  `data/archive/raw/soangra_john_2022/data/{stroke,healthy}/<participant>/DATA0000.OMX`.
 - There are 32 observed files: 13 CK stroke and 19 SUP healthy. This differs
   from counts reported in the associated paper, so all evaluation must record
   the exact analysed-file count rather than assume publication-level numbers.

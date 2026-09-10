@@ -114,3 +114,13 @@ when a genuinely untouched paired cohort is ready for locked evaluation.
   genuinely new evidence stage rather than another architecture variation.
 - Material findings belong in an executed notebook. Reusable scripts may
   support the work but do not replace notebook evidence.
+
+
+## Experiment notebook convention
+
+Experiment code and saved results belong in notebooks; reusable modules and tests
+remain Python. [Notebook 35: virtual-IMU saved results](35_virtual_imu_saved_results.ipynb)
+contains full orchestration, executed artifact checks, stored cohort/exclusion
+tables and an embedded six-channel plot. Reading requires no rerun. The original
+pilot runner was removed after migration. Other historical runners have not yet
+been migrated and must not be deleted blindly.

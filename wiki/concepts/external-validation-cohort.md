@@ -4,9 +4,11 @@ type: concept
 
 # External validation cohort
 
-The primary model now needs a genuinely untouched cohort with age and sex metadata. External sources are screened against five requirements: both healthy and stroke labels, raw wearable signals, compatible gait placement, participant-level demographics, and a protocol that can be documented well enough for a frozen test.
+Current status: RevalExo has already been acquired and repeatedly evaluated. It is inspected stress evidence, not a new final-test candidate. Follow [[classification-project-status]] and [[mobilise-d-tvs]] for current acquisition.
 
-## Current candidate: RevalExo
+The primary model still needs a genuinely untouched paired cohort with age and sex metadata. External sources are screened against five requirements: both healthy and stroke labels, raw wearable signals, compatible gait placement, participant-level demographics, and a protocol that can be documented well enough for a frozen test.
+
+## Historical candidate and completed stress test: RevalExo
 
 [RevalExo](https://doi.org/10.48804/OWJOID) is the strongest newly identified candidate for an external robustness test. Its README reports 10 stroke and 7 healthy participants with lower-body IMU recordings, pelvis and bilateral lower-limb sensors, 60 Hz sampling and annotated 12-second sliding clips. The official dataset description reports 7 healthy older adults and 6 stroke survivors with synchronized video and lower-body IMUs, plus 4 additional stroke participants with IMU-only recordings. The sensor configuration is close enough to map pelvis to the lower-back channel and retain bilateral foot channels after a deliberately documented resampling and channel-selection procedure.
 
@@ -20,9 +22,15 @@ It is not yet an age-validation cohort. The README gives cohort mean ages of 74.
 - The [138-control and 50-stroke full-body gait dataset](https://pmc.ncbi.nlm.nih.gov/articles/PMC10692332/) has unusually useful lifespan coverage and matched biomechanical data, but uses motion capture, force plates and EMG rather than the current IMU tensor. It is suitable for age and gait-behavior corroboration, not direct CNN validation.
 - The [Zenodo rehabilitation dataset](https://zenodo.org/records/10534055) contains raw IMUs and demographics for 10 stroke participants but no healthy controls. It is suitable for stroke-only representation learning or robustness checks, not binary external validation.
 
-## Decision and next action
+## Current decision
 
-Do not pool RevalExo or any of the screened sources into supervised training. First inspect the small RevalExo trimmed archive or obtain its participant-level metadata, then run the frozen current model with a pelvis-plus-bilateral-foot adaptation and report the result as protocol/device stress testing. In parallel, recruit a new age-complete, age- and sex-matched cohort because no screened public source currently satisfies every requirement for age-stratified external validation. Related pages: [[age-and-stroke-gait]], [[classification-methods]], [[future-directions]], [[voisard-2025]] and [[felius-dataset]].
+Do not reacquire or rerun RevalExo as an untouched validation study. TVS metadata
+intake is complete for 40 participants, with two raw development samples and an
+executed inference smoke test. The unfinished task is a common-task pilot protocol
+and selected additional raw recordings, followed by quality checks and frozen
+specificity evaluation. TVS has no stroke-positive group. Independent paired
+stroke/healthy validation and adequate demographics remain unresolved.
+
 ## Extraction audit (2026-08-23)
 
 The full RevalExo archives have been downloaded and extracted under `data/raw/revalexo/`. The extracted data contain 30 subject folders across the HC, ST, and SR groups, with HDF5 motion files, annotation CSV files, and selected video files. The primary binary validation cohort is HC versus ST; SR is excluded from the primary classifier.
@@ -33,7 +41,7 @@ The audit found that the HDF5 field named `time_since_start_s` is numerically en
 
 ## Adapter checkpoint
 
-The current model input contract is 18 channels: lower-back, left-foot, and right-foot, each with 3-axis acceleration and gyroscope. The tracker ordering and adapter mapping are verified in the consolidated pipeline notebook.
+This historical adapter checkpoint used 18 channels: lower-back, left-foot, and right-foot, each with 3-axis acceleration and gyroscope. The tracker ordering and adapter mapping are verified in the consolidated pipeline notebook.
 
 The HDF5 metadata resolves this mapping: the tracker order is `Pelvis`, `Right Upper Leg`, `Right Lower Leg`, `Right Foot`, `Left Upper Leg`, `Left Lower Leg`, `Left Foot`. The project mapping is LB ← Pelvis, RF ← Right Foot, and LF ← Left Foot. Free acceleration is documented in m/s² and is converted to g. The HDF5 gyroscope label is inconsistent, but the unit is resolved below from Xsens documentation.
 
@@ -55,4 +63,4 @@ The current evidence supports targeted recruitment before domain adaptation. Rev
 
 Priority data addition: recruit a healthy comparison group with age distribution centered around the external healthy cohort and collect the same lower-body sensor configuration where possible. A smaller, age-matched adaptation cohort may then be used to test recalibration or feature alignment, but it must be held separate from the final external test. Do not perform unsupervised or supervised domain adaptation on the current RevalExo test participants and still call the result external validation.
 
-RevalExo remains a held-out external-validation cohort. It must not influence training folds, fold normalization, threshold selection, augmentation policy, or model selection. Poor results should first be investigated as sensor/body-location/sampling/domain shift before considering adaptation.
+RevalExo remains training-external but repeatedly inspected research evidence, not a pristine final-validation cohort. It must not influence training folds, fold normalization, threshold selection, augmentation policy, or model selection. Poor results should first be investigated as sensor/body-location/sampling/domain shift before considering adaptation.

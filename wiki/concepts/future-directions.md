@@ -2,6 +2,13 @@
 type: concept
 ---
 
+Current implementation status: [[classification-project-status]] and [[mobilise-d-tvs]].
+TVS metadata acquisition (40 participants), selected raw acquisition (36) and
+preprocessing/evaluation (34 participants, 117 windows) are completed. The dated
+directions below are historical, not the current task queue. RevalExo is historical
+only. Consult the handoff for the current synthesis work.
+
+
 Nine specific directions now guide the project, several of which are prerequisites for the review's own completion rather than only recommendations for the wider field.
 
 1. **Report explicit control-group matching, and share code not only data** — the two clearest gaps [[quality-assessment]] identifies.

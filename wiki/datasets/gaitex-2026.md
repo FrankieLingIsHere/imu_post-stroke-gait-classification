@@ -1,5 +1,7 @@
 # GAITEX (2026): virtual-IMU synthesis candidate
 
+Current implementation: [workspace guide](../../docs/classification/README.md) and [weekly progress](../../docs/classification/WEEKLY_PROGRESS_2026-09-07.md). Completed public results are in Week 3 commit `b462795`; remaining local files include both completed work and active research.
+
 ## Local status
 
 The full GAITEX release is retained in the completed-source archive at

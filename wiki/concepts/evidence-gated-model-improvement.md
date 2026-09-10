@@ -1,10 +1,41 @@
 ---
 type: concept
 status: active
-updated: 2026-09-03
+updated: 2026-09-09
 ---
 
 # Evidence-gated model improvement
+
+Latest: [native alignment correction](../../reports/PACKET_ALIGNMENT_CORRECTION_2026-09-09.md)
+completed; frozen non-stroke positives remain 89/138, zero changed calls. This
+preprocessing correction is retained but not a specificity fix. No next diagnostic
+candidate is admitted. See [[classification-project-status]].
+
+Previous: [conditional gait comparison](../../reports/CONDITIONAL_GAIT_COMPARISON_2026-09-09.md)
+completed 36 feature/covariate fits; no replacement admitted. Device/protocol-matched
+RMS separates stroke from healthy better than stroke from other disorders. The measurement adapter is now evaluated and rejected; the packet-timeline
+correction is now completed as recorded in [[classification-methodology]].
+
+Previous implementation decision: [differential experiment](../../reports/DIFFERENTIAL_GAIT_IMPLEMENTATION_2026-09-09.md)
+completed 27 GPU fits and failed all three seed gates. Other-pathology FPR fell
+but stroke sensitivity dropped by 19.05 percentage points versus the matched
+primary control. No model promotion. The separate input-validity wrapper rejects
+constant/nonfinite windows with no score; it is not a moving-gait specificity fix.
+Use [[classification-project-status]] as the current continuation, with the
+older sections below retaining completed evidence rather than pending tasks.
+
+
+Current completion update (2026-09-09): [full cohort results](../../reports/TVS_COHORT_RESULT_2026-09-09.md).
+All 30 additional files acquired; 36 raw participants local in total. All 40
+registered people accounted for: 34 evaluated on 117 windows, five metadata
+exclusions and one short-bout exclusion. Positive calls: 17/18 healthy and 16/16
+PD overall; 14/15 healthy and 14/14 PD among newly opened people. Verification
+passed; no process remains running. Cohort acquisition/scoring is complete,
+not pending. Earlier launch descriptions below are historical. No model
+improvement or validated correction is claimed.
+
+
+Current implementation and acquisition handoff: [[classification-project-status]]. TVS progress and exact download counts: [[mobilise-d-tvs]]. The development results below remain historical evidence, not new TVS performance estimates.
 
 The 2026-09-03 development experiment improves the primary lower-back
 acceleration classifier through complementary model errors rather than a blind
@@ -57,7 +88,7 @@ precise clinical claim. Using the development rates only as planning values, a
 257 independent healthy/non-stroke and 222 independent stroke participants.
 This is a planning calculation, not a universal regulatory requirement.
 
-## Next action
+## Completed development decisions
 
 Notebook 31 established that threshold tuning cannot jointly remove FP and FN:
 the minimum development-consensus error is 58 participants, zero FP requires
@@ -91,15 +122,81 @@ incumbent/MiniROCKET fusion reached 22.13: it reduced mean FP by 0.47 but added
 passed the locked gate. Architecture rotation on these 314 participants is
 closed; see `../../reports/CANONICAL_CORRECTIVE_BENCHMARK_2026-09-03.md`.
 
-Before final external evaluation, freeze the exact members, equal averaging,
-preprocessing, training durations, and threshold. The final test must use
+The exact members, equal averaging and training duration are now frozen in
+v0.2.0. Before final external evaluation, lock cohort-specific preprocessing,
+threshold, calibration and abstention decisions. The final test must use
 previously unseen participants from independent sites, include demographic and
 stroke-severity breadth plus non-stroke gait confounders, and report TP/FP/FN/TN
 with confidence intervals by site and predefined subgroup. No external
 retuning is allowed.
 
-## Links
+## Local weight freeze completed 2026-09-08
+
+The earlier frozen selection decision now has a concrete local artifact:
+`stroke-gait-lower-back-ensemble-v0.2.0`, 15 members trained for eight epochs
+each on the established 314 development participants. Nine contract tests and
+CPU/GPU/CLI equivalence checks on 96 development windows passed. No external
+cohort was loaded. This does not update held-out performance estimates or lock
+the final-test threshold/calibration/abstention protocol. See
+`../../reports/LOWER_BACK_RELEASE_FREEZE_2026-09-08.md` for duplicate-work checks,
+checksum, precision correction and verification details.
+
+## Related decisions
+
+The subsequent [locked TVS pilot](../../reports/TVS_LOCKED_PILOT_2026-09-08.md)
+is new execution, not a repeat of the exact-weight Voisard audit. It adds four
+selected raw-file acquisitions with frozen decisions and explicit exclusions.
+Both new healthy slow-walking bouts are too short for the five-second contract,
+so this pilot cannot establish healthy specificity. PD/1001 was also too short;
+PD/1000 alone was evaluated and scored positive at 0.887380. All four acquisitions
+completed. The separate offline task-duration screen is feasibility
+work only. Neither activity changes the selected model or demonstrates fewer
+false positives. Current continuation is maintained in [[classification-project-status]].
 
 This decision implements [[evidence-gate-cross-dataset-imu]], preserves the
 minimal-sensor direction in [[sensor-placement]], and should govern subsequent
 work in [[classification-methods]] and [[future-directions]].
+
+
+## Exact-weight specificity stress result (2026-09-08)
+
+Frozen v0.2.0 produced 89/138 non-stroke positive calls at 0.50 (64.5%, 95% Wilson CI 56.2 to 72.0%) on the previously inspected Voisard cohort. Historical three-channel positive count was 72/138. No threshold or model change followed. This closes the exact-weight audit gap but confirms substantial differential-specificity limitations. No independent-validation or sensitivity claim is supported. See `../../reports/LOWER_BACK_NONSTROKE_STRESS_2026-09-08.md`. The role-specific provider gate is implemented. The subsequent pooling diagnosis still leaves 87/138 positive calls and does not resolve specificity. TVS acquisition/evaluation and the differential-objective experiment are complete; use [[classification-project-status]] for the current decision.
+
+
+## Hallway transfer probe completed (2026-09-08)
+
+The [hallway probe](../../reports/TVS_HALLWAY_PROBE_2026-09-08.md) reused four
+inspected pilot people with a separate fixed protocol, excluding schema samples.
+All four had valid windows; 2/2 healthy and 2/2 PD were positive at 0.50. Neither
+reference system supplies turning information; possible turns were retained.
+The failure is not confined to pathological gait, but its cause is unproven.
+The input-transfer check is complete without a tested mismatch, and the later
+three-class candidate was rejected. Domain generalization remains unresolved. These people cannot become an untouched
+test for a subsequent correction. No additional download or clinical claim.
+
+
+## Input-transfer check and cohort-wide continuation
+
+The [new check and batch](../../reports/TVS_INPUT_TRANSFER_AND_COHORT_2026-09-08.md)
+verified raw magnitude reconstruction, 100 Hz timebase, g units and exact frozen
+training normalization constants. No tested mismatch or corrective transformation
+was identified. The user authorized a full HA/PD registered-cohort queue: 40
+accounted for, 35 metadata-eligible, five explicit exclusions, 30 new raw members
+plus five reused eligible files. Results separate new and previously inspected
+participants. This expands evaluation; it does not establish model improvement.
+
+
+## Positive-call mechanism diagnosis completed
+
+The [controlled diagnosis](../../reports/TVS_POSITIVE_CALL_MECHANISM_2026-09-08.md)
+used only four inspected TVS people and 24 development controls. No new cohort
+participant was used. All 15 members called both healthy TVS people positive;
+actual training batches had 32 healthy and 32 stroke windows per source. Final
+head bias alone was small relative to healthy feature-logit contributions.
+Offset/amplitude/filter probes did not remove either healthy false positive.
+Temporal shuffling drove scores near zero, while constant signals produced high
+positive scores. These demonstrate temporal-pattern dependence and a non-walking
+failure mode, not a proven clinical cause of the real hallway errors. No model,
+threshold, filter or normalization change was promoted. The cohort and subsequent differential-objective experiment are complete;
+use [[classification-project-status]] for the current decision. Do not repeat
+this diagnosis or tune on the four inspected people.

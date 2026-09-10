@@ -1,3 +1,13 @@
+---
+type: concept
+updated: 2026-09-08
+---
+
+Current implementation status: [[classification-project-status]] and [[mobilise-d-tvs]].
+TVS metadata acquisition (40 participants), selected raw acquisition (36) and
+preprocessing/evaluation (34 participants, 117 windows) are completed. The dated
+directions below are historical, not the current task queue. RevalExo is historical
+only. Consult the handoff for the current synthesis work.
 # Online-only data expansion strategy
 
 ## Dataset roles

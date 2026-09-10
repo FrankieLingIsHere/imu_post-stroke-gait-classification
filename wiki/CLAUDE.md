@@ -21,6 +21,15 @@ This is the direct analog of Nick Milo's "SSK" startup prompt — it exists to d
 ## Three layers
 
 **Raw sources** (immutable, outside this vault, in the parent project folder):
+
+For the classification implementation track, also use the executed reports,
+saved manifests and `../docs/STROKE_CLASSIFICATION_INTEGRATION_PLAN.md` together
+with `../docs/CLASSIFICATION_EVIDENCE_MAP.md`. The current vault handoff is
+[[classification-project-status]], with acquisition details in [[mobilise-d-tvs]].
+These sources govern implementation state, not manuscript inclusion or review
+claims. Update the affected pages, index and append-only log in the same change
+batch when implementation advances. Dataset metadata completion must never be
+reported as completion of raw-signal acquisition or clinical evaluation.
 - `../docs/Review_Paper_Draft.docx` — the manuscript itself. Source of truth for all included-study facts, quality-assessment findings, and discussion synthesis.
 - `../docs/Sources_Search_Log_and_Datasets.docx` — the search log and dataset access registry. Source of truth for screening/exclusion history.
 - `../notebooks/01_post_stroke_gait_baseline.ipynb` — the hands-on data-mining notebook. Source of truth for every hands-on-mining number (age stats, cluster purity, SNR rankings, placement comparisons).
@@ -29,8 +38,8 @@ This is the direct analog of Nick Milo's "SSK" startup prompt — it exists to d
 Never edit these from inside the wiki. If a wiki page and a raw source disagree, the raw source is right and the wiki page needs fixing — flag it, don't silently pick one.
 
 **The wiki** (this directory, LLM-maintained):
-- `studies/` — one page per included study in Table 3 (currently 17). Filename: `lastname-year.md` (e.g. `mannini-2016.md`; `hsu-2018.md` and `hsu-2021.md` for the two distinct Hsu et al. studies). Template: `templates/study-template.md`.
-- `datasets/` — one page per hands-on-mined dataset (currently 7: Voisard, Felius, GaitMotion, DUO-GAIT, OxWalk, MAREA, Camargo). Template: `templates/dataset-template.md`.
+- `studies/` — one page per included study in Table 3 (see index.md for the maintained roster). Filename: `lastname-year.md` (e.g. `mannini-2016.md`; `hsu-2018.md` and `hsu-2021.md` for the two distinct Hsu et al. studies). Template: `templates/study-template.md`.
+- `datasets/` — one page per hands-on-mined dataset (see index.md for the current dataset and acquisition catalog). Template: `templates/dataset-template.md`.
 - `reviews/` — one page per prior review discussed in Section 2 (currently 5: Jiao, da Silva, Prisco, Boukhennoufa, Jourdan). Template: `templates/review-template.md`.
 - `concepts/` — topic/synthesis pages that cut across studies: research questions, eligibility criteria, discriminative features, sensor placement, classification methods, quality assessment, the trunk-vs-pocket deployment tension, future directions. Template: `templates/concept-template.md`.
 - `synthesis.md` — the top-level narrative page. Mirrors the manuscript's Discussion/Conclusion but as a living, linkable document rather than fixed prose.

@@ -18,7 +18,7 @@ age-diverse healthy walking as stroke.
   participant-level metadata.
 - Five files have a longer timestamp vector than sensor tensors; this is a
   small, explicit adapter requirement, not an invitation to alter raw data.
-  See `data/raw/carpinella_2026/metadata/LOCAL_AUDIT.md`.
+  See `data/archive/raw/carpinella_2026/metadata/LOCAL_AUDIT.md`.
 - The frozen lower-back-only baseline was evaluated without retraining,
   calibration, model selection, or threshold tuning. It yielded 0/60 healthy
   participant false positives at the pre-existing 0.50 decision reference

@@ -2,6 +2,17 @@
 
 Append-only, chronological. Prefix every entry `## [YYYY-MM-DD] <type> | <what>` so it stays greppable (`grep "^## \[" log.md | tail -5`).
 
+## [2026-09-08] search | online paired-cohort scan, no new qualifying cohort
+
+Searched Europe PMC, Crossref/DataCite, OpenAlex, Zenodo, Figshare, Synapse, and primary dataset pages for an untouched cohort matching the frozen lower-back plus bilateral-foot gait IMU contract. No code or data were changed and no archive was downloaded.
+
+- Felius Zenodo records `10.5281/zenodo.11045239`, `10.5281/zenodo.11044903`, and parent/version records are the already-used Felius cohort, not a new cohort. Their official metadata confirm healthy/stroke labels, lower-back plus bilateral-foot sensors, raw CSV, 104 Hz sampling, and a 2-minute walk test.
+- Zhou record `10.5281/zenodo.10534055` is stroke-only with ten participants and two visits.
+- BLISS (`10.15125/BATH-01425`) includes healthy and impaired participants, including stroke-related impairment, but does not document the required lower-back plus bilateral-foot acceleration contract.
+- WearGait-PD remains a hard-negative candidate only because it has healthy and Parkinson disease participants but no stroke group.
+
+Conclusion: zero new public candidates cleared all requirements for an untouched paired validation set. Continue with existing source audits or contact/prospective recruitment. Apply the provider schema-sample gate before any full archive acquisition.
+
 ## [2026-07-22] search | 2 candidates screened (from Zotero, not a fresh search), 0 included, 1 excluded, 1 staged
 
 Follow-up to the same-day citation-accuracy check: two papers sitting in the user's Zotero library looked topically close to this review and were flagged for screening at the user's request, via the `wiki-search-enrich` skill rather than an ad hoc read. Both fetched and read in full (PMC mirror for Johansson, since MDPI blocked the direct fetch with a 403; Frontiers' own site for Hosoi), not screened from abstract or search-snippet alone.
@@ -1829,3 +1840,580 @@ discrimination/calibration. Architecture rotation on the same 314 participants
 is now closed. The selected lower-back ensemble remains frozen, and a new
 untouched paired cohort is the next evidence requirement. Full report:
 `../reports/CANONICAL_CORRECTIVE_BENCHMARK_2026-09-03.md`.
+
+
+## [2026-09-08] sync | Lower-back ensemble weights frozen and verified
+
+Recorded the completed 15-member local weight freeze in notebook 34, the model card, package instructions, integration plan, and evidence-gated-model-improvement concept. Nine tests and saved-weight CPU/GPU/CLI equivalence on 96 development windows passed. Preserved the failed TF32 smoke-check provenance and corrected inference precision without retraining. No external data or new performance estimate. Report: `../reports/LOWER_BACK_RELEASE_FREEZE_2026-09-08.md`.
+
+
+## [2026-09-08] sync | Exact-weight non-stroke stress test completed
+
+Updated notebook 34, model card, integration plan, evidence map and model-improvement concept with the predeclared v0.2.0 result: 89/138 non-stroke positive calls at 0.50. Verified matched cohort accounting, training-key separation, saved aggregation and Wilson intervals. No retuning. Full report: `../reports/LOWER_BACK_NONSTROKE_STRESS_2026-09-08.md`.
+
+
+## [2026-09-08] sync | Reconcile classification handoff and completed TVS metadata intake
+
+Synced from executed acquisition/integration reports and saved local manifests.
+Added [[classification-project-status]] and [[mobilise-d-tvs]], updated the model
+improvement concept, index and synthesis pointer, and reconciled the integration
+plan and evidence map rather than stacking more contradictory status notices.
+
+Verified current state: 40/40 HA/PD participants have metadata, zero metadata
+transfers are pending, and raw laboratory signals exist only for HA/4109 and
+PD/4020. Their 25 trials produced ten engineering windows (3 HA, 7 PD), and
+frozen v0.2.0 inference passed. No additional raw cohort, larger evaluation or
+accuracy improvement was claimed. Test5/Test6 each have 19 HA and 19 PD metadata
+candidates after excluding those development samples; raw-duration and clinical
+quality eligibility remain unresolved.
+
+Recorded completed role-specific intake, unchanged false-positive limitations,
+public-only acquisition preference and unsent contact drafts. Earlier 504
+failures are historical; metadata subsequently completed. The downloader reuses
+partial/completed ranges. The ten recorded focused downloader/adapter/intake tests
+passed in prior executed runs; this sync did not rerun inference or model tests.
+
+Next work remains a predeclared common-task pilot and selected additional raw
+acquisition, not another metadata download, gate rebuild, freeze or audit.
+Added same-batch wiki synchronization instructions to AGENTS.md and the vault
+schema. Preserved earlier log entries and unrelated changes. No manuscript,
+included-study count, model weights or participant data were changed by this sync.
+
+Also corrected the Soangra/John and Carpinella dataset-page paths to their verified current `data/archive/raw/` locations, preserving their prior results.
+
+
+## [2026-09-08] sync | User-requested whole-vault progress scan
+
+Scanned all 79 Markdown pages, including 26 study pages, 16 dataset/acquisition
+pages, 15 concept pages, five review pages, six staging pages, four templates
+and seven root pages. Full-text progress-hit inventory and source hashes saved
+in `data/interim/wiki_full_scan_2026-09-08.json` (pre-correction snapshot).
+Verified 40 saved metadata screens, zero pending transfers, six acquired-member
+hashes, the 10-window tensor hash and frozen checkpoint hash against the executed
+smoke result. Found no running TVS script or larger-cohort prediction artifact
+in the checked locations. No new acquisition, training or model evaluation.
+
+Corrected additional stale active directions in external-validation-cohort,
+recruitment-protocol, future-directions and online-data-expansion. Retained
+historical experiments, labelled old adapter contracts, expanded the dataset
+catalog, removed stale schema roster counts and corrected Camargo's obsolete
+unparseable label. No manuscript study claims were re-audited or changed.
+
+Actual next task: predeclare the common-task pilot and quality protocol, acquire
+selected additional raw TVS laboratory recordings, then assess usable walking
+and frozen participant-level specificity. There is no background job for the
+user to wait for, and no larger pilot has yet been selected or evaluated.
+
+
+## [2026-09-08] sync | New locked TVS pilot executed and local duration screen added
+
+Checked prior artifacts before creating a new four-person Test6 pilot; excluded
+HA/4109 and PD/4020 schema samples. Locked selection and protocol before acquisition
+or scoring. Acquired and CRC/SHA-verified HA/1091, HA/1092, PD/1000 and PD/1001:
+195,716,730 new raw bytes. Six raw laboratory participants are now local; all 40
+metadata records remain verified and 34 raw recordings remain unacquired. No full
+archive download, replacement participant, threshold tuning or retraining.
+
+Three short-bout exclusions (4.18, 3.63 and 3.33 seconds) left PD/1000 alone:
+one window, positive call with score 0.8873795271 at 0.50. Healthy specificity
+is undefined; the PD 1/1 Wilson interval is 20.65%-100%. This is an exploratory
+failure observation with severe selection and sample-size limitations, not
+model improvement or clinical validation. Frozen release smoke and independent
+raw/protocol/score-accounting verification passed. The pilot process finished.
+
+Added the locked runner and offline final-task duration screen. Five new tests
+cover protocol/result protection, acquisition failures and duration/provenance
+handling; these and ten existing focused tests passed. The six-file duration
+screen found hallway windows for three healthy and two PD people (eight and six
+windows, including schema samples). Next is hallway turn/task compatibility on
+existing files, not additional short-walk acquisition or a repeated audit.
+
+Updated classification-project-status, mobilise-d-tvs, evidence-gated-model-
+improvement, index, integration plan and evidence map. Detailed result and
+hashes: reports/TVS_LOCKED_PILOT_2026-09-08.md. Saved artifacts include
+locked_pilot_v1/results.json and verification.json, plus local_duration_screen.json.
+No manuscript findings or unrelated changes were modified.
+
+
+## [2026-09-08] sync | Hallway compatibility checked and separate frozen probe executed
+
+Confirmed from archived TVS release description that neither reference system
+provides turning information. Empty Stereophoto/INDIP sharp-turn fields cannot
+certify straight walking. Locked a separate exploratory hallway-task protocol
+before hallway scoring, retaining possible turns and using existing break handling.
+Reused HA/1091, HA/1092, PD/1000 and PD/1001; excluded both schema participants.
+No download, replacement, threshold tuning, inferred turn filtering or retraining.
+
+Four eligible people supplied 11 windows. At frozen 0.50: 2/2 healthy and 2/2 PD
+positive. Mean scores: HA1091 0.962193, HA1092 0.978089, PD1000 0.947829,
+PD1001 0.515021. This fails to support current hallway use; it does not identify
+turn causality or establish a precise population rate. The people were already
+inspected, and the hallway task was selected following duration screening.
+
+Added run_tvs_hallway_probe.py and three new safeguards; these and five adapter
+tests passed. Release smoke and independent saved-score/protocol verification
+passed. Earlier Test6 results remain byte-for-byte unchanged. Hallway artifacts
+are in data/interim/public_imu_screen_2026-09-08/hallway_probe_v1. Updated the
+hallway report, prior-report pointer, wiki handoff/dataset/evidence pages, index,
+integration plan and evidence map. Six raw participants remain local; no job
+remains running. Next is a bounded input-transfer mismatch check against frozen
+contract/development evidence, not a repeat pilot or outcome-fitted threshold.
+
+
+## [2026-09-08] sync | Input-transfer check completed and cohort-wide batch launched
+
+Verified release development hashes, independent raw magnitude reconstruction
+(max error 2.483e-7 g), 100 Hz timebase and archived g-unit evidence. Recomputed
+training mean 1.0162991285 and std 0.2063165307 exactly matched all 15 members.
+No tested implementation mismatch or fitted correction. Added durable score
+explanation: healthy is the ground-truth group; the output is a stroke-class
+model score averaged across 15 sigmoid outputs and then participant windows.
+
+On user instruction, launched run_tvs_cohort.py: all 40 HA/PD registered, 35
+metadata-eligible, five explicit exclusions, five eligible local files reused,
+30 new members totaling 1,252,087,764 compressed / 1,258,819,511 raw bytes.
+Fixed rules, no replacement/tuning, separate new/inspected strata; two resumable
+range connections. Three new cohort tests passed. Added status_tvs_cohort.py.
+The batch is incomplete at this log entry; inspect intake/results and active
+process before resuming. Updated report, wiki handoff/dataset/evidence/index,
+integration plan and evidence map. Earlier probe artifacts remain unchanged.
+
+
+## [2026-09-08] sync | Controlled positive-call mechanism diagnosis
+
+User requested why the model favours positive calls. Checked release-matching
+training/architecture/inference code: equal class counts per source in sampled
+batches, healthy=0/stroke=1, lower-back-only channel. New frozen diagnostic used
+four already inspected TVS people and 24 deterministic development controls;
+no newly opened cohort participant was consumed. All 15 members independently
+called both healthy TVS people positive. Their mean feature contributions were
+3.5176/4.5221 logits versus mean head bias 0.1020. Offset/gain/5Hz/10Hz probes
+left both positive. Order shuffling drove scores near zero; constant inputs
+produced strong positives, including all 24 development controls. These expose
+behavioural weaknesses but cannot identify a unique physiological cause.
+
+Three transform tests passed; original hallway scores reproduced within 1e-6.
+Protocol, participant/member outputs and summary saved in positive_call_diagnosis_v1.
+Report: TVS_POSITIVE_CALL_MECHANISM_2026-09-08.md. Updated wiki status/evidence/
+dataset/index, integration plan and evidence map. No deployment correction or
+threshold fitting. The separate cohort acquisition remains active and incomplete;
+use status_tvs_cohort.py rather than treating earlier six-file counts as current.
+
+
+## [2026-09-09] sync | Full TVS cohort completed and independently verified
+
+Status check found completion at 2026-09-08 23:52 Malaysia time, with no running
+cohort process. All 30 additional raw members acquired (1,258,819,511 bytes).
+Total acquired HA/PD raw participants: 36; four metadata-excluded files remain
+unacquired. All 40 registered participants accounted for: 34 evaluated, five
+metadata exclusions and HA/3107 excluded for a 487-sample bout. 117 windows.
+
+New stratum: healthy 14/15 positive, PD 14/14. Combined: healthy 17/18, PD 16/16.
+Severe hallway transfer/specificity failure; no improvement, no stroke sensitivity.
+Verified all 30 new raw CRC/SHA/sizes, locked dependencies/protocol, evaluated
+raw/window hashes and shapes, score aggregation and participant/group accounting.
+Earlier pilot results unchanged; no inference rerun. Saved verification.json.
+Updated completion report, prior launch report, wiki handoff/dataset/evidence/
+index, integration plan and evidence map. No batch remains to wait for or resume.
+
+
+## [2026-09-09] sync | Differential objective implemented, executed and rejected; validity wrapper delivered
+
+Checked current plan/evidence map and prior negative-exposure experiments before
+implementing a distinct one-channel matched objective test. Voisard: 72 healthy,
+49 stroke, 138 other pathology; 7,485 windows. Three folds isolate participants
+and whole pathology pairs; three seeds and three arms produce 27 GPU fits.
+Three-class mean specificity/sensitivity/other FPR: 93.06/68.71/40.58%, versus
+primary binary 91.20/87.76/53.38% and binary exposure 92.59/68.71/35.99%.
+All locked seed gates failed. Candidate promotion rejected, no TVS data used,
+no threshold tuning or frozen model change. 2,331 participant predictions saved.
+
+Implemented models/input_validity.py API/CLI: reject exact constant/nonfinite
+windows without scores; forward valid windows unchanged. It is not a gait
+detector and does not fix moving healthy false positives. Six focused tests
+passed plus real API/CLI smoke verification. The release smoke contains one
+constant window, now intentionally rejected by the opt-in wrapper; the valid
+smoke score is preserved. Original release API and weights remain unchanged.
+
+Report: DIFFERENTIAL_GAIT_IMPLEMENTATION_2026-09-09.md. Artifacts and verification
+under data/processed/differential_gait_v1. Replaced stale current handoff/plan/map
+instructions; updated affected concept/dataset pages and index. Preserved old
+reports and logs. No process remains running and no next candidate is selected.
+
+
+## [2026-09-09] sync | classification methodology review
+
+Reviewed prior evidence, feature/device analyses and current architecture; checked
+primary framework/product sources. Executed eval-mode receptive-field verification:
+74 samples, gradient support 214-287. No training improvement claimed. Added report
+and classification-methodology concept; updated plan, evidence map, current status,
+feature interpretation and index. Next implementation is metadata overlap and
+conditional gait-feature discrimination, not an architecture sweep. No downloads,
+new preprocessing or cohort evaluations occurred. Historical results preserved.
+
+
+## [2026-09-09] sync | conditional gait comparison implemented and executed
+
+Built participant contract from 1,348 represented trials, preserving 259 people,
+metadata mixtures and missing age. Reused local raw lower-back signals and corrected
+reference-event walking bounds; no downloads. Executed 36 logistic fits under
+existing disjoint participant/pathology folds in all and device/protocol-matched
+scopes. Matched 144-person RMS AUROC .801 against healthy, .449 against other;
+combined features did not improve on nuisance plus cadence. No model promoted.
+Three unittest checks passed; prediction/label accounting and frozen hash verified.
+Updated plan, evidence map, status, methodology, feature interpretation, improvement
+page and index. Next: autonomous lower-back event measurement validation, still
+unimplemented. No independent cohort result or clinical root cause is claimed.
+
+
+## [2026-09-09] sync | lower-back event adapter executed and timeline defect exposed
+
+Installed pinned mobgap 1.2.0 in existing environment; no clinical downloads.
+Implemented norm-based GSD/IC adapter and evaluated all 260 people/1,356 trials
+(2,712 trial/mode rows), using provider-processed acceleration on annotation
+clock. Native-row attempt exposed omitted packet/index mismatch. Three invalid
+reference trials retained. Autonomous stroke F1 .811; count-cadence MAE 17.51;
+all group admission gates failed. Four tests passed; no classifier promotion.
+Packet diagnostic corrected float-counter rounding noise without changing
+predictions: 513 prior selected trials/115 people affected, matched subset zero.
+Flagged mixed-cohort RMS interpretation provisional. Updated report, plan, evidence
+map, status, methodology, features, Voisard page, improvement page and index.
+Next is verified packet-aligned native loading. Historical results retained;
+independent event truth and source validation remain open. No running jobs.
+
+
+## [2026-09-09] sync | packet alignment fixed and false positives retested
+
+Implemented versioned native common-clock loader with bounded interpolation,
+16-bit rollover support and explicit missing edges. Four tests passed. Verified
+all 1,348 selected trials against provider-filtered magnitude (max error .000126
+m/s2). Regenerated features, retained all 259 participants, reran 36 fixed fits.
+Combined other FPR remains 50.7%. Frozen paired specificity test on identical
+5,340 windows/138 people: 89 positive old, 89 aligned, no participant flips.
+No acquisition, independent sensitivity result or model promotion. Original
+weights/results preserved. Updated plan, map, status, methodology, features,
+Voisard page, improvement page and index. Packet-correction experiment closed;
+new native extraction uses aligned loader. Manuscript-wide migration remains
+separate. No running job.
+
+
+## [2026-09-09] sync | collaborator false-positive hypothesis review
+
+Read supplied synthesis, checked main actionable citation scopes against primary
+sources and compared with completed experiments. Walking-detection specificity is
+not stroke-diagnosis specificity; pure axis rotations preserve the model input
+norm. Identified a distinct proposed phase-feature test: step/swing/stance asymmetry
+versus previously tested mean stride asymmetry. Not implemented; no new model or
+root-cause claim. Updated hypothesis report, plan, evidence map, current status,
+methodology and index. Acquisition/evaluation state and old results unchanged.
+
+
+## [2026-09-09] sync | follow-up bilateral-phase/OOD synthesis reviewed
+
+Corrected causal overstatements and a mismatched Van Mierlo citation. Verified
+Ullrich lower-back laterality method uses gyroscope features; GaitEncoder inputs
+are full-body kinematics and OpenOOD benchmarks concern image classification.
+Kept reference-assisted phase-feature experiment first, OOD rejection separate
+with sensitivity/coverage accounting. Updated hypothesis report, methodology,
+status and index. No new data, training or evaluation; not a full reference audit.
+
+
+## [2026-09-09] sync | bilateral phase feasibility implemented and evaluated
+
+Added locked protocol, label-independent event-phase extractor, four passing
+synthetic tests, 24 logistic fits and paired conditional bootstrap intervals.
+Retained all 259 participants and all 1,348 trial ledger rows. Baseline predictions
+reproduced. Primary other FP 73 to 64/138 with two fewer stroke detections, matched
+35 to 26/76 with four fewer detections. Both gates failed. Secondary combined+phase
+matched FP 43 to 31/76 with 31/49 stroke detections unchanged. No release promotion.
+Updated plan, evidence map, status, methodology, features, Voisard page and index.
+Acquisition unchanged, phase preprocessing/evaluation complete, no background job.
+
+
+## [2026-09-09] sync | nested phase sensitivity thresholds completed
+
+Locked protocol then executed 72 inner fits, thresholds selected without outer
+labels, all 259 participants retained. Three tests passed. Both primary gates
+failed. Matched combined+phase reaches 45/49 stroke detections but 62/76 other
+and 13/19 healthy positives. Stop further threshold sweeps on this feature set.
+Updated plan, evidence map, status, methodology, features, Voisard page and index.
+Added execution pointer to historical hypothesis review. Acquisition unchanged,
+phase preprocessing reused, evaluation complete, frozen release unchanged.
+
+
+## [2026-09-09] sync | stance CV coverage gate and directional schema screen
+
+Implemented within-side/bout stance-duration CV with pre-fit protocol and eight
+passing CV/phase tests. 1,259 usable trials, all 259 participants retained. Healthy,
+ACL and HOA coverage below 95%, so zero model fits. Did not lower the requirement.
+Screened 1,348 raw headers: Acc/Gyr/Mag XYZ present, anatomical mapping unconfirmed.
+Updated report, protocol, plan, evidence map, status, methodology, features, dataset
+page and index. Acquisition unchanged, CV preprocessing complete, model evaluation
+not run. Next prerequisite is provider axis mapping, no new accuracy claim.
+
+
+## [2026-09-09] sync | nominal directional axes and raw/processed mapping verified
+
+Read provider paper/figure and code. Audited all 1,348 selected trials: 1,294
+signed-axis comparisons match at numerical precision, 54 explicitly unsupported.
+Nominal Y is ML, X vertical, Z AP. 750 TechnoConcept recordings flip X/Y in
+processing. Initial gravity flag CVA_18_2 retained. Updated report, code comment,
+plan/evidence map, status, methodology, features, dataset page and index.
+No raw download or classifier fit. Axis audit complete, HR experiment pending.
+
+
+## [2026-09-09] sync | directional HR implemented and evaluated
+
+Locked protocol, three passing tests, 96 fits. Main coverage all 259 people.
+Primary matched HR: 44/49 stroke, 5/19 healthy FP, 47/76 other FP. Full: 45/49,
+6/72, 56/138. Both primary gates failed despite gains. Screened sensitivity weaker.
+Updated report, plan/evidence map, status, methodology, features, dataset and index.
+Acquisition unchanged, HR preprocessing/evaluation complete, frozen model unchanged.
+Next is gyro measurement validation, no automatic diagnostic improvement claim.
+
+
+## [2026-09-09] sync | conditional gyro laterality evaluated
+
+Six fresh SVC fits, two tests passed, 48,131 usable contacts. Matched stroke 89.6%
+and RIL 88.1% below 90% gate; mixed-device results poorer. No post-hoc flips,
+pretrained pickle predictions, environment downgrade or release changes. Saved
+contact predictions and coverage. Updated plan/map, status, methodology, features,
+dataset, index. Acquisition unchanged, conditional evaluation complete. Next gap
+is signed gyro mapping/transfer, not an assumed proven device root cause.
+
+
+## [2026-09-09] sync | gyro raw/processed mapping audit completed
+
+All 1,348 trials accounted, 1,294 comparable, 54 unsupported. Gyro mappings agree
+with acceleration, unit scale and constant offsets explain processing. Two tests
+passed, no retraining. Ten paired-device participants show exploratory accuracy
+25.9% XSens vs 78.9% TechnoConcept, not causal isolation. Updated report, plan/map,
+status, methodology, features, dataset and index. Acquisition and models unchanged.
+Close mapping check; no guessed label inversion or automatic model correction.
+
+
+## [2026-09-09] sync | physical calibration evidence and session confounding
+
+Checked 1,348 trials: near-pi turn integrals both devices, near-zero processed
+bias, head/back sign agreement all 1,343 usable trials. No guessed correction.
+All ten paired-device participants differ in session; hardware effect not isolated.
+Saved physical and session ledgers, report, updated plan/map, status, methodology,
+features, dataset and index. Acquisition/model results unchanged. Physical checks
+complete, independent handedness/event-reference proof remains unavailable here.
+
+
+## [2026-09-09] sync | TVS optical references and exploratory classifier
+
+Verified explicit optical sides/raw markers in 32 local HA/PD participants.
+Initial expected-count bug allowed three fits (87.46/87.34%); fixed, preserved
+exploratory artifacts, corrected coverage 86.4/85.4% fails gate, no further fits.
+1,584 matched optical/INDIP sides agree. 163/225 trials usable. Updated report,
+protocol, plan/map, status, methodology, TVS and index. Acquisition unchanged,
+no accepted new classifier or stroke validation. No background job.
+
+
+## [2026-09-09] sync | working prototype policy and executable laterality package
+
+User requested lower gates for a working prototype. Adopted 85% macro side accuracy
+and 85% declared-contact coverage for TVS only, explicitly post-result engineering
+acceptance. Prior strict failures unchanged. Full fit on 32 people/1,645 contacts,
+saved trusted local checkpoint/manifest and inference CLI. Feature parity, serialized
+prediction parity and real input CLI smoke passed. Explained Felius/Voisard/Sint
+stroke development, RevalExo evaluation and distinct TVS optical role. Acquisition
+unchanged, prototype complete, no newly validated stroke classifier.
+
+
+## [2026-09-09] sync | classification navigation and prototype organization
+
+Added classification guide and prototype registry. Moved bundled examples into examples/ and updated builder/CLI paths. Preserved historical evidence and raw data. Recorded folder preference in AGENTS.md. Next deliverable returns to stroke phase+HR packaging. Acquisition unchanged, no new preprocessing or model evaluation.
+
+
+## [2026-09-09] sync | executable stroke phase+HR feature prototype
+
+Built full-development model on 259 participants, trusted local manifest and CSV
+CLI. Three contract tests, serialization parity, example invalid-row behavior and
+259-row batch smoke passed. Development-derived threshold explicitly unvalidated;
+prior nested comparisons preserved separately. Updated guide/registry, plan/map,
+status/methodology/index. Acquisition unchanged, extraction reused, packaging done.
+Frozen model untouched. No new report sprawl or independent validation claim.
+
+
+## [2026-09-09] sync | reconstructed features and verified held-out benchmark
+
+Reconstructed ten predictors from 1,348 source trials, exact participant-table
+parity within floating precision. Twelve fold refits reproduced saved predictions,
+API and inner-threshold provenance checked. Ten tests passed. Full/matched AUROC
+0.897/0.835; neurological controls still produce many positives. Added maintained
+classification benchmark document and versioned processed artifacts, updated package
+README, guide, plan/map, status/methodology/features/index. No acquisition, model
+replacement or new independent validation. Full-fit training scores excluded.
+
+
+## [2026-09-09] sync | pathology-balanced phase+HR comparison completed
+
+Locked one training-weight change before 24 fits. Two regression tests passed. Full neurological FP 56/94 to 52/94 with one extra missed stroke and healthy FP; matched FP 47/76 to 48/76. Both replacement gates failed. Existing prototype retained. Updated guide, evidence map, integration plan, status, methodology, Voisard page and index. Metadata/raw acquisition unchanged, existing preprocessing reused, evaluation complete on development cohorts only. No independent validation or model replacement.
+
+
+## [2026-09-09] sync | ElderNet checkpoint acquired and executed
+
+Pinned upstream 437a38b, one 44.7 MB gait-speed checkpoint and small wrist fixture acquired. All 416 supplied walking-window predictions reproduced within 1e-4 tolerance (maximum difference 3.234889e-7 m/s), 139 state keys matched, no required keys missing. Upstream TVS fine-tuning overlap and wrist-only head contract recorded. No lower-back stroke training, FP improvement or independent validation. Model/source and small fixture acquisition complete, fixture preprocessing/inference complete, whole-cohort acquisition unchanged. Updated guide, plan/map, status/methodology, TVS and index.
+
+
+## [2026-09-09] sync | corrected ElderNet lower-back transfer probe
+
+Ran 1,785 native XYZ windows from 146/259 participants, frozen pretrained and random encoders, 48 nested head fits. Corrected pretrained/random full-subset AUROC 0.553/0.703, neurological FP 58/71 versus 42/71. Matched AUROC 0.569/0.568 and neurological FP 54/57 versus 50/57. Both gates failed, no replacement. First attempt used wrong physical units and is explicitly invalid/archived; corrected all results after division by 9.80665. Two unit/shape tests passed. Severe coverage loss recorded (12/72 healthy available). Updated guide, plan/map, status/methodology, Voisard and index. Acquisition unchanged, preprocessing and frozen head-transfer evaluation complete. No end-to-end or independent validation claim.
+
+
+## [2026-09-09] sync | partial ElderNet late-layer adaptation completed
+
+18 CUDA fits, frozen pretrained and random partial controls, fixed six-epoch recipe with separate calibration participants. Full AUROC .719 adapted versus .596 frozen, stroke TP 39/44 versus 42/44 and neurological FP 61/71 versus 63/71. Matched adapted AUROC .642, TP41/44, FP51/57. All four advancement comparisons failed. 18 state checks and three regression tests passed, split identities verified. No replacement or fusion. Coverage unchanged at146/259, raw acquisition unchanged, reconstruction and partial training/evaluation complete. Updated report/guide, plan/map, status/methodology, Voisard and index. Full end-to-end unfreezing and independent validation remain open.
+
+
+## [2026-09-09] sync | controlled ElderNet feature fusion completed
+
+18 CUDA fits with main-only and random-fusion controls. Full subset main/pretrained-fusion AUROC .707/.699, TP44/44 versus41/44, neurological FP49/71 versus61/71. Matched main/fusion TP38/44 versus40/44 and FP21/57 versus45/57. All advancement comparisons failed. Verified identical calibration/test splits, threshold provenance and18 state checks; three regression tests passed. Existing checkpoints retained. Coverage146/259 unchanged, no acquisition, reconstruction and fusion training/evaluation complete. Updated guide/report, plan/map, status/methodology, Voisard/index. Fusion is completed; independent cross-source validation remains open.
+
+
+## [2026-09-09] sync | Linn39 gait_cnn reviewed and trained
+
+Pinned MIT source 689cc9b, no released checkpoint in inspected tree. Actual Keras builder trained in36 CUDA fits, four sensor inputs and three seeds. All259 participants retained with21,800 cycles. Combined AUROC .825-.837 versus magnitude .637-.653; neurological FP67-82/94 versus78-81/94. Matched combined AUROC .643-.666. No arm passes every prespecified comparison, but richer inputs improve ranking. Three unit tests and split/threshold/source/checkpoint verification passed. Class-conditioned upstream scaling repaired; no original-paper replication claim. Updated guide, plan/map, status/methodology, Voisard and index. Metadata/raw acquisition unchanged, reference-assisted preprocessing and evaluation complete, independent validation and sensor-only segmentation open. Report records optimization as an unresolved development question, not an established cause.
+
+
+## [2026-09-09] sync | DUO-GAIT archived availability and benchmark scope
+
+Verified16 participants with SA/LF/RF signals and left event tables in each of four archived conditions. Historical event gap was subsequently resolved. New gait_cnn run used Voisard only; no DUO-GAIT adapter/inference executed. Recorded source/unit/flag checks needed for frozen external-negative evaluation and comparable differential diagnosis evidence. Updated status, DUO-GAIT, index, plan and evidence map. No raw acquisition or new training.
+
+
+## [2026-09-09] sync | frozen DUO-GAIT magnitude evaluation
+
+All16 people/four conditions,15,485 cycles,nine frozen models. FP ranges1-12 control,0-7 fatigue,2-11 dual-task,2-13 dual-task fatigue. Timestamp-index first pass invalidated, corrected v2 maps foot events through timestamps and excludes106 unsupported intervals. No fitting; thresholds unchanged. Directional arms pending training/external coordinate harmonization. Metadata/raw unchanged, magnitude preprocessing/evaluation complete; no stroke sensitivity or model replacement. Updated result, guide, plan/map, status/methodology, DUO-GAIT and index.
+
+
+## [2026-09-09] sync | waveform-frame six-channel CNN completed
+
+36 fits,18 validation-selected models; lower-rate recipe selected7/9 frame6 and1/9 magnitude. All259 Voisard participants/21,800 cycles and16 DUO-GAIT participants/four conditions/15,485 cycles retained. Full frame6 AUROC .756-.768, stroke TP45-47/49, neurological FP80-82/94 versus magnitude AUROC .635-.644, TP44-45/49, FP78-79/94. Only1/6 gate comparisons passes. External frame6 FP3-16/16 control,7-16/16 fatigue; no specificity solution or model replacement. Two unit tests,218-cycle rotation check and selection/split/threshold/source/checkpoint verification passed (reload numerical tolerance1e-5, no changed calls). Waveform frame is not anatomical calibration. Updated report/protocol/guide, plan/map, status/methodology, DUO-GAIT/Voisard/index and historical follow-up banners. Metadata/raw unchanged, preprocessing and evaluation complete. Contribution ablation and independent positive validation remain open.
+
+
+## [2026-09-09] sync | final channel ablation and FP localization complete
+
+36 new fits,18 selected models,27-model trial replay. Acc3 TP46-48/49, neurological FP79-82/94; gyro3 TP41-48/49, neurological FP82-86/94 and healthy FP45-53/72. Neither passes any paired gate. Combined recurring neurological positives80/94,70/80 positive on every evaluated trial across seeds. Seven calibration stroke people force7/7 at the nominal90% rule; CVA_31/CVA_16/CVA_8 set combined fold thresholds. Threshold changes still trade substantial stroke sensitivity. Participant IDs, trial contributions and strongest cycle locations saved. Verification passed, max trial replay error5.96e-6. No unique biological root cause proved; no further rescue sweep launched. Updated report/guide, plan/map, status/methodology, DUO-GAIT/Voisard/index and historical frame follow-up. Metadata/raw unchanged, preprocessing/evaluation/localization complete, existing prototype retained.
+
+
+## [2026-09-09] sync | clinical-rating screening target implemented
+
+Verified provider VGA0 none through4 very severe; actual local key visualGaitAssessment. Earliest-session labels84 normal,164 impaired,11 unknown, including19 diagnosed normal-rated people and one healthy-group mild case.18 fits,9 selected models. AUROC .790-.797, normal alerts14-18/84, impaired detections88-105/164, healthy score0 FP6-9/65. Gate failed. DUO-GAIT ordinary-walk alerts1-5/16, no VGA ground truth. Strict float32 boundary finalized from calibration:9 calibration corrections, no held-out/external call changes. Two tests and source/label/split/selection/threshold verification passed. Updated protocol/result/guide, plan/map, status/methodology, both dataset pages/index. New screening task separate from stroke diagnosis, no model promotion. Metadata label construction complete; raw unchanged; preprocessing/evaluation complete.
+
+
+## [2026-09-09] sync | controlled regularization experiment started
+
+Locked 27 fits of 40 epochs without early stopping: fixed cosine schedule, decoupled weight decay 0.01, and five-epoch learning-rate warm-up. Same 248-person VGA target and role splits. Two schedule/optimizer tests passed. Training remains active, final metrics and verification pending. Updated plan/map, guide, status/methodology, dataset pages and index to prevent duplicate execution. Metadata/raw unchanged, preprocessing reused, no new completed evaluation or promoted model.
+
+
+## [2026-09-09] sync | controlled regularization and warm-up completed
+
+All27 fits reached40 epochs. Same248-person VGA target. Control normal FP16-17/84, impaired detections91-101/164; decay16-18/84 and87-102/164; warm-up15-19/84 and89-103/164. Healthy VGA0 false alerts control7-8/65, decay/warm-up7-9/65. Warm-up full AUROC .778-.784 exceeds paired control .769-.779 slightly, but false alerts rise in two seeds. All settings fail the gate. Only2/27 late recoveries after simulated patience8 stop, gains .00430/.00533 validation loss; selected epochs1-24, no final-epoch selection. Source/label/all-role separation/threshold/metric/decision verification passed; three checkpoint spot checks max error5.93e-7, zero changed calls. Two schedule/optimizer tests previously passed. Saved full learning curves, severity, paired call changes and DUO-GAIT alerts, with no matching external VGA labels. Updated report/guide/plan/map/status/methodology/dataset pages/index and previous-baseline follow-up. Metadata/raw unchanged, preprocessing reused, evaluation complete, no model promotion or new training sweep.
+
+
+## [2026-09-09] sync | weekly benchmark and model structure record
+
+Created docs/classification/WEEKLY_PROGRESS_2026-09-07.md covering this week through September9. Consolidated executed prototype, ElderNet, gait CNN, DUO-GAIT, frame/channel, VGA and optimization work. Documented separate benchmark targets, ten-feature logistic pipeline, 1,058-parameter six-channel CNN, exact checkpoint locations, recipe selection, measurement limits and verification. No single validated best model declared and no seed promoted. Linked guide, plan/map, status/methodology, dataset pages and index. Documentation only: metadata/raw/preprocessing/evaluation state unchanged, no training or downloads.
+
+
+## [2026-09-09] sync | Week 3 GitHub Pages published
+
+Reviewed Week 1 presentation and Week 2 model gate, credibility report and portal publishing setup. Built responsive Week 3 results page with historical context, separate stroke/VGA benchmarks, model structures and embedded training curves. Desktop/mobile and assembled-link checks passed. Published four scoped page/build/workflow files in commit9b5fc92; Pages workflow34354799744 succeeded. Public HTML matches local source and portal links the new page. Live URL: https://frankielingishere.github.io/imu_post-stroke-gait-classification/reports/WEEK_03_PROGRESS.html. Updated weekly record, guide, plan/map, status/methodology, dataset pages and index. Metadata/raw/preprocessing/evaluation unchanged, no new model training or promotion.
+
+
+## [2026-09-09] sync | pending Git changes prepared for user review
+
+Reviewed tracked diff and untracked inventory after published Week 3 commit9b5fc92. Added narrow ignores for downloaded ElderNet/gait_cnn trees, generated prototype weights and examples, preserving all local files. New-file list reduced233 to178, about0.83MiB reviewable source/docs/manifests. Restored incidental terminal spacing in three tracked Markdown files. Recorded explicit review-before-push preference in AGENTS.md and dependency policy in models/README.md. Inventory and tracked patch saved locally under data/processed/git_review_2026-09-09. Existing PDF deletion and stale historical wiki status passages flagged for review, not silently reverted. No staging, commit, push, dataset change or model rerun.
+
+
+## [2026-09-09] sync | previous-week commitments traced
+
+Compared original one-/three-channel source-held-out configs, ERM prediction identities, selected epochs and per-source seed ranges. Same1570 ERM participant/seed/label rows and settings except representation, but selected durations12/8/4 versus16/12/12. Existing matching ERM and ensemble summaries now documented in weekly record. Five-seed extension not found in these runs; material FP variation recorded. Verified completed native-window ratio/repeated-seed failure and GAITEX virtual/affine/SSL failure, distinguishing unresolved L5 placement and unverified checklist items. Updated evidence map/status/index. Read-only CSV summaries saved locally; no training, data acquisition, staging or push.
+
+
+## [2026-09-09] sync | supervisor feedback aligned to grant deliverable
+
+Updated existing weekly progress record and local Week3 page with primary clinical-parameter healthy-to-stroke-like synthesis objective. Distinguished completed healthy generation/GAITEX transfer from unimplemented clinical transformation, and small-data hypothesis from proven failure mechanism. RevalExo restricted to historical evidence, development split exposure must remain explicit, independent final cohort still needed. Added unsent Ms.Chua guide on longitudinal recovery, trunk/lower-back measurements, differential gait, speed/asymmetry ranges, coupling and uncertainty. No invented ranges or claimed consultation. Recorded policy in AGENTS.md; synced plan/map/guide/status/methodology/GAITEX/index. No training, outreach, staging, commit or push. Local page revisions await user review.
+
+
+## [2026-09-09] sync | clinical interview guide deduplicated
+
+Preserved the user-supplied opening and eight questions in the weekly progress record. Replaced the overlapping assistant draft with four additions on recovery over weeks, lower-back trunk measurements, other neurological/orthopedic conditions and quantitative simulation ranges. Added optional probes for definitions, joint constraints, references and uncertainty. Original guide delivery status unverified; no assistant outreach or assumed clinical answers. Local Week3 builder/page and status/index updated, no publication.
+
+
+## [2026-09-09] sync | supervisor expectations completion checklist
+
+Added nine-item status checklist to existing weekly record and local Week3 page, separating reporting corrections and policy from unfinished implementation/evidence. Clinical stroke transformation, sourced parameters, new synthesis holdout manifest and clean final cohort remain outstanding; existing interview guide does not establish a completed consultation. Recovery modeling also unimplemented. Synced plan/map/status/methodology/index. No training, contact, stage, commit or push; public page unchanged pending review.
+
+
+## [2026-09-09] sync | initial clinical parameter contract implemented
+
+Verified primary chronic-hemiparesis paper, preserving individual ratio/speed examples separately from unknown clinical ranges and FAC. Added parameter specification and algebraic cycle consistency function with five passing tests. Defines coupled speed/cadence/step geometry, contact timing and double support; no full-body or clinical validity claim. Updated weekly record, page builder/HTML, plan/map/guide/status/methodology/GAITEX/index. No raw changes, RevalExo loading, new training, motion generation or outreach. Initial specification and engineering checks complete; motion model, joint clinical bounds and L5 placement remain open. User final review required before push.
+
+
+## [2026-09-09] sync | six-channel rigid-attachment pilot executed
+
+Implemented ideal sensor-frame acceleration and gyro with explicit fixed attachment,
+gravity and pose conventions. Six new physics tests pass; five cycle tests retained.
+GAITEX healthy pilot executed on 18 parents, 55 windows (500 x 6), one missing-source
+parent recorded. Development parent roles saved before generation, 14 available
+build and 4 holdout; prior exposure prevents independent-final-test claims.
+Metadata/raw unchanged, new preprocessing and engineering verification complete.
+No clinical transformation, stroke labels, L5 validation, downstream training or
+RevalExo use. Updated parameter spec, weekly Markdown, page builder/HTML, current
+plan/evidence map/guide and affected wiki pages/index. Remaining clinical/motion
+and final-cohort gaps explicit. No staging, commit or push.
+
+
+## [2026-09-09] sync | completed-results page published separately
+
+User explicitly limited publication to completed work. Pushed commit b462795 with
+only the Week 3 HTML and its builder. Removed public plans, interview guide and
+unfinished-deliverables lists while retaining interpretation limits. All pending
+research code, plans, wiki changes and the existing PDF deletion stay local.
+Updated internal weekly record, plan/map/guide, status/methodology/GAITEX/index to
+distinguish public results from the internal handoff. Metadata, raw acquisition,
+preprocessing and evaluation unchanged. Page layout, anchors and whitespace checks
+passed. Deployment verification is recorded below when completed.
+
+Deployment verified: GitHub Pages run 34365277408 and repository hygiene both succeeded. Live HTML includes completed-results/pilot content and excludes Next deliverables and Remaining work sections.
+
+
+## [2026-09-09] sync | archive completed notes and simplify navigation
+
+Archived ten completed classification reviews/results under archive/2026-09;
+updated relative links without changing experiment decisions. Active folder now
+15 files instead of 25. Rewrote README as the reading entry point and removed
+repeated handoff paragraphs from six docs/wiki pages. Corrected stale TVS acquisition
+and two-participant status claims in future-directions, online-data-expansion and
+synthesis. Preserved locked protocol paths and historical logs. Metadata/raw,
+preprocessing and evaluation outcomes unchanged. No code/data/result deletion,
+training, commit or push. Weekly record and local page record the cleanup.
+
+
+## [2026-09-09] Notebook migration: virtual-IMU experiment
+
+User confirmed experiment notebooks with stored outputs, keeping reusable Python
+modules/tests. Notebook 35 now holds orchestration and an executed read-only
+artifact replay: cohort/exclusion tables, hashes, consistency checks and embedded
+six-channel plot. Removed the duplicated pilot runner. Configured the existing
+CUDA venv as the gait-cu130 Jupyter kernel. No generation or training rerun;
+metadata/raw/preprocessing and clinical outcomes unchanged. Other historical
+runners remain pending migration. Local changes only, nothing pushed.
+
+
+## [2026-09-10] Local Git checkpoint by purpose
+
+User requested an empty staged/unstaged inventory. Preserved pending changes on
+local review branch work/classification-local-2026-09-10, grouped into code/tests,
+completed evidence, internal research documents, notebook/wiki records and page
+maintenance. The pre-existing PDF deletion is recorded separately and recoverable
+from Git history. Generated outputs and downloaded dependencies remain ignored.
+No push: published main remains b462795. Clean Git status is housekeeping, not
+completion of the clinical synthesis objective or remaining notebook migration.
+107 Python files parsed, two notebooks loaded, eleven targeted synthesis tests
+passed and whitespace checks passed. This is not a rerun of all experiments.
+Metadata/raw acquisition, preprocessing and clinical evaluation are unchanged.

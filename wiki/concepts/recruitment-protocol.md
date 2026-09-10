@@ -1,3 +1,8 @@
+---
+type: concept
+updated: 2026-09-08
+---
+
 # Recruitment protocol for age-robust gait classification
 
 ## Purpose
@@ -35,11 +40,11 @@ Never use the same participants for adaptation and final external reporting.
 
 ## Minimum acceptance checks
 
-Before adding new data to training, verify sensor placement, units, sampling rate, channel order, walking annotation quality, age-by-label overlap, missingness, and participant-level leakage. A recruitment dataset should first reproduce the existing 18-channel preprocessing contract and then be evaluated as a separate source before any pooling decision.
+Before adding new data to training, verify sensor placement, units, sampling rate, channel order, walking annotation quality, age-by-label overlap, missingness, and participant-level leakage. Use the current role-specific lower-back contract in [[classification-project-status]]: acceleration magnitude in g, 100 Hz, (windows, 500, 1). Bilateral feet are required only for the full-comparison role. The older 18-channel representation is not the acquisition default. Evaluate a new source separately before any pooling decision.
 
 ## Current decision
 
-Recruitment is the preferred next investment. Domain adaptation remains a secondary experiment after an age-overlapping cohort exists; it should not be used to hide poor healthy specificity on the current external cohort.
+Current authorized work is public-only TVS acquisition and eligibility assessment as recorded in [[mobilise-d-tvs]]. Contact-only recruitment is parked, and drafts remain unsent. Domain adaptation remains a secondary experiment after an age-overlapping cohort exists; it should not be used to hide poor healthy specificity on the current external cohort.
 
 ## Immediate project artifacts
 
