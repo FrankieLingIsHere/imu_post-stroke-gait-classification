@@ -8,7 +8,6 @@ development pool. No external cohort is evaluated or loaded.
 
 from __future__ import annotations
 
-import copy
 import hashlib
 import io
 import json
@@ -23,7 +22,7 @@ from models.lower_back_ensemble import LowerBackDomainNet
 from src.models.evidence_gated_domain_generalization import (
     BenchmarkConfig,
     METHODS,
-    evaluate_by_source,
+    probabilities,
     load_development_data,
     train_model,
 )
@@ -166,6 +165,7 @@ def build_smoke_windows() -> np.ndarray:
 
 
 @torch.inference_mode()
+@torch.backends.cudnn.flags(allow_tf32=False)
 def bundle_probabilities(
     bundle: dict,
     windows: np.ndarray,
@@ -200,6 +200,10 @@ def run(project_root: Path, config: FreezeConfig | None = None) -> dict:
     checkpoint_path = checkpoint_dir / f"{RELEASE_ID}.pt"
     manifest_path = checkpoint_dir / f"{RELEASE_ID}.manifest.json"
     tuning_path = processed / "lower_back_release_freeze_tuning.csv"
+    split_path = processed / "lower_back_release_freeze_participants.csv"
+    for path in (checkpoint_path, manifest_path, tuning_path, split_path):
+        if path.exists():
+            raise FileExistsError(f"Refusing to overwrite prior freeze artifact: {path}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type != "cuda":
         raise RuntimeError("The release freeze is intentionally GPU-only")
@@ -210,6 +214,18 @@ def run(project_root: Path, config: FreezeConfig | None = None) -> dict:
             raise AssertionError(f"Frozen-cohort loader reference found: {token}")
 
     x, meta = load_development_data(processed)
+    expected_sources = {"felius_2024", "voisard_2025", "sint_maartenskliniek"}
+    if set(meta["source"]) != expected_sources:
+        raise AssertionError(f"Unexpected development sources: {sorted(meta['source'].unique())}")
+    if meta[["source", "participant_key", "label"]].isna().any().any():
+        raise AssertionError("Missing participant identity or label")
+    if meta.groupby("group")["y"].nunique().gt(1).any():
+        raise AssertionError("Conflicting participant labels")
+    fit, validation = full_development_split(meta, config.tuning_seed, config.validation_fraction)
+    people = meta[["source", "group", "y"]].copy()
+    people["epoch_selection_role"] = np.where(validation, "validation", "fit")
+    people.drop_duplicates().to_csv(split_path, index=False)
+    print(f"Development input: {len(meta)} windows, {meta['group'].nunique()} participants", flush=True)
     selected_epochs, tuning = select_full_data_epochs(x, meta, config, device)
     tuning.to_csv(tuning_path, index=False)
     print("Selected full-development epochs:", selected_epochs)
@@ -218,8 +234,14 @@ def run(project_root: Path, config: FreezeConfig | None = None) -> dict:
     members = []
     member_manifest = []
     base_config = benchmark_config(config)
+    verification_index = np.unique(np.concatenate([
+        np.asarray(indices)[np.linspace(0, len(indices) - 1, min(8, len(indices)), dtype=int)]
+        for indices in meta.groupby(["source", "y"]).indices.values()
+    ]))
+    equivalence_errors = []
     for seed in config.seeds:
         for method in METHODS:
+            print(f"Training member method={method} seed={seed}", flush=True)
             model, mean, std, _ = train_model(
                 method,
                 x,
@@ -241,6 +263,13 @@ def run(project_root: Path, config: FreezeConfig | None = None) -> dict:
                 "model_state_dict": state,
             }
             members.append(member)
+            with torch.backends.cudnn.flags(allow_tf32=False):
+                reference = probabilities(model, x, verification_index, [0], mean, std, device)
+            packaged = bundle_probabilities({"members": [member]}, x[verification_index, :, :1], device)
+            error = float(np.max(np.abs(reference - packaged)))
+            if not np.isfinite(error) or error > 1e-6:
+                raise AssertionError(f"Training/package inference mismatch: {method} {seed}: {error}")
+            equivalence_errors.append(error)
             member_manifest.append(
                 {
                     "method": method,
@@ -299,11 +328,27 @@ def run(project_root: Path, config: FreezeConfig | None = None) -> dict:
         "input_sha256": {
             "primary": sha256(processed / "validated_acceleration_magnitude_windows_float32.npy"),
             "sint": sha256(processed / "sint_maartenskliniek_external_windows_float32.npy"),
+            "primary_metadata": sha256(processed / "validated_window_metadata.csv"),
+            "sint_metadata": sha256(processed / "sint_maartenskliniek_external_window_metadata.csv"),
+            "participant_split": sha256(split_path),
+            "epoch_tuning": sha256(tuning_path),
         },
+        "code_sha256": {str(path.relative_to(project_root)): sha256(path) for path in (
+            Path(__file__).resolve(),
+            project_root / "src/models/evidence_gated_domain_generalization.py",
+            project_root / "models/lower_back_ensemble.py",
+            project_root / "models/stroke_gait_inception.py",
+            project_root / "models/predict_lower_back.py",
+        )},
+        "training_package_equivalence_maximum_error": max(equivalence_errors),
+        "training_package_equivalence_windows": len(verification_index),
         "software": {
             "python": __import__("sys").version.split()[0],
             "torch": torch.__version__,
             "cuda_device": torch.cuda.get_device_name(0),
+            "numpy": np.__version__,
+            "pandas": pd.__version__,
+            "scikit_learn": __import__("sklearn").__version__,
         },
         "smoke_test_maximum_absolute_error": maximum_error,
         "external_cohorts_loaded": False,

@@ -8,6 +8,13 @@
 /models/checkpoints/**
 !/models/checkpoints/README.md
 
+# Downloaded upstream implementations and locally built research artifacts.
+# Preserve on disk; publish source/provenance and obtain artifacts separately.
+/models/pretrained/eldernet-437a38b/
+/models/research/gait_cnn-689cc9b/
+/models/prototypes/*/model.joblib
+/models/prototypes/*/examples/
+
 # --- Local/private working material ---
 /.agents/
 /.claude/

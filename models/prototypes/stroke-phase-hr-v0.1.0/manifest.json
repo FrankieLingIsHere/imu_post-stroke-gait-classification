@@ -1,0 +1,32 @@
+{
+  "task": "stroke_feature_research",
+  "status": "research_prototype",
+  "features": [
+    "age",
+    "xsens_fraction",
+    "protocol_length_m",
+    "cadence",
+    "step_asymmetry",
+    "swing_asymmetry",
+    "stance_asymmetry",
+    "swing_fraction",
+    "double_support_fraction",
+    "ml_log_hr"
+  ],
+  "training_participants": 259,
+  "populations": {
+    "healthy": 72,
+    "stroke": 49,
+    "other_pathology": 138
+  },
+  "threshold": 0.3953767333929809,
+  "threshold_provenance": "90% empirical stroke sensitivity target from existing full-scope participant OOF development scores; selected after those results were inspected; not independently evaluated",
+  "historical_evaluation": "Prior nested thresholds: full 45/49 stroke, 6/72 healthy FP, 56/138 other FP. Separately fitted matched scope: 44/49, 5/19, 47/76. Neither is validation of this full-data artifact/threshold.",
+  "contract": "One participant row; reference-assisted phase features and nominal lower-back Y log HR; same extraction as directional_hr_v1; age only may be missing; no autonomous raw IMU inference",
+  "checkpoint_sha256": "a17b22fb82eb323523b41aa93589a16852e7b35686045c1b0a482acb34f9c0e0",
+  "input_sha256": "b47031fd874df59c5606502164d1568d238bcb7ee944653d33b77b537d560e00",
+  "threshold_source_sha256": "568289ffa060cb9d1e6de3ccca8d0b211b6571dafa82d5a4b78a9754688c043d",
+  "builder_sha256": "ee2aa893a5573c806bea9466822759f5b0ff9d09a0fd5a02c9d91549036d6865",
+  "inference_sha256": "6119f6d2313dd511dbbfb9f6ab982a7623bf711fc6e4b2624480849808a591e6",
+  "serialization_parity": "passed"
+}

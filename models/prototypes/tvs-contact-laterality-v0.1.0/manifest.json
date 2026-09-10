@@ -1,0 +1,22 @@
+{
+  "status": "research_prototype",
+  "policy": "85% cohort macro accuracy and 85% declared-contact coverage; post-result user-authorized policy",
+  "previous_strict_gate": "failed; historical result unchanged",
+  "task": "left/right at supplied contacts; not stroke diagnosis",
+  "training_participants": 32,
+  "training_contacts": 1645,
+  "evaluation": "earlier participant-disjoint exploratory CV, not full-fit training accuracy",
+  "accuracy": {
+    "HA": 0.8746091839445777,
+    "PD": 0.8733695632936406
+  },
+  "coverage": {
+    "HA": 0.8644957983193278,
+    "PD": 0.8544698544698545
+  },
+  "checkpoint_sha256": "2320872dec4cec7797e3ca4d2bca28b07f83d276aab5b9c341b9e133ff12c6cc",
+  "input_sha256": "a59443bc2bd1deb76be219d0a1efdc30d67924f4f7395b38e071263b6e7b6520",
+  "code_sha256": "542865140f0d87189c8b6920caf48caf3e12eeab3b11f6535c6acdcb74c378c8",
+  "inference_code_sha256": "9dd59d3eff0bdd538087f20c5deaf206d26180cb5b934240ab818897ec49fbb7",
+  "roundtrip_and_feature_parity": "passed"
+}

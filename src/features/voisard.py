@@ -148,8 +148,9 @@ def _channel_nonlinear_features(
     """Sample entropy, harmonic ratio, and Poincare-plot SD1 for one channel,
     restricted to the straight-walking bounds.
 
-    Sensor-axis orientation is not confirmed for this dataset (unlike Lee et
-    al. (2018)'s own calibrated sensor), so these are computed on
+    These historical features use magnitude. The later directional-axis audit
+    (reports/DIRECTIONAL_AXIS_AUDIT_2026-09-09.md) establishes nominal LB Y as ML,
+    but does not establish per-trial anatomical calibration. These are computed on
     acceleration/angular-velocity *magnitude* rather than a specific
     labeled axis, to avoid an unverified vertical/AP/ML axis claim.
 

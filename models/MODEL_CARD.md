@@ -1,4 +1,38 @@
-# Model card: stroke-gait-inception-v0.1.0
+# Model card: selected lower-back ensemble and historical comparator
+
+## Current selection: stroke-gait-lower-back-ensemble-v0.2.0
+
+The selected incumbent combines ERM, CORAL and ERM++-style compact models over
+five seeds, with equal probability weights. Input is `(windows, 500, 1)` lower-back
+acceleration magnitude in g at 100 Hz. Each member uses saved training-only
+normalization. Participant scores are the mean of window probabilities.
+
+Selection evidence is notebooks 29, 30 and 34 across Felius, Voisard and Sint.
+This is healthy-versus-stroke development evidence, not established stroke
+specificity. RevalExo has been repeatedly inspected and is a stress test, not
+a pristine final evaluation. The lower-back release was subsequently trained
+and verified locally on 2026-09-08: 15 members, eight epochs each, 314 development
+participants. CPU/GPU/CLI inference passed on 96 development verification windows.
+See [the freeze report](../reports/LOWER_BACK_RELEASE_FREEZE_2026-09-08.md).
+No performance numbers below transfer to
+this ensemble. Threshold, calibration and abstention require a separate freeze.
+
+The full-development fit cannot reproduce held-out notebook-29 predictions:
+those require their original fold-trained models. Verify inference equivalence
+against the same saved weights, and reproduce OOF evidence separately.
+
+See [package instructions](README.md) and the [integration plan](../docs/STROKE_CLASSIFICATION_INTEGRATION_PLAN.md).
+
+Current ensemble limitation, measured 2026-09-08: v0.2.0 made positive calls
+for 89/138 already-inspected Voisard non-stroke participants at 0.50 (64.5%,
+95% Wilson CI 56.2–72.0%). This is same-protocol stress evidence, not independent
+validation. No stroke sensitivity is measurable in that cohort. See the
+[exact-weight stress report](../reports/LOWER_BACK_NONSTROKE_STRESS_2026-09-08.md).
+
+## Historical model card: stroke-gait-inception-v0.1.0
+
+The following records the earlier three-channel prototype and its historical
+evaluation. It is not the current model contract.
 
 ## Intended purpose
 
