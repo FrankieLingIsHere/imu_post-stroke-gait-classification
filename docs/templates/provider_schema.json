@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "provider_id": "",
+  "dataset_id": "",
+  "reviewer": "",
+  "reviewed_on": "",
+  "intended_role": "final_external_test",
+  "evidence": {
+    "paired_stroke_healthy_release": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "clinical_reference_labels": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "raw_or_lossless_signals": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "documented_lower_back": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "bilateral_feet": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "synchronized_signals": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "controlled_or_annotated_walking": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "matched_group_protocol": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "participant_age_sex": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "clinical_metadata_dictionary": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "participant_trial_identifiers": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "no_development_or_tuning_overlap": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "external_evaluation_permission": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "provider_schema_sample_reviewed": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "sample_size_precision_plan": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    },
+    "nonstroke_comparison_groups": {
+      "status": "unknown",
+      "reference": "",
+      "notes": ""
+    }
+  },
+  "sensor": {
+    "sampling_rate_hz": null,
+    "device_model": "",
+    "channel_order": "",
+    "axis_convention": "",
+    "walking_annotation_format": "",
+    "acceleration_unit": "",
+    "gyroscope_unit": ""
+  },
+  "participant_counts": {
+    "healthy": null,
+    "stroke": null,
+    "nonstroke": null
+  },
+  "evaluation_profile": "full_comparison"
+}
