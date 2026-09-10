@@ -1,5 +1,7 @@
 # Bilateral phase-feature experiment, 2026-09-09
 
+> Reporting migration (2026-09-10): [saved-output notebook](../notebooks/36_phase_measurement_saved_results.ipynb). Historical script commands below refer to the original Git revision recorded in that notebook; no new experiment was run.
+
 **Executed: primary gate failed in both scopes. False positives remain.**
 
 The five annotation-derived phase features improve out-of-fold AUROC and reduce

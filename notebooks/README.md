@@ -1,6 +1,22 @@
 # Notebook guide
 
-Current through 4 September 2026: 34 active numbered notebooks and 18 Week 2
+## Current experiment reading path (10 September)
+
+| Notebook | Saved material |
+|---|---|
+| [35 - Virtual IMU](35_virtual_imu_saved_results.ipynb) | Pilot code, cohort/exclusion tables, checks and six-channel trace |
+| [36 - Phase and measurement](36_phase_measurement_saved_results.ipynb) | Conditional/phase comparisons, laterality, contact validation and packet correction |
+| [37 - VGA training](37_vga_training_saved_results.ipynb) | Metrics, paired comparisons, decisions, verification and learning curves |
+
+These contain executed **artifact replays**, not newly rerun training. Tables and
+plots are embedded so reading needs no execution. Notebook 36 replaces five
+standalone summarizers; notebook 37 replaces the regularization report writer.
+Original reporting code is preserved in disabled audit cells with exact byte
+hashes and Git revision. Use that revision for historical regeneration. Normal
+Run All reads saved artifacts; it does not execute the old reporting/writing code.
+
+
+Historical snapshot through 4 September 2026: 34 numbered notebooks and 18 Week 2
 experiments are represented in the public sprint presentation. The three
 candidate external datasets identified in that presentation are listed in the
 [dataset access guide](../reports/DATASET_ACCESS_GUIDE.html).

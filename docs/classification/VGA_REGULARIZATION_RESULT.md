@@ -1,5 +1,7 @@
 # Controlled regularization and warm-up: executed results
 
+> Reporting migration (2026-09-10): [saved-output notebook](../../notebooks/37_vga_training_saved_results.ipynb). Historical script commands below refer to the original Git revision recorded in that notebook; no new experiment was run.
+
 2026-09-09. All 27 fits completed 40 epochs. This tests clinician-observed gait impairment (VGA 0 versus 1-4), separately from stroke diagnosis. No existing model was replaced.
 
 **Result: neither tested change gives a consistent reduction in false alerts.** Warm-up slightly improves full-population AUROC over the cosine control in all three seeds, but increases normal-rated alerts in two seeds. Weight decay corrects none of the control's normal-rated false alerts and introduces two additional alerts in seed 42. Every setting fails the fixed operating-point gate. Lower validation loss did not provide a reliable screening improvement.

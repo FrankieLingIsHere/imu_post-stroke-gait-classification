@@ -1,5 +1,7 @@
 # Conditional gyro laterality experiment, 2026-09-09
 
+> Reporting migration (2026-09-10): [saved-output notebook](../notebooks/36_phase_measurement_saved_results.ipynb). Historical script commands below refer to the original Git revision recorded in that notebook; no new experiment was run.
+
 **Gate failed. This measures side assignment at supplied contact times, not stroke diagnosis.**
 
 [Pre-fit protocol](../docs/GYRO_LATERALITY_PROTOCOL_2026-09-09.md).

@@ -41,8 +41,8 @@ including failed admission decisions. Historical proposals are not a new queue.
 | Pathology balance comparison | [Result](archive/2026-09/PATHOLOGY_BALANCE_RESULT.md) |
 
 Locked protocol files remain at their original paths because experiment manifests
-hash them. `VGA_SCREEN_RESULT.md` and `VGA_REGULARIZATION_RESULT.md` remain beside
-their existing report-generation paths. A protocol's presence here does not mean
+hash them. `VGA_SCREEN_RESULT.md` and `VGA_REGULARIZATION_RESULT.md` remain current result
+references; the regularization reporting code now lives in notebook 37. A protocol's presence here does not mean
 its experiment is pending; consult the result and evidence map.
 
 Reusable code belongs in `src/`, executable packages in `models/prototypes/`,
@@ -66,3 +66,13 @@ Local Git organization (2026-09-10): pending work is preserved on the local
 A clean working tree does not mean all research is complete or published.
 Experiment-notebook migration remains partial. Published main stays at b462795;
 review each group before any future publication.
+
+
+## Consolidated saved-result notebooks
+
+Use [36 - phase and measurement](../../notebooks/36_phase_measurement_saved_results.ipynb)
+and [37 - VGA training](../../notebooks/37_vga_training_saved_results.ipynb) to
+inspect completed results without rerunning. Six standalone reporting scripts
+were removed; their exact source and historical revision are preserved in the
+notebooks. Shared training functions and utilities remain importable Python.
+This is a completed reporting migration, not completion of all runner migrations.

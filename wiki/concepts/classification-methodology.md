@@ -187,3 +187,11 @@ Full orthopedic FP 0/44, neurological controls remain difficult, CIPN worsens
 versus baseline. Thresholds from inner OOF training only for these metrics;
 full-package threshold is not independently evaluated. Acquisition unchanged,
 feature reconstruction/benchmark complete, sensor-only and independent validation open.
+
+
+Notebook restructuring (2026-09-10): notebooks 36 and 37 consolidate phase/measurement
+and VGA reports with saved artifact-replay outputs. Six standalone report scripts
+removed after dependency checks; original source-byte hashes verified against
+notebook audit cells. Shared experiment helpers and utilities remain Python.
+No new model run, dataset acquisition or clinical evaluation. See the notebook
+guide for the current reading path.

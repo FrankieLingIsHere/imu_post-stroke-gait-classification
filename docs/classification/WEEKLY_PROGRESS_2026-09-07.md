@@ -510,3 +510,17 @@ completion of the clinical synthesis objective or remaining notebook migration.
 107 Python files parsed, two notebooks loaded, eleven targeted synthesis tests
 passed and whitespace checks passed. This is not a rerun of all experiments.
 Metadata/raw acquisition, preprocessing and clinical evaluation are unchanged.
+
+
+## [2026-09-10] Reporting scripts consolidated into saved-output notebooks
+
+Replaced five phase/measurement summarizers with notebook 36 and the VGA
+regularization report writer with notebook 37. Saved outputs include full selected
+CSV tables, JSON decisions/verification, source artifact hashes and the existing
+learning-curve image. Reporting cells were executed read-only; original code is
+retained in disabled audit cells and recoverable at its recorded Git revision.
+All six original source-byte hashes verified; no Python import dependencies on
+the removed modules were found. Shared training helpers and utilities remain
+Python pending dependency-preserving migration. Notebook guide, script guide,
+workspace guide, wiki and local page updated. Metadata/raw acquisition,
+preprocessing, model predictions and clinical evaluation unchanged. No push.
