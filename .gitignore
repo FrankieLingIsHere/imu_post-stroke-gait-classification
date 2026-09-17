@@ -51,6 +51,12 @@ htmlcov/
 /slides/.slidev/
 /slides/dist/
 
+# --- Android / Expo (Gait Steps app) ---
+android/node_modules/
+android/.expo/
+android/dist/
+android/.metro-cache/
+
 # --- OS and editor noise ---
 .DS_Store
 Thumbs.db

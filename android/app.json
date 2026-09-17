@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Gait Steps",
+    "slug": "gait-steps",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gaitsteps.app"
+    },
+    "android": {
+      "package": "com.gaitsteps.app",
+      "versionCode": 1
+    },
+    "web": {},
+    "sdkVersion": "52.0.0",
+    "platforms": [
+      "android",
+      "ios",
+      "web"
+    ],
+    "extra": {
+      "appDescription": "Guided movement recording for research"
+    },
+    "plugins": [
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow Gait Steps to record motion for your walking research session."
+        }
+      ]
+    ]
+  }
+}

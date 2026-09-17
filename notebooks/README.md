@@ -115,9 +115,7 @@ blindly pooled. They are decision evidence, not recommended starting points.
 Notebook 34 completed the only authorized corrective benchmark. Neither model
 nor any fixed fusion reduced both FP and FN while preserving performance across
 all held-out sources. The notebook-29 ensemble therefore remains frozen and
-architecture rotation on these participants is closed. Do not create notebook
-35 for another model variant. The next evidence notebook should exist only
-when a genuinely untouched paired cohort is ready for locked evaluation.
+architecture rotation on these participants is closed. Architecture rotation remains closed. Notebooks 35-38 now document virtual-IMU work, historical artifact replays and script inventory; they are not new independent clinical evaluations.
 
 ## Execution and archive status
 
@@ -126,8 +124,7 @@ when a genuinely untouched paired cohort is ready for locked evaluation.
 - Import-only and function-definition cells may intentionally show no output.
 - The 17 notebooks under `archive/` are executed historical explorations and
   are not part of the current workflow.
-- Keep active numbering continuous. The next number is 35, but reserve it for a
-  genuinely new evidence stage rather than another architecture variation.
+- Keep active numbering continuous. Numbers 35-38 are now used; the historical audit above covered notebooks 1-34 only. New numbering must reflect the current registry.
 - Material findings belong in an executed notebook. Reusable scripts may
   support the work but do not replace notebook evidence.
 

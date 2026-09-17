@@ -3,6 +3,8 @@
 Start here for executable experimental models. Frozen release checkpoints remain
 in `../checkpoints/`. Prototype acceptance does not replace validation evidence.
 
+**Clone contents:** this repository publishes source, manifests and saved research evidence. Locally fitted `model.joblib` files, checkpoints and generated examples are intentionally ignored. The packaged/CLI-verified states below describe local verification; inference will not run from a fresh clone until the matching trusted artifacts and required data are supplied or reproduced. Installing Python dependencies alone does not recreate weights.
+
 | Package | Task | Inputs | State |
 |---|---|---|---|
 | `tvs-contact-laterality-v0.1.0/` | Assign left/right to supplied contacts | Native TVS lower-back gyro XYZ, 100Hz, zero-based contact indices | Packaged and CLI verified; exploratory side accuracy HA 87.46%, PD 87.34% |

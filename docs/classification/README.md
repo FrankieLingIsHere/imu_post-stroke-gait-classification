@@ -4,6 +4,8 @@ Start here. **Uncommitted does not mean unfinished:** this workspace contains
 completed experiments and executable prototypes as well as active research.
 Only the Week 3 public page and builder were published in commit `b462795`.
 
+Current week: [Week 4 app-development progress](WEEKLY_PROGRESS_2026-09-14.md), recorded through 17 September. Week 3 below remains the historical model-development record.
+
 ## Read these first
 
 | Need | Document |

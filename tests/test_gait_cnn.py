@@ -3,6 +3,7 @@ import io
 import unittest
 import numpy as np
 import pandas as pd
+import torch
 from scripts.classification.benchmark_gait_cnn import cycle_bounds, weights, upstream_builder
 
 
@@ -22,7 +23,10 @@ class GaitCNNTests(unittest.TestCase):
         np.testing.assert_allclose(pd.Series(w).groupby(m.participant).sum(), [1.5]*4)
         self.assertAlmostEqual(w[1]+w[2], w[3])
 
+    @torch.backends.cudnn.flags(allow_tf32=False)
     def test_upstream_forward_matches_numpy(self):
+        # Compare float32 math, not reduced-precision GPU convolution.
+        torch.manual_seed(19)
         rng = np.random.default_rng(19)
         for channels in [1, 6, 12, 18]:
             with contextlib.redirect_stdout(io.StringIO()):

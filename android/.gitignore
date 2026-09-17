@@ -1,0 +1,11 @@
+node_modules/
+.expo/
+dist/
+.metro-cache/
+*.apk
+*.aab
+*.jks
+*.keystore
+credentials.json
+.env
+.env.*

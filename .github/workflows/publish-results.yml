@@ -23,14 +23,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: android/package-lock.json
+      - name: Verify and build the phone-layout supervisor preview
+        working-directory: android
+        env:
+          GAIT_WEB_BASE_PATH: /${{ github.event.repository.name }}/gait-app
+        run: |
+          npm ci
+          npm run ts:check
+          npm test
+          npx expo export --platform web --output-dir dist/web
       - name: Assemble the reader-facing portal
         run: |
           mkdir -p _site/reports
+          cp -R android/dist/web _site/gait-app
           cp site/index.html _site/index.html
           cp reports/POPULATION_ROBUSTNESS_MATRIX.html _site/reports/
           cp reports/DEMOGRAPHIC_CLINICAL_POPULATION_COVERAGE.html _site/reports/
           cp reports/WEEK_01_PRESENTATION.html _site/reports/
           cp reports/WEEK_03_PROGRESS.html _site/reports/
+          cp reports/WEEK_04_PROGRESS.html _site/reports/
           cp reports/LOWER_BACK_VS_THREE_CHANNEL_BENCHMARK.html _site/reports/
           cp slides/Week2_Sprint_Report_Post-Stroke_Gait_IMU.pdf _site/reports/Week2_Sprint_Report_Post-Stroke_Gait_IMU.pdf
           cp reports/WEEK_2_MODEL_IMPROVEMENT_GATE.html _site/reports/
