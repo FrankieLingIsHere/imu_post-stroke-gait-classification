@@ -173,3 +173,13 @@ User-requested current-week app progress is prepared in `docs/classification/WEE
 - wiki/concepts/classification-project-status.md
 - wiki/index.md
 - wiki/log.md
+
+## PWA delivery change batch - 2026-09-17
+
+The user requested a PWA instead of the uncommitted Expo Update/Android automatic-update preparation. That preparation was removed locally: no `expo-updates` dependency, Expo account linkage, Android update channel, automatic-update workflow, APK update metadata, or native update behavior remains in this batch.
+
+The same `/android` app source now exports a PWA through the existing Pages workflow. New public files provide a standalone manifest, local app icon and scoped service worker; a post-export script adds manifest and service-worker registration to Expo's generated HTML. The Home screen uses the browser's standard installation prompt where available and gives Add-to-Home-screen guidance otherwise. The Pages deployment runs `npm run export:web`, so every approved main-branch change rebuilds the PWA from the same source; no generated deployment files are committed.
+
+The PWA cache is an offline app-shell fallback. It uses network-first navigation to receive a new deployment and caches static same-origin files. It does not persist recordings, upload data or expand browser sensor permissions. Browser capture still requires the three exposed Generic Sensor APIs, including the currently unavailable magnetometer on the tested browser.
+
+Verification: TypeScript and 70 tests pass. The PWA export includes the manifest, standalone metadata, service-worker registration, icon and worker files. Android bundle export still passes without altered native behavior. Physical PWA installation, browser permission and offline fallback testing remain pending.

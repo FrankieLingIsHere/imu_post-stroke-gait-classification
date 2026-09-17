@@ -36,7 +36,7 @@ jobs:
           npm ci
           npm run ts:check
           npm test
-          npx expo export --platform web --output-dir dist/web
+          npm run export:web
       - name: Assemble the reader-facing portal
         run: |
           mkdir -p _site/reports

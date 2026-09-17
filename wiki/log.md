@@ -2470,3 +2470,8 @@ Browser capture implemented locally: all three Generic Sensor API streams must p
 ## [2026-09-17] sync | Browser capture publication approved
 
 User approved the reviewed browser-capture source, tests and documentation batch for publication. 67 tests, TypeScript and both platform bundles passed before this approval. Physical-phone sensor and audio verification remains pending; no new clinical evaluation.
+
+
+## [2026-09-17] PWA delivery preparation
+
+Reverted the uncommitted Android automatic-update preparation as requested. The shared web build now includes a PWA manifest, install route, icon and offline service worker. The browser's sensor availability is unchanged; recordings remain tab-memory only. Automated checks pass, while physical installation/offline testing remains pending. No clinical evaluation.

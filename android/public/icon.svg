@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Gait Steps</title>
+  <desc id="desc">Two shoe-sole marks on a walking path, representing gait assessment.</desc>
+  <rect width="512" height="512" rx="108" fill="#176B62"/>
+  <path d="M256 92v328" stroke="#8FC5B9" stroke-width="12" stroke-linecap="round" stroke-dasharray="12 22" opacity=".78"/>
+  <g transform="translate(186 213) rotate(-18)">
+    <path d="M-48-94C-72-78-75-37-68 6l11 71c5 35 25 58 57 58s52-23 57-58L68 6c7-43 4-84-20-100-25-17-71-17-96 0Z" fill="#F6F3EC"/>
+  </g>
+  <g transform="translate(326 301) rotate(18)">
+    <path d="M-48-94C-72-78-75-37-68 6l11 71c5 35 25 58 57 58s52-23 57-58L68 6c7-43 4-84-20-100-25-17-71-17-96 0Z" fill="#F6F3EC"/>
+  </g>
+</svg>

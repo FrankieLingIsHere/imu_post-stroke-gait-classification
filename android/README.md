@@ -136,8 +136,15 @@ Keep the page foregrounded and the phone unlocked. Missing streams or a hidden t
 
 References: [Sensor timestamps](https://developer.mozilla.org/en-US/docs/Web/API/Sensor/timestamp), [Accelerometer device frame](https://developer.mozilla.org/en-US/docs/Web/API/Accelerometer/Accelerometer), [Gyroscope](https://developer.mozilla.org/en-US/docs/Web/API/Gyroscope), [Magnetometer support](https://developer.mozilla.org/en-US/docs/Web/API/Magnetometer/Magnetometer).
 
-## Previous supervisor browser preview
+## Browser layout and review
 
-The browser build uses a centred phone frame (430 px outer width) on wider screens and the full viewport on phones. It reuses the app screens, with a persistent no-recording banner and an explanatory hands-free walkthrough instead of simulated sensor success. Android continues to use native capture. Local JSON imports are bounded and validated, held in tab memory only, never uploaded, and cleared on refresh. Browser exports download files instead of using native sharing.
+The browser build uses a centred phone frame (430 px outer width) on wider screens and the full viewport on phones. It reuses the app screens, gives an explanatory hands-free walkthrough when its three-sensor check cannot pass, and never simulates a successful reading. Local JSON imports are bounded and validated, held in tab memory only, never uploaded, and cleared on refresh. Browser exports download files instead of using native sharing.
 
-Deployment review and exact proposed source scope: [DEPLOYMENT_REVIEW.md](DEPLOYMENT_REVIEW.md). The existing Pages workflow now builds a separate `/gait-app/` entry. No publication has occurred yet. Web and Android bundles and TypeScript pass. Browser interaction cannot be verified here because no connected browser is available. APK distribution additionally requires an Expo account or a local native build environment; neither is configured for building here.
+Deployment review and exact proposed source scope: [DEPLOYMENT_REVIEW.md](DEPLOYMENT_REVIEW.md). The existing Pages workflow builds a separate `/gait-app/` entry. Browser interaction cannot be verified here because no connected browser is available.
+
+
+## Installable web app (PWA)
+
+The web export is a single-page progressive web app. On a supported phone browser, open the hosted app, then use **Install on this phone** or the browser's **Add to Home screen** menu. It opens in its own phone-shaped app window and caches the app shell for offline reopening. A connection is still required to load the latest deployment and browser sensor permissions/availability still apply. In particular, installing the PWA cannot expose a magnetometer that the browser has withheld.
+
+The PWA is rebuilt from this same `/android` source on every Pages deployment. The service worker uses network-first navigation and cached static assets as an offline fallback; versioned JavaScript files update with a new deployment. Browser recordings remain tab-memory only and must be exported before refresh, closing, or browser storage eviction.

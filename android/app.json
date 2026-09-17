@@ -20,7 +20,12 @@
       "package": "com.gaitsteps.app",
       "versionCode": 1
     },
-    "web": {},
+    "web": {
+      "name": "Gait Steps",
+      "shortName": "Gait Steps",
+      "themeColor": "#176B62",
+      "backgroundColor": "#F6F3EC"
+    },
     "sdkVersion": "52.0.0",
     "platforms": [
       "android",

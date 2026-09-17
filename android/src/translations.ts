@@ -2,6 +2,8 @@ import { patientMessages } from './patientSummary';
 /** English source -> Bahasa Melayu, Simplified Chinese. Export schema remains English. */
 export const messages: Record<string, readonly [string, string]> = {
   ...patientMessages,
+  'Install on this phone': ['Pasang pada telefon ini', '安装到此手机'],
+  'To install, open your browser menu and choose Add to Home screen. Browser sensor access can still vary.': ['Untuk memasang, buka menu pelayar dan pilih Tambah ke skrin utama. Akses penderia pelayar mungkin masih berbeza.', '如要安装，请打开浏览器菜单并选择“添加到主屏幕”。浏览器传感器访问仍可能有所不同。'],
   'Browser mode · sensor access varies': ['Mod pelayar · akses penderia berbeza', '浏览器模式 · 传感器支持因设备而异'],
   'Check this phone’s sensors': ['Periksa penderia telefon ini', '检查这部手机的传感器'],
   'Checking live sensors…': ['Memeriksa penderia langsung…', '正在检查实时传感器…'],

@@ -78,3 +78,8 @@ Settings clarity update (2026-09-17): labelled 10/20/30 seconds as recording dur
 ### Default settings shortcut
 
 Added Use default settings: restores the existing 20-second configuration with voice and direction reminders on and practice off, cancels a playing voice sample, closes help and confirms the selected values. It does not start recording, change language or select consent. All four setting explanations use info buttons; English, Malay and Chinese supported. TypeScript and 58 tests pass. Publication authorized by the user on 2026-09-17.
+
+
+## [2026-09-17] PWA delivery preparation
+
+Reverted the uncommitted Android automatic-update preparation at the user's request. The web build now has a manifest, install prompt, application icon and service worker, all produced from the same `/android` source and deployed through the existing Pages workflow. The PWA uses cached shell assets for offline reopening; fresh navigation is network-first. Installation does not change Generic Sensor API availability, so browser magnetometer access can remain unavailable. Browser recordings still require export before closing. TypeScript and the app test suite pass; browser installation and offline behavior need physical-browser testing. No APK, Expo account link or clinical evaluation.

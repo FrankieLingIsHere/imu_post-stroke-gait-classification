@@ -302,3 +302,8 @@ Added Use default settings: restores the existing 20-second configuration with v
 ## [2026-09-17] Browser capture implementation
 
 Browser capture implemented locally: all three Generic Sensor API streams must pass a measured three-second check before shared setup and separate consent. Exports identify browser timing, conversion and platform. Tab-memory recordings require export before refresh/close; sensor loss or hiding interrupts the walk. 67 tests and TypeScript pass; web/Android bundles build. Physical-phone testing and publication remain pending. No clinical acquisition or evaluation.
+
+
+## [2026-09-17] PWA delivery preparation
+
+At the user's request, the uncommitted Android automatic-update preparation was removed. The shared web build now has manifest, install prompt, icon and offline service worker through the existing Pages deployment. PWA installation does not expand browser sensor access, so the magnetometer remains browser-dependent. Recording remains in tab memory and must be exported before close. Automated checks pass; physical installation/offline testing remains outstanding. No clinical evaluation.
