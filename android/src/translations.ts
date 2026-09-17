@@ -2,6 +2,18 @@ import { patientMessages } from './patientSummary';
 /** English source -> Bahasa Melayu, Simplified Chinese. Export schema remains English. */
 export const messages: Record<string, readonly [string, string]> = {
   ...patientMessages,
+  'Use default settings': ['Guna tetapan lalai', '使用默认设置'],
+  'Sets 20 seconds, voice and direction reminders on, and practice off.': ['Tetapkan 20 saat, hidupkan panduan suara dan peringatan arah, serta matikan latihan.', '设为20秒，开启语音指导和方向提醒，关闭练习模式。'],
+  'Defaults selected: 20 seconds, voice and direction reminders on, practice off. You can still change these settings.': ['Tetapan lalai dipilih: 20 saat, suara dan peringatan arah dihidupkan, latihan dimatikan. Anda masih boleh mengubah tetapan ini.', '已选择默认设置：20秒，开启语音和方向提醒，关闭练习模式。您仍可修改这些设置。'],
+  'Recording duration': ['Tempoh rakaman', '记录时长'],
+  'About recording duration': ['Tentang tempoh rakaman', '关于记录时长'],
+  'Choose 10, 20 or 30 seconds of recording after the countdown. Setup time is extra. You may pause or stop early.': ['Pilih rakaman selama 10, 20 atau 30 saat selepas kiraan detik. Masa persediaan tidak termasuk. Anda boleh berehat atau berhenti awal.', '选择倒计时结束后记录10、20或30秒。准备时间另计。您可以休息或提前结束。'],
+  'About voice guidance': ['Tentang panduan suara', '关于语音指导'],
+  'About direction reminders': ['Tentang peringatan arah', '关于方向提醒'],
+  'About practice walk': ['Tentang latihan berjalan', '关于练习步行'],
+  'Hear setup instructions, the countdown, and start and finish cues without looking at the phone. If off, ask a helper to signal start and finish.': ['Dengar arahan persediaan, kiraan detik serta isyarat mula dan tamat tanpa melihat telefon. Jika dimatikan, minta pembantu memberi isyarat mula dan tamat.', '无需看手机，即可听到准备说明、倒计时以及开始和结束提示。关闭后，请让协助者提示开始和结束。'],
+  'Gentle cues may remind you when the phone detects turning. They cannot confirm a straight path. Move comfortably and keep using your usual support.': ['Peringatan lembut mungkin diberikan apabila telefon mengesan putaran. Ia tidak dapat mengesahkan laluan lurus. Bergerak dengan selesa dan terus gunakan sokongan biasa anda.', '手机检测到转向时可能会轻声提醒，但不能确认您是否走直线。请舒适地行走，并继续使用平时的辅助支撑。'],
+  'Try the same recording flow for your chosen duration. Your recording is still saved and exported, but labelled as practice.': ['Cuba aliran rakaman yang sama untuk tempoh pilihan anda. Rakaman tetap disimpan dan boleh dieksport, tetapi dilabel sebagai latihan.', '按所选时长熟悉相同的记录流程。记录仍会保存并可导出，但会标记为练习。'],
   "Browser preview · no sensor recording": ["Pratonton pelayar · tiada rakaman penderia", "浏览器预览 · 不采集传感器数据"],
   "BROWSER PREVIEW · NO SENSOR RECORDING": ["PRATONTON PELAYAR · TIADA RAKAMAN PENDERIA", "浏览器预览 · 不采集传感器数据"],
   "Supervisor walkthrough": ["Panduan untuk penyelia", "导师演示"],

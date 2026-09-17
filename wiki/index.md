@@ -237,3 +237,5 @@ Full script inventory (2026-09-10), notebook 38: 139 scripts checked structurall
 candidates. Eight missing-path flags, six with archive counterparts and two
 Mobilise-D paths unresolved. No deletion approval or experiment completion is
 implied by these counts. Source/data/evaluation states are unchanged.
+
+App settings clarification: [[classification-project-status]] and [Week 4 progress](../docs/classification/WEEKLY_PROGRESS_2026-09-14.md) record duration labels, multilingual expandable help and the default-settings shortcut, authorized for publication.

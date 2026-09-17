@@ -64,3 +64,13 @@ The grant objective remains clinically parameterized healthy-to-stroke-like synt
 - App wiki: retained locally for separate research review.
 - [Week 3 model-development history](WEEKLY_PROGRESS_2026-09-07.md)
 - [Supervisor-facing Week 4 page](../../reports/WEEK_04_PROGRESS.html)
+
+
+## Settings explanation update
+
+Settings clarity update (2026-09-17): labelled 10/20/30 seconds as recording duration after the countdown, excluding setup time and allowing pauses/early stopping. Added accessible 48-pixel info buttons for Recording duration, Voice guidance, Direction reminders and Practice walk, with one expandable explanation at a time. The duration label remains visible; its explanation is hidden until tapped. Text supports English, Malay and Simplified Chinese. TypeScript and all 58 existing app tests pass. This change is authorized for publication; recording logic is unchanged.
+
+
+### Default settings shortcut
+
+Added Use default settings: restores the existing 20-second configuration with voice and direction reminders on and practice off, cancels a playing voice sample, closes help and confirms the selected values. It does not start recording, change language or select consent. All four setting explanations use info buttons; English, Malay and Chinese supported. TypeScript and 58 tests pass. Publication authorized by the user on 2026-09-17.

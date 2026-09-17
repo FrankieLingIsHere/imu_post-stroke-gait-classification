@@ -2445,3 +2445,18 @@ scripts. These are structural checks, not a full semantic review, saved-output
 coverage proof or permission to delete. No code removal, training or download.
 Metadata/raw acquisition, preprocessing and evaluation unchanged. Reading guides,
 wiki and local progress page updated; no push.
+
+
+## [2026-09-17] sync | Settings duration and toggle explanations
+
+Settings clarity update (2026-09-17): labelled 10/20/30 seconds as recording duration after the countdown, excluding setup time and allowing pauses/early stopping. Added accessible 48-pixel info buttons for Voice guidance, Direction reminders and Practice walk, with one expandable explanation at a time. Text supports English, Malay and Simplified Chinese. TypeScript and all 58 existing app tests pass. This change is local pending publication review; recording logic is unchanged.
+
+
+## [2026-09-17] sync | Duration info button
+
+Recording duration now uses the same expandable info button as the three toggles. Label remains visible; only one explanation opens at a time. English, Malay and Chinese supported. TypeScript and 58 tests pass. Local only.
+
+
+## [2026-09-17] sync | Default settings shortcut publication
+
+Added Use default settings: restores the existing 20-second configuration with voice and direction reminders on and practice off, cancels a playing voice sample, closes help and confirms the selected values. It does not start recording, change language or select consent. All four setting explanations use info buttons; English, Malay and Chinese supported. TypeScript and 58 tests pass. Publication authorized by the user on 2026-09-17. No data acquisition, preprocessing or clinical evaluation changed.

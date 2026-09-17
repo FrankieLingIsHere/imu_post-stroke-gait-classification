@@ -287,3 +287,13 @@ Full script inventory (2026-09-10), notebook 38: 139 scripts checked structurall
 candidates. Eight missing-path flags, six with archive counterparts and two
 Mobilise-D paths unresolved. No deletion approval or experiment completion is
 implied by these counts. Source/data/evaluation states are unchanged.
+
+
+## App settings explanation - 2026-09-17
+
+Settings clarity update (2026-09-17): labelled 10/20/30 seconds as recording duration after the countdown, excluding setup time and allowing pauses/early stopping. Added accessible 48-pixel info buttons for Recording duration, Voice guidance, Direction reminders and Practice walk, with one expandable explanation at a time. The duration label remains visible; its explanation is hidden until tapped. Text supports English, Malay and Simplified Chinese. TypeScript and all 58 existing app tests pass. This change is authorized for publication; recording logic is unchanged. No acquisition, preprocessing or clinical evaluation changed.
+
+
+### Default settings shortcut
+
+Added Use default settings: restores the existing 20-second configuration with voice and direction reminders on and practice off, cancels a playing voice sample, closes help and confirms the selected values. It does not start recording, change language or select consent. All four setting explanations use info buttons; English, Malay and Chinese supported. TypeScript and 58 tests pass. Publication authorized by the user on 2026-09-17.
