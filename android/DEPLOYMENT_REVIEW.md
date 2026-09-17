@@ -1,5 +1,11 @@
 # Supervisor preview deployment review
 
+**Approved publication update (2026-09-17):** browser capture is implemented and the user approved publishing the exact batch below. Earlier preview-only descriptions below document the previous release; see README.md for the current browser contract. This batch is being published; physical-device verification remains pending.
+
+Proposed new files: android/src/browserSensors.ts and android/tests/browserSensors.test.cjs. Modified app files cover the recording adapter/contract, setup and result screens, platform banner/home/import text, transient browser storage, exports, timing provenance, translations and tests. App README and this review document, Week 4 Markdown/HTML, and wiki status/index/log accompany the change. Dependencies, generated bundles and previously stashed research work remain excluded.
+
+Verification: 67 tests and TypeScript pass; web and Android bundles build. No actual browser-device sensor or audio validation has been completed. Browser capture remains dependent on all three Generic Sensor APIs; tab memory is lost on refresh/close and users must export first.
+
 Publication authorized on 2026-09-17. Git repaired to 2.55.0.windows.5; remote fetch succeeds and origin/main is an ancestor of the reviewed branch. Publication is being executed; earlier blocker/review entries below are historical. This is a research prototype presentation, not a patient-service launch.
 
 ## Current patient flow
@@ -138,3 +144,32 @@ Sources: [Microsoft App Control troubleshooting](https://learn.microsoft.com/en-
 ## Week 4 publication additions
 
 User-requested current-week app progress is prepared in `docs/classification/WEEKLY_PROGRESS_2026-09-14.md` and `reports/WEEK_04_PROGRESS.html`. `site/index.html` now features Week 4 while retaining Week 3, and the Pages workflow copies the new report. The classification index and wiki handoff link the current week. These additional files remain local for final review; the report states deployment is pending and separates implementation, software tests, sample QA and uncompleted clinical evaluation.
+
+
+## Exact browser-capture change batch
+
+- android/DEPLOYMENT_REVIEW.md
+- android/README.md
+- android/src/browserSensors.ts
+- android/src/components/PhoneFrame.tsx
+- android/src/components/ReviewImport.web.tsx
+- android/src/exportData.ts
+- android/src/gaitTiming.ts
+- android/src/recording.ts
+- android/src/researchFeatures.ts
+- android/src/screens/DetailsScreen.tsx
+- android/src/screens/HomeScreen.tsx
+- android/src/screens/PrepareScreen.tsx
+- android/src/screens/RecordScreen.tsx
+- android/src/screens/ResultScreen.tsx
+- android/src/sensors.ts
+- android/src/store.web.ts
+- android/src/translations.ts
+- android/tests/browserSensors.test.cjs
+- android/tests/experience.test.cjs
+- android/tests/recording.test.cjs
+- docs/classification/WEEKLY_PROGRESS_2026-09-14.md
+- reports/WEEK_04_PROGRESS.html
+- wiki/concepts/classification-project-status.md
+- wiki/index.md
+- wiki/log.md

@@ -17,6 +17,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
     <BigButton label="View summary & signals" onPress={() => navigation.navigate('Details', route.params)} />
     <BigButton label="Back to home" variant="outline" onPress={() => navigation.popToTop()} />
   </>}>
+    {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
     {r ? <PatientSummary recording={r} /> : <Body>Loading recording details…</Body>}
     {issues.length > 0 && <Body muted>Saved with recording notes</Body>}
     {!!error && <Text style={ui.error}>{error}</Text>}

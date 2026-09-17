@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, AppState, BackHandler, StyleSheet } from 'react-native';
+import { View, AppState, BackHandler, StyleSheet, Platform } from 'react-native';
 import { Text } from '../i18n';
 import { getLanguage } from '../language';
-import { useKeepAwake } from 'expo-keep-awake';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
@@ -18,7 +18,11 @@ import { SettlingGate } from '../movement';
 import { FitCheck } from '../placement';
 
 export default function RecordScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'Record'>) {
-  useKeepAwake();
+  useEffect(() => {
+    const tag = 'gait-recording-' + Date.now(); let disposed = false;
+    void activateKeepAwakeAsync(tag).then(() => { if (disposed) void deactivateKeepAwake(tag).catch(() => {}); }).catch(() => {});
+    return () => { disposed = true; void deactivateKeepAwake(tag).catch(() => {}); };
+  }, []);
   const { duration, isPractice, audioEnabled, guidanceEnabled } = route.params;
   const [attempt, setAttempt] = useState(0);
   const passedFit = useRef<Recording['fitCheck']>();
@@ -158,6 +162,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           say('Begin walking at your comfortable pace.');
         } else if (seconds <= 3 && seconds !== lastSecond) say(String(seconds));
       } else {
+        if (Platform.OS === 'web' && !engine.allReceiving) { finish('interrupted'); return; }
         setDirectionReady(engine.guidanceReady);
         if (guidanceEnabled && !directionExplained && seconds <= duration - 3) {
           directionExplained = true;
@@ -177,9 +182,18 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
         setError('Setup paused when the app left the screen. Return to setup when ready.');
       }
     });
+    const hidden = () => {
+      if (document.visibilityState === 'visible') return;
+      if (phaseRef.current === 'walk') finish('interrupted');
+      else if (['prep','checking','fit','countdown'].includes(phaseRef.current)) {
+        engine.disconnect(); phaseRef.current = 'error'; setPhase('error'); stopSpeaking();
+        setError('Setup paused when the app left the screen. Return to setup when ready.');
+      }
+    };
+    if (Platform.OS === 'web') document.addEventListener('visibilitychange', hidden);
     const back = BackHandler.addEventListener('hardwareBackPress', () => { cancel(); return true; });
     return () => {
-      mounted.current = false; clearInterval(timer); app.remove(); back.remove(); engine.disconnect();
+      mounted.current = false; if (Platform.OS === 'web') document.removeEventListener('visibilitychange', hidden); clearInterval(timer); app.remove(); back.remove(); engine.disconnect();
       // Let the hands-free completion cue finish across the transition to results.
       if (phaseRef.current !== 'done') stopSpeaking();
     };

@@ -52,10 +52,11 @@ test('Cancelling while voice availability is loading prevents late speech', asyn
  const audio=load('audio',{'expo-speech':speech});const task=audio.speak('Start');await entered;
  audio.stopSpeaking();resolveVoice([{language:'en-MY',identifier:'en'}]);await task;assert.equal(spoken,false);
 });
-function harness(screen, platform='android') {
+function harness(screen, platform='android', browserResult=null) {
  let now=0,nextId=0,currentEngine,navigated=[],spoke=[],voiceOptions,appListener;
- const timers=new Map();
- const globals={performance:{now:()=>now},setInterval:(fn,delay)=>{const id=++nextId;timers.set(id,{fn,delay,next:now+delay,repeat:true});return id},clearInterval:id=>timers.delete(id),setTimeout:(fn,delay)=>{const id=++nextId;timers.set(id,{fn,delay,next:now+delay});return id},clearTimeout:id=>timers.delete(id)};
+ const timers=new Map();let visibilityListener;
+ const doc={visibilityState:'visible',addEventListener:(_,fn)=>visibilityListener=fn,removeEventListener:()=>visibilityListener=null};
+ const globals={document:doc,AbortController,performance:{now:()=>now},setInterval:(fn,delay)=>{const id=++nextId;timers.set(id,{fn,delay,next:now+delay,repeat:true});return id},clearInterval:id=>timers.delete(id),setTimeout:(fn,delay)=>{const id=++nextId;timers.set(id,{fn,delay,next:now+delay});return id},clearTimeout:id=>timers.delete(id)};
  function advance(ms){act(()=>{const end=now+ms;while(now<end){now=Math.min(now+100,end);for(const [id,t] of [...timers]) if(t.next<=now){if(t.repeat)t.next+=t.delay;else timers.delete(id);t.fn();}}});}
  const steady={enough:true,steady:true,upright:true,context:'rest-or-quiet'};
  class Engine {
@@ -63,16 +64,17 @@ function harness(screen, platform='android') {
   connect(){} disconnect(){} restoreFitCheck(v){this.savedFitCheck=v} startFit(){this.fitStarted=true} finishFit(){this.savedFitCheck={status:'movement-then-settled',version:'guided-fit-v2'}} begin(){this.begun=true}
  }
  const native={Platform:{OS:platform},Text:'text',View:'view',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
- const mocks={'react-native':native,'expo-keep-awake':{useKeepAwake(){}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
+ const mocks={'react-native':native,'expo-keep-awake':{activateKeepAwakeAsync:async()=>{},deactivateKeepAwake:async()=>{}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
  '../components/Screen':{Screen:({children,actions,...p})=>React.createElement('screen',p,children,actions),Card:'card',Body:'body',ui:{row:{},fill:{},caption:{}}},'../components/BigButton':{default:'button',__esModule:true},
  '../i18n':{Text:'text',LanguagePicker:()=>null,t:x=>x,useLanguage:()=> 'en'},
  '../audio':{speak:async(text,opts)=>{spoke.push(text);voiceOptions=opts},stopSpeaking(){},ensureVoice:async()=>({identifier:'en',language:'en-MY'})},
- '../sensors':{SensorRecorder:Engine,checkSensors:async()=>{if(platform==='web')throw new Error('Browser must not check live sensors')}},'../store':{saveSession:async()=>{},generateSessionId:()=> 'test'},
+ '../browserSensors':{checkBrowserSensors:async()=>browserResult},
+ '../sensors':{SensorRecorder:Engine,checkSensors:async()=>{if(platform==='web'&&!browserResult?.ready)throw new Error('Browser must not check live sensors')}},'../store':{saveSession:async()=>{},generateSessionId:()=> 'test'},
  };
  const Component=load('screens/'+screen,mocks,globals).default;
  let renderer;act(()=>{renderer=create(React.createElement(Component,{navigation:{navigate:(...p)=>navigated.push(p),replace:(...p)=>navigated.push(p),goBack:()=>navigated.push(['back'])},route:{params:{duration:10,audioEnabled:true,isPractice:true,guidanceEnabled:true}}}))});
  const button=label=>renderer.root.findAllByType('button').find(n=>n.props.label===label);
- return {renderer,button,advance,get engine(){return currentEngine},get voiceOptions(){return voiceOptions},navigated,spoke,background:()=>act(()=>appListener('background')),close:()=>act(()=>renderer.unmount())};
+ return {renderer,button,advance,get engine(){return currentEngine},get voiceOptions(){return voiceOptions},navigated,spoke,hide:()=>act(()=>{doc.visibilityState='hidden';visibilityListener?.()}),background:()=>act(()=>appListener('background')),close:()=>act(()=>renderer.unmount())};
 }
 test('Failed setup retries locally with eight seconds and does not navigate through setup or sound again', () => {
  const h=harness('RecordScreen');h.engine.allReceiving=false;h.advance(40500);
@@ -161,4 +163,35 @@ test('Browser setup opens explanation without sensor checks, consent or creating
  assert.deepEqual(h.navigated,[['Walkthrough']]);
  assert.equal(h.engine,undefined);
  h.close();
+});
+
+
+test('Browser capture starts only after all-sensor check and separate user consent; preview stays available',async()=>{
+ const sensors=Object.fromEntries(['accelerometer','gyroscope','magnetometer'].map(n=>[n,{status:'ready',count:150,hz:50}]));
+ const h=harness('PrepareScreen','web',{ready:true,sensors});
+ await act(async()=>h.button('Check this phone’s sensors').props.onPress());
+ assert.equal(h.button('Start test').props.disabled,true);
+ assert.ok(h.button('Preview hands-free flow'));
+ const consent=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='checkbox');
+ act(()=>consent.props.onPress());assert.equal(h.button('Start test').props.disabled,false);
+ await act(async()=>h.button('Start test').props.onPress());
+ assert.equal(h.navigated[0][0],'Record');h.close();
+});
+test('Failed browser capability check cannot unlock recording',async()=>{
+ const sensors=Object.fromEntries(['accelerometer','gyroscope','magnetometer'].map(n=>[n,{status:n==='magnetometer'?'unavailable':'ready',count:0,hz:0}]));
+ const h=harness('PrepareScreen','web',{ready:false,sensors});
+ await act(async()=>h.button('Check this phone’s sensors').props.onPress());
+ assert.equal(h.button('Start test'),undefined);assert.ok(h.button('Preview hands-free flow'));h.close();
+});
+
+test('Browser sensor loss or hidden tab interrupts and saves an active walk',async()=>{
+ for(const cause of ['hidden','lost']){
+  const h=harness('RecordScreen','web');
+  h.advance(23500);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1500);
+  h.engine.motionStatus={enough:true,steady:true,upright:true,context:'rest-or-quiet'};h.advance(9500);assert.equal(h.engine.begun,true);
+  let reason;
+  h.engine.stop=r=>{reason=r;return {stopReason:r,startedAt:'2026-09-17T00:00:00Z',elapsedSeconds:1,streams:{accelerometer:[],gyroscope:[],magnetometer:[]},guidanceEvents:[]}};
+  await act(async()=>{if(cause==='hidden')h.hide();else{h.engine.allReceiving=false;h.advance(100)}});
+  assert.equal(reason,'interrupted');assert.equal(h.navigated.at(-1)[0],'Result');h.close();
+ }
 });

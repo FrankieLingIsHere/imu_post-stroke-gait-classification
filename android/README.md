@@ -1,6 +1,6 @@
 ﻿# Gait Steps
 
-A single-role, offline Android prototype for guided movement recording. After cloning, run `cd android` and `npm ci` (or `npm install`), then `npm run android`, using an Expo SDK 52-compatible client or development build. `npm run web` previews the interface only: the three-sensor recording contract requires the native app.
+A single-role Android prototype for guided movement recording. After cloning, run `cd android` and `npm ci` (or `npm install`), then `npm run android`, using an Expo SDK 52-compatible client or development build. The local `npm run web` build supports preview and capability-gated browser capture; see the browser contract below. Browser capture publication authorized on 2026-09-17; physical-device verification remains pending.
 
 ## What changed
 
@@ -122,7 +122,21 @@ Validation: 53 app contract tests include 60/90/120/150 steps/min synthetic osci
 The prior [event adapter failed admission](../reports/LOWER_BACK_EVENT_VALIDATION_2026-09-09.md); this new simple peak estimator is not a validated replacement or a port of mobgap. Literature distinguishes step-count estimation from contact-event measurement: [smartphone step counting](https://cancer.jmir.org/2023/1/e47646) and [lumbar gait-event estimation](https://www.jmir.org/2025/1/e72831/). Their validation does not transfer to this implementation. Independent synchronized step/contact observations are the next measurement-validation need.
 
 
-## Supervisor browser preview
+## Browser capture
+
+This update adds **Check this phone's sensors** to setup. Under HTTPS, the browser must expose real Accelerometer, Gyroscope and Magnetometer XYZ streams through the Generic Sensor API. Hardware presence alone is insufficient; unsupported browsers retain the walkthrough. No compass-angle substitution, synthetic data or partial-sensor recording fallback is used.
+
+The check takes three seconds. Every sensor needs finite XYZ and increasing timestamps, at least 1.5 seconds of measured coverage, at least 25 Hz, no sensor-time gap over 250 ms and a reading within the last 500 ms. These are engineering readiness rules, not calibration or clinical quality validation. Start rechecks streams before the existing mounting/baseline/fit/countdown flow and requires separate consent. Existing requested-rate capture notes remain unchanged, so a browser can pass readiness but still have rate notes against the 100/100/50 Hz requests.
+
+Device-relative acceleration including gravity is converted from m/s2 to g using 9.80665; gyro stays rad/s and magnetometer stays uT. Sensor.timestamp milliseconds become seconds, without substituting receipt time. JSON identifies platform=web, API, timing origin, conversion, user agent and unverified calibration. Raw and feature CSV append platform, sensor_api and timestamp_basis. Experimental timing metadata distinguishes browser from native time. This is not evidence of native/browser measurement equivalence.
+
+Keep the page foregrounded and the phone unlocked. Missing streams or a hidden tab interrupt and save an active walk. Browser capture and review are held only in tab memory: **export before refreshing or closing**. No uploads or persistent browser storage. Speech, vibration and wake lock depend on browser support and need actual-phone testing. Native local-file storage is unchanged.
+
+67 automated tests and TypeScript pass; web and Android bundles build. Tests inject events and check missing/denied/slow/stale/invalid streams, conversion, cleanup, provenance, consent and interrupted saving. Physical browser-device and audio trials remain pending.
+
+References: [Sensor timestamps](https://developer.mozilla.org/en-US/docs/Web/API/Sensor/timestamp), [Accelerometer device frame](https://developer.mozilla.org/en-US/docs/Web/API/Accelerometer/Accelerometer), [Gyroscope](https://developer.mozilla.org/en-US/docs/Web/API/Gyroscope), [Magnetometer support](https://developer.mozilla.org/en-US/docs/Web/API/Magnetometer/Magnetometer).
+
+## Previous supervisor browser preview
 
 The browser build uses a centred phone frame (430 px outer width) on wider screens and the full viewport on phones. It reuses the app screens, with a persistent no-recording banner and an explanatory hands-free walkthrough instead of simulated sensor success. Android continues to use native capture. Local JSON imports are bounded and validated, held in tab memory only, never uploaded, and cleared on refresh. Browser exports download files instead of using native sharing.
 

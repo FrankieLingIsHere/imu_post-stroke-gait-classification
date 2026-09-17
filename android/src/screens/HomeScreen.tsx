@@ -15,7 +15,7 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
   </>}>
     <LanguagePicker />
     <View style={s.hero}><Text style={s.arrow} accessible={false}>↑</Text><Text style={s.heroText}>One step at a time</Text><Body>10–30 seconds · Guided by voice</Body></View>
-    <Card><Text style={s.label}>Your walk can help research</Text><Body muted>{Platform.OS==='web'?'Explore the phone interface and review your own exported files. Real sensor recording requires the Android app.':'Record your movement and choose when to share it. Your recordings stay on this phone.'}</Body></Card>
+    <Card><Text style={s.label}>Your walk can help research</Text><Body muted>{Platform.OS==='web'?'Check whether this browser can record all three sensors, or preview the steps and review an exported file.':'Record your movement and choose when to share it. Your recordings stay on this phone.'}</Body></Card>
     <ReviewImport onOpen={id=>navigation.navigate('Details',{sessionId:id})}/>
     <Text style={s.note}>For movement research. This app does not diagnose stroke or assess whether it is safe to walk.</Text>
   </Screen>;

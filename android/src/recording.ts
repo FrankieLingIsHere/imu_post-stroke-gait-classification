@@ -6,7 +6,7 @@ export const REQUESTED_HZ: Record<SensorName, number> = { accelerometer: 100, gy
 export interface Sample {
   x: number; y: number; z: number;
   elapsedMs: number; receivedAtUnixMs: number;
-  /** Unmodified Expo native event time in seconds; not Unix time. Null if not supplied. */
+  /** Expo native event seconds or browser Sensor.timestamp converted from ms; not Unix time. Null if not supplied. */
   sensorTimestampSeconds: number | null;
 }
 export type Streams = Record<SensorName, Sample[]>;
@@ -16,8 +16,9 @@ export interface Recording {
   platform: string; osVersion: string;
   placement: 'lower-back-upright-screen-out'; coordinateFrame: 'device';
   accelerationIncludesGravity: true;
-  magnetometerCalibration: 'OS-calibrated; app accuracy unverified';
-  timestampBasis: 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: native event';
+  magnetometerCalibration: 'OS-calibrated; app accuracy unverified' | 'Browser-provided; calibration unverified';
+  acquisition?: { api:'generic-sensor-api-v1'; timestampSource:'browser-sensor-timestamp-ms-to-seconds'; accelerationConversion:'m/s2 divided by 9.80665'; validation:'not-validated-against-native'; userAgent:string };
+  timestampBasis: 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: native event' | 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: browser Sensor.timestamp / 1000';
   stopReason: 'completed' | 'user-stopped' | 'interrupted';
   guidanceEnabled: boolean; voiceEnabled: boolean;
   guidanceEvents: { elapsedMs: number; type: 'possible-turn' | 'strong-motion' | 'possible-handling' | 'possible-placement-shift'; angleDegrees?: number }[];

@@ -1,16 +1,22 @@
 ﻿import { Accelerometer, Gyroscope, Magnetometer } from 'expo-sensors';
 import { Platform } from 'react-native';
+import { browserHardware, checkBrowserSensors } from './browserSensors';
 import { DirectionTracker, emptyStreams, REQUESTED_HZ, SENSOR_NAMES, SENSOR_UNITS, validAxes } from './recording';
 import type { Recording, Sample, SensorName } from './recording';
 import { motionWindow, StrongMotionTracker } from './movement';
 import { highFrequencyRms, ShiftMonitor } from './placement';
-const hardware = { accelerometer: Accelerometer, gyroscope: Gyroscope, magnetometer: Magnetometer };
+const nativeHardware = { accelerometer: Accelerometer, gyroscope: Gyroscope, magnetometer: Magnetometer };
+const hardware = Platform.OS === 'web' ? browserHardware : nativeHardware;
 export async function checkSensors(): Promise<void> {
-  if (Platform.OS === 'web') throw new Error('Open the Android app to record all three motion sensors. Browser preview cannot collect this recording.');
+  if (Platform.OS === 'web') {
+    const check = await checkBrowserSensors();
+    if (!check.ready) throw new Error('All three browser sensors must send steady readings. Try the sensor check again or use the Android app.');
+    return;
+  }
   for (const name of SENSOR_NAMES) {
-    const permission = await hardware[name].requestPermissionsAsync();
+    const permission = await nativeHardware[name].requestPermissionsAsync();
     if (!permission.granted) throw new Error(`Allow motion access in phone settings to use the ${name}.`);
-    if (!await hardware[name].isAvailableAsync()) throw new Error(`This phone has no available ${name}. All three sensors are required for this study recording.`);
+    if (!await nativeHardware[name].isAvailableAsync()) throw new Error(`This phone has no available ${name}. All three sensors are required for this study recording.`);
   }
 }
 export class SensorRecorder {
@@ -131,8 +137,9 @@ export class SensorRecorder {
       schemaVersion: 2, source: 'device', startedAt: this.startedAt, elapsedSeconds: this.startTime === null ? 0 : (performance.now() - this.startTime) / 1000,
       requestedHz: REQUESTED_HZ, units: SENSOR_UNITS, platform: Platform.OS, osVersion: String(Platform.Version),
       placement: 'lower-back-upright-screen-out', coordinateFrame: 'device', accelerationIncludesGravity: true,
-      magnetometerCalibration: 'OS-calibrated; app accuracy unverified',
-      timestampBasis: 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: native event',
+      magnetometerCalibration: Platform.OS === 'web' ? 'Browser-provided; calibration unverified' : 'OS-calibrated; app accuracy unverified',
+      acquisition: Platform.OS === 'web' ? { api:'generic-sensor-api-v1', timestampSource:'browser-sensor-timestamp-ms-to-seconds', accelerationConversion:'m/s2 divided by 9.80665', validation:'not-validated-against-native', userAgent:typeof navigator === 'undefined' ? '' : navigator.userAgent } : undefined,
+      timestampBasis: Platform.OS === 'web' ? 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: browser Sensor.timestamp / 1000' : 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: native event',
       stopReason: reason, ...this.options, guidanceEvents: this.events, streams: this.streams,
       baseline: this.baseline, fitCheck: this.fitCheck,
       motionRulesVersion: 'motion-context-v2',

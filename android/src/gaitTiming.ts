@@ -22,7 +22,7 @@ export function estimateGaitTiming(r:Recording) {
   const excluded:{startSeconds:number;endSeconds:number;reason:string}[]=[];
   const result = {version:'phone-step-peaks-v1', status:'unavailable', clinicalValidation:false,
     eventMeaning:'Candidate acceleration peaks, not verified heel strikes. Side and toe-off are unknown.',
-    timingBasis:'Native sensor seconds mapped to recording elapsed seconds using the first accelerometer sample.',
+    timingBasis:r.platform==='web'?'Browser Sensor.timestamp converted to seconds and mapped to recording elapsed seconds using the first accelerometer sample. Browser timing is not validated against native capture.':'Native sensor seconds mapped to recording elapsed seconds using the first accelerometer sample.',
     processing:'Linear interpolation to 50 Hz within gaps <=100 ms; keep full one-second combined-movement windows; acceleration magnitude minus bidirectionally smoothed 0.3 Hz baseline, then bidirectional 3 Hz exponential smoothing. Local prominence peaks with 300 ms separation; split intervals above 2 s. Nominal filter settings, not Butterworth cutoffs.',
     boundaryPolicy:'Exclude 300 ms at each supported-run boundary and incomplete final one-second windows. Count is partial, not a full-session step count.',
     settings:SETTINGS, features,bouts,excluded,

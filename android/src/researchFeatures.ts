@@ -33,7 +33,7 @@ export function researchFeatures(r: Recording) {
     coordinateFrame:r.coordinateFrame, elapsedSeconds:r.elapsedSeconds,
     comparisonEligibility:'not-established', clinicalValidation:false,
     captureNotes:recordingIssues(r),
-    streamCoverage:Object.fromEntries(SENSOR_NAMES.map(n => [n,streamStats(r.streams[n],r.elapsedSeconds)])),
+    streamCoverage:Object.fromEntries(SENSOR_NAMES.map(n => { const stats=streamStats(r.streams[n],r.elapsedSeconds); return [n,{...stats,timing:r.platform==='web'&&stats.timing==='native'?'browser-sensor':stats.timing}]; })),
     motionContext:describeMovement(r), features,
   };
 }

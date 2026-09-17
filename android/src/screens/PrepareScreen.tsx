@@ -6,6 +6,8 @@ import { Screen, Body, ui } from '../components/Screen';
 import BigButton from '../components/BigButton';
 import { colours } from '../theme';
 import { checkSensors } from '../sensors';
+import { checkBrowserSensors, BrowserCheck } from '../browserSensors';
+import { SENSOR_NAMES } from '../recording';
 import { ensureVoice, speak, stopSpeaking } from '../audio';
 import { Text, LanguagePicker, useLanguage, t } from '../i18n';
 export default function PrepareScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'Prepare'>) {
@@ -21,6 +23,10 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   const [testing, setTesting] = useState(false);
   const [canSkip, setCanSkip] = useState(true);
   const [error, setError] = useState('');
+  const [browserCheck, setBrowserCheck] = useState<BrowserCheck | null>(null);
+  const [checkingBrowser, setCheckingBrowser] = useState(false);
+  const browserRequest = useRef<AbortController | null>(null);
+  const webReady = Platform.OS === 'web' && browserCheck?.ready === true;
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const deadline = useRef<ReturnType<typeof setTimeout>>();
   const active = useRef(true);
@@ -35,9 +41,17 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   }
   useEffect(() => {
     active.current = true; stopSample(); setError('');
-    const app = AppState.addEventListener('change', state => { if (state !== 'active') stopSample(); });
-    return () => { active.current = false; request.current++; app.remove(); stopSpeaking(); clearTimeout(timer.current); clearTimeout(deadline.current); };
+    const app = AppState.addEventListener('change', state => { if (state !== 'active') { stopSample(); browserRequest.current?.abort(); setBrowserCheck(null); } });
+    return () => { active.current = false; request.current++; browserRequest.current?.abort(); app.remove(); stopSpeaking(); clearTimeout(timer.current); clearTimeout(deadline.current); };
   }, [language]);
+  async function checkBrowser() {
+    browserRequest.current?.abort(); stopSample(); setBrowserCheck(null); setCheckingBrowser(true); setError('');
+    const controller = new AbortController(); browserRequest.current = controller;
+    try {
+      const result = await checkBrowserSensors(controller.signal);
+      if (active.current && !controller.signal.aborted) setBrowserCheck(result);
+    } finally { if (active.current && browserRequest.current === controller) setCheckingBrowser(false); }
+  }
   async function sample() {
     stopSample(); const id = ++request.current;
     setTesting(true); setCanSkip(false); setError('');
@@ -51,7 +65,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   }
   async function start() {
     if (busy) return;
-    if(Platform.OS==='web'){stopSample();navigation.navigate('Walkthrough');return;}
+    if(Platform.OS==='web'&&!webReady){stopSample();navigation.navigate('Walkthrough');return;}
     stopSample(); setBusy(true); setError('');
     const id = ++request.current;
     try {
@@ -66,8 +80,17 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     ['Direction reminders', guidanceEnabled, setGuidance, 'About direction reminders', 'Gentle cues may remind you when the phone detects turning. They cannot confirm a straight path. Move comfortably and keep using your usual support.'],
     ['Practice walk', isPractice, setPractice, 'About practice walk', 'Try the same recording flow for your chosen duration. Your recording is still saved and exported, but labelled as practice.'],
   ];
-  return <Screen title="Set up your walk" actions={<BigButton label={Platform.OS==='web'?'Preview hands-free flow':testing ? 'Start without sound test' : 'Start test'} disabled={Platform.OS==='web'?false:!ready || !canSkip} loading={busy} onPress={start} />}>
+  return <Screen title="Set up your walk" actions={<BigButton label={Platform.OS==='web'&&!webReady?'Preview hands-free flow':testing ? 'Start without sound test' : 'Start test'} disabled={checkingBrowser || (Platform.OS==='web'&&!webReady?false:!ready || !canSkip)} loading={busy} onPress={start} />}>
     <LanguagePicker />
+    {Platform.OS === 'web' && <View style={{gap:8}}>
+      <Text style={ui.caption}>Keep this page visible and the phone unlocked. Browser recordings stay in this tab: export before refreshing or closing. Vibration may be unavailable.</Text>
+      <BigButton label={checkingBrowser?'Checking live sensors…':'Check this phone’s sensors'} variant="outline" onPress={checkBrowser} disabled={busy || checkingBrowser} />
+      {browserCheck && <View accessibilityLiveRegion="polite">
+        {SENSOR_NAMES.map(name=><View key={name}><Text style={ui.label}>{name === 'accelerometer'?'Accelerometer':name === 'gyroscope'?'Gyroscope':'Magnetometer'}</Text><Text style={ui.caption}>{t(browserCheck.sensors[name].status === 'ready'?'Live readings received':browserCheck.sensors[name].status === 'unavailable'?'Not exposed by this browser':browserCheck.sensors[name].status === 'blocked'?'Permission denied or sensor error':browserCheck.sensors[name].status === 'slow'?'Readings too slow or interrupted':browserCheck.sensors[name].status === 'invalid'?'Invalid sensor timestamps':'No fresh readings')}{' · '}{browserCheck.sensors[name].hz.toFixed(1)} Hz</Text></View>)}
+        <Text style={ui.caption}>{webReady?'All three sensors are responding. Start will recheck them before setup.':'All three sensors are required. Preview the steps or use the Android app.'}</Text>
+      </View>}
+      {webReady && <BigButton label="Preview hands-free flow" variant="ghost" onPress={()=>{stopSample();navigation.navigate('Walkthrough');}} disabled={busy} />}
+    </View>}
     <BigButton label="Use default settings" variant="outline" onPress={useDefaults} disabled={busy} accessibilityHint={t('Sets 20 seconds, voice and direction reminders on, and practice off.')} />
     {defaultsApplied && duration === 20 && audioEnabled && guidanceEnabled && !isPractice && <Text accessibilityLiveRegion="polite" style={ui.caption}>Defaults selected: 20 seconds, voice and direction reminders on, practice off. You can still change these settings.</Text>}
     <View>
@@ -89,7 +112,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       {openInfo === label && <Text accessibilityLiveRegion="polite" style={[ui.caption,{ paddingBottom:12 }]}>{explanation}</Text>}
     </View>)}</View>
     {audioEnabled ? <><BigButton label={testing ? 'Stop sample' : 'Play voice sample'} variant="outline" onPress={testing ? stopSample : sample} disabled={busy} /><Text style={ui.caption}>Listen briefly, or skip. Voice guidance stays on. Check your media volume first.</Text></> : <Body>Voice is off. Ask a helper to signal start and finish while the phone is secured.</Body>}
-    {Platform.OS!=='web'&&<Pressable accessibilityRole="checkbox" accessibilityLabel={t('Path clear, usual support ready. I agree to save my movement data.')} accessibilityState={{ checked:ready }} onPress={() => setReady(!ready)} style={[ui.row,{ minHeight:64 }]}><Text style={{ fontSize:28,color:colours.primary }}>{ready ? '☑' : '☐'}</Text><Text style={[ui.caption,ui.fill]}>Path clear, usual support ready. I agree to save my movement data.</Text></Pressable>}
+    {(Platform.OS!=='web'||webReady)&&<Pressable accessibilityRole="checkbox" accessibilityLabel={t('Path clear, usual support ready. I agree to save my movement data.')} accessibilityState={{ checked:ready }} onPress={() => setReady(!ready)} style={[ui.row,{ minHeight:64 }]}><Text style={{ fontSize:28,color:colours.primary }}>{ready ? '☑' : '☐'}</Text><Text style={[ui.caption,ui.fill]}>Path clear, usual support ready. I agree to save my movement data.</Text></Pressable>}
     {!!error && <Text accessibilityRole="alert" style={ui.error}>{error}</Text>}
   </Screen>;
 }

@@ -297,3 +297,8 @@ Settings clarity update (2026-09-17): labelled 10/20/30 seconds as recording dur
 ### Default settings shortcut
 
 Added Use default settings: restores the existing 20-second configuration with voice and direction reminders on and practice off, cancels a playing voice sample, closes help and confirms the selected values. It does not start recording, change language or select consent. All four setting explanations use info buttons; English, Malay and Chinese supported. TypeScript and 58 tests pass. Publication authorized by the user on 2026-09-17.
+
+
+## [2026-09-17] Browser capture implementation
+
+Browser capture implemented locally: all three Generic Sensor API streams must pass a measured three-second check before shared setup and separate consent. Exports identify browser timing, conversion and platform. Tab-memory recordings require export before refresh/close; sensor loss or hiding interrupts the walk. 67 tests and TypeScript pass; web/Android bundles build. Physical-phone testing and publication remain pending. No clinical acquisition or evaluation.

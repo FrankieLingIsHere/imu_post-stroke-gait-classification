@@ -1,5 +1,9 @@
 # Week 4 progress: phone gait collection app
 
+## Browser sensor follow-up
+
+Implemented a three-second real-stream check for browser accelerometer, gyroscope and magnetometer, per-sensor rates/status, separate consent and fresh recheck before shared hands-free setup. All streams must meet 25 Hz coverage/freshness requirements; missing channels are never synthesized. Browser exports identify acquisition API, timing origin, unit conversion and platform. Capture is foreground-only, with interrupted saving on sensor loss or tab hiding. Tab-memory recordings must be exported before refresh/close. Native/browser equivalence is not established. 67 tests and TypeScript pass; web/Android bundles build. Actual-phone permissions, speech and sensor checks remain pending. Publication approved on 2026-09-17, with no new clinical acquisition or model evaluation. The earlier weekly snapshot below describes the deployed preview.
+
 Week beginning **14 September 2026**, recorded through **17 September**. This week's focus is developing and checking the phone collection workflow, building on the earlier app prototype. Earlier model-development results remain in the Week 3 report; no new model training or clinical validation is claimed here.
 
 ## Main outcome

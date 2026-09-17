@@ -371,7 +371,7 @@ test('Fit raw streams remain separate and sustained placement shifts reach recor
   assert.equal(load('movement').describeMovement(r).repeatingMotion, null);
   const csv = exporting.exportCSV({ id: 'shifted', recording: r, duration: 6, windows: [] });
   assert.match(csv, /placement_review_required/);
-  assert.match(csv.split('\r\n')[1], /"true"$/);
+  assert.match(csv.split('\r\n')[1], /"true","android","expo-sensors"/);
 });
 
 
@@ -486,5 +486,5 @@ test('Browser imported recordings are review-only and cannot start native persis
  assert.equal(store.importReviewRecording(exporting.exportJSON(session)),'review');
  assert.equal((await store.getSessions()).length,1);
  assert.equal((await store.getSession('review')).id,'review');
- await assert.rejects(store.saveSession(session),/does not record sensors/);
+ await assert.rejects(store.saveSession(session),/Only browser sensor recordings/);
 });

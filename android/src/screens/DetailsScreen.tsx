@@ -48,7 +48,8 @@ export default function DetailsScreen({ route }: NativeStackScreenProps<RootStac
     {!loading && !session && <BigButton label="Retry loading" onPress={() => setAttempt(attempt + 1)} />}
     {session && !r && <Text style={ui.error}>Older simulated recording · not patient sensor data</Text>}
     {session && tab === 'Summary' && <>
-      {r ? <PatientSummary recording={r} /> : <Body>No gait summary is calculated from older simulated recordings.</Body>}
+      {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
+    {r ? <PatientSummary recording={r} /> : <Body>No gait summary is calculated from older simulated recordings.</Body>}
     </>}
     {session && tab === 'Signals' && <>
       <View style={ui.row}>{SENSOR_NAMES.map((n, i) => <Pressable key={n} accessibilityRole="tab" accessibilityLabel={t(n)} accessibilityState={{ selected: sensor === n }} onPress={() => { setSensor(n); setPage(0); }} style={[ui.choice, sensor === n && ui.selected]}><Text style={ui.caption}>{['Accel', 'Gyro', 'Mag'][i]}</Text></Pressable>)}</View>

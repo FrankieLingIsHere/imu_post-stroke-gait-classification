@@ -239,3 +239,5 @@ Mobilise-D paths unresolved. No deletion approval or experiment completion is
 implied by these counts. Source/data/evaluation states are unchanged.
 
 App settings clarification: [[classification-project-status]] and [Week 4 progress](../docs/classification/WEEKLY_PROGRESS_2026-09-14.md) record duration labels, multilingual expandable help and the default-settings shortcut, authorized for publication.
+
+Browser capture update: [[classification-project-status]] records local implementation and pending publication/device checks.
