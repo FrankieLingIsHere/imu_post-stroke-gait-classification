@@ -36,3 +36,8 @@ User approved pushing the GaitTrace app, update workflow, sampling audit and ass
 ## [2026-09-21] GitHub update workflow runtime repair
 
 User configured EXPO_TOKEN and the workflow credential-presence check passed. The Expo action then failed installing current EAS CLI because @oclif/plugin-autocomplete requires Node >=22 while the workflow used Node 20. Updated the Android update workflow to Node 22 within the authorized publication scope. No app binary or runtime change. Publishing verification remains in progress.
+
+
+## [2026-09-21] Build 2 OTA compatibility repair
+
+GitHub token authentication and tests passed, but first CI update fingerprint differed from installed build 2. EAS fingerprint comparison isolated exactly .gitignore and eas.json byte hashes: Git LF normalization differed from the Windows build files. Added a content-hash-gated script restoring the exact known build-2 line endings before CI publication. Modified configs are not rewritten and no runtime hash is overridden. This preserves native-change protection. CI delivery recheck pending.

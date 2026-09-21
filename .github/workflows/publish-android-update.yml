@@ -32,5 +32,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
       - run: npm ci
       - run: npm run ts:check && npm test
+      - name: Preserve installed build config line endings
+        run: node scripts/preserve-build2-fingerprint.cjs
       - name: Publish Android preview update
         run: eas update --platform android --channel preview --environment preview --message "main $GITHUB_SHA" --non-interactive
