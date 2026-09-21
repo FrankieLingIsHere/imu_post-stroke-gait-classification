@@ -31,3 +31,8 @@ Replacement APK build 44f1af5a-436e-4613-82a0-66dd7f9bc99b completed successfull
 ## [2026-09-21] Publication authorized
 
 User approved pushing the GaitTrace app, update workflow, sampling audit and associated documentation batch to main. APK and initial compatible OTA are already built/published. GitHub automation requires the EXPO_TOKEN repository secret; its presence has not yet been verified. No generated datasets, dependency folders, APKs or credentials belong in this source commit.
+
+
+## [2026-09-21] GitHub update workflow runtime repair
+
+User configured EXPO_TOKEN and the workflow credential-presence check passed. The Expo action then failed installing current EAS CLI because @oclif/plugin-autocomplete requires Node >=22 while the workflow used Node 20. Updated the Android update workflow to Node 22 within the authorized publication scope. No app binary or runtime change. Publishing verification remains in progress.
