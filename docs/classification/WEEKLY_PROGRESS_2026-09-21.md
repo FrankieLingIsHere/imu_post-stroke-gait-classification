@@ -41,3 +41,8 @@ User configured EXPO_TOKEN and the workflow credential-presence check passed. Th
 ## [2026-09-21] Build 2 OTA compatibility repair
 
 GitHub token authentication and tests passed, but first CI update fingerprint differed from installed build 2. EAS fingerprint comparison isolated exactly .gitignore and eas.json byte hashes: Git LF normalization differed from the Windows build files. Added a content-hash-gated script restoring the exact known build-2 line endings before CI publication. Modified configs are not rewritten and no runtime hash is overridden. This preserves native-change protection. CI delivery recheck pending.
+
+
+## [2026-09-21] Automatic Android updates verified
+
+GitHub Actions run 35563700262 completed successfully after authentication, checks and publication. The update endpoint returned HTTP 200 and Android update 01a0c261-f5cf-761a-b117-fcd21738811e for installed build 2 runtime ead45ff05f56ff8de69ce960cb9af9126a4cc015. EXPO_TOKEN and CI publication are now verified. No replacement APK is needed. Physical cold-launch adoption remains a device check.
