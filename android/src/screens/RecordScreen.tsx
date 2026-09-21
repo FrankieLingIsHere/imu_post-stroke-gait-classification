@@ -106,7 +106,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     let checkStarted = 0;
     let lastSetupCue = 0;
     let directionExplained = false;
-    if (phaseRef.current === 'prep') say(attempt > 0 ? 'You have 8 seconds to put the phone back. Stay comfortable.' : `You have ${placementSeconds} seconds to secure the phone in a snug belt pouch against your lower back, screen facing out. Then stand comfortably still, facing your clear path.`);
+    if (phaseRef.current === 'prep') say(attempt > 0 ? 'You have 8 seconds to put the phone back. Stay comfortable.' : `You have ${placementSeconds} seconds to secure the phone horizontally in a snug belt pouch against your lower back, screen facing out. Then stand comfortably still, facing your clear path.`);
     const timer = setInterval(() => {
       const now = performance.now();
       if (now > stopArmedUntil.current) setConfirmStop(false);
@@ -137,7 +137,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
             say('The check could not finish. No walk has started. Please rest, then check the phone when safe.');
           } else if (now - lastSetupCue >= 8000) {
             lastSetupCue = now;
-            say(!engine.allReceiving ? 'Still waiting for sensor readings. Please stay where you are.' : 'The phone is not steady or upright yet. Adjust only the pouch if comfortable. You can rest.');
+            say(!engine.allReceiving ? 'Still waiting for sensor readings. Please stay where you are.' : 'The phone is not steady or horizontal yet. Adjust only the pouch if comfortable. You can rest.');
           }
       } else if (phaseRef.current === 'fit') {
         const status = fit.update(now, engine.allReceiving, engine.motionStatus);
@@ -209,7 +209,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     </View>}
     <Card>
       <Text accessible={false} style={s.arrow}>{phase === 'walk' ? '↑' : '•'}</Text>
-      <Body>{phase === 'prep' ? 'Secure the phone at your lower back, screen facing out. Listen for the phone check, three comfortable steps and a stop, then the final countdown.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Take three comfortable steps, then stop. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Listen for begin. ${remaining} seconds.` : phase === 'walk' ? hint || 'Follow your clear path. Keep your eyes ahead.' : 'Recording stopped. Check your phone when safely settled.'}</Body>
+      <Body>{phase === 'prep' ? 'Secure the phone horizontally at your lower back, screen facing out. Listen for the phone check, three comfortable steps and a stop, then the final countdown.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Take three comfortable steps, then stop. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Listen for begin. ${remaining} seconds.` : phase === 'walk' ? hint || 'Follow your clear path. Keep your eyes ahead.' : 'Recording stopped. Check your phone when safely settled.'}</Body>
       {phase === 'checking' && <Text style={ui.caption}>Checks sensor readings, phone angle and settling. Lower-back location cannot be verified.</Text>}
       {phase === 'walk' && <Text style={ui.caption}>{guidanceEnabled ? directionReady ? 'Gentle reminders on · arrow is a path reminder' : 'Direction estimate unavailable · walk only as comfortable' : 'Direction reminders off · arrow is a path reminder'}</Text>}
     </Card>

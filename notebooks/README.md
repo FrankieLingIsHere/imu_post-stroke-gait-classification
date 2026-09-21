@@ -151,3 +151,5 @@ two Mobilise-D scripts lack the checked paths. No byte-identical scripts found.
 Dynamic imports/calls and filename-based utility labels require manual review.
 This is a complete structural inventory, not a full semantic review or deletion
 approval. No experiments were run or scripts deleted by this check.
+
+- [39_phone_sampling_feasibility.ipynb](39_phone_sampling_feasibility.ipynb): executed development-data rate-reduction audit, with coverage and explicit nonclinical limitations.

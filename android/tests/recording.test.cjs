@@ -11,10 +11,36 @@ function load(name, mocks = {}, globals = {}, cache = {}) {
   const module = { exports: {} }; cache[filename] = module;
   const code = ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { esModuleInterop: true, target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText;
   vm.runInNewContext(code, { module, exports: module.exports, console, Date, Math, performance,
-    require: id => id in mocks ? mocks[id] : id.startsWith('.') ? load(path.relative(path.resolve(__dirname, '../src'), path.resolve(path.dirname(filename), id)), mocks, globals, cache) : require(id), ...globals }, { filename });
+    require: id => id === './releaseInfo' ? {releaseInfo:()=>({appVersion:'test',buildNumber:'0',runtimeVersion:null,updateId:null,channel:null,embedded:true})} : id in mocks ? mocks[id] : id.startsWith('.') ? load(path.relative(path.resolve(__dirname, '../src'), path.resolve(path.dirname(filename), id)), mocks, globals, cache) : require(id), ...globals }, { filename });
   return module.exports;
 }
 const pure = load('recording');
+test('Candidate alternation measures interval differences without a foot or disease verdict', () => {
+  const mock = intervals => load('alternatingTiming', {'./gaitTiming': {estimateGaitTiming:()=>({bouts:[{intervalsSeconds:intervals,eventTimesSeconds:[0]}]})}}).alternatingTiming({});
+  assert.equal(mock(Array(10).fill(.5)).differencePercent,0);
+  const uneven=mock(Array.from({length:10},(_,i)=>i%2?.6:.4));
+  assert.ok(Math.abs(uneven.differencePercent-40)<1e-8);
+  assert.equal(uneven.footIdentity,'unknown');assert.equal(uneven.neurologicalCause,'undetermined');
+  assert.equal(mock(Array(9).fill(.5)).differencePercent,null);
+});
+test('Landscape belt accepts either end up and rejects portrait or flat placement', () => {
+  const motion = load('movement');
+  const rows = (x,y,z) => Array.from({length:100},(_,i)=>({x,y,z,elapsedMs:i*10,sensorTimestampSeconds:i/100}));
+  for (const sign of [-1,1]) assert.equal(motion.motionWindow(rows(sign,0,0),rows(0,0,0),true).upright,true);
+  assert.equal(motion.motionWindow(rows(0,1,0),rows(0,0,0),true).upright,false);
+  assert.equal(motion.motionWindow(rows(0,0,1),rows(0,0,0),true).upright,false);
+});
+test('Baseline projections agree after rigid rotation and preserve raw samples', () => {
+  const {comparisonSignals} = load('comparisonSignals');
+  const make = (x,y,z,bx,by,bz) => ({units:pure.SENSOR_UNITS,elapsedSeconds:1,guidanceEvents:[],baseline:{mean:{accelerometer:{x:bx,y:by,z:bz}}},streams:Object.fromEntries(pure.SENSOR_NAMES.map(n=>[n,[{x,y,z,elapsedMs:0,sensorTimestampSeconds:0}]]))});
+  const a=make(2,1,3,0,1,0),b=make(1,-2,3,1,0,0),original=JSON.stringify(a);
+  const pa=comparisonSignals(a),pb=comparisonSignals(b);
+  assert.equal(pa.streams.accelerometer[0].vertical,pb.streams.accelerometer[0].vertical);
+  assert.equal(pa.streams.accelerometer[0].horizontalMagnitude,pb.streams.accelerometer[0].horizontalMagnitude);
+  assert.equal(JSON.stringify(a),original);
+  b.guidanceEvents=[{type:'possible-placement-shift'}];assert.equal(comparisonSignals(b).streams,null);
+  delete a.baseline;assert.equal(comparisonSignals(a).streams,null);
+});
 const exporting = load('exportData');
 const sample = (t, x = 1, y = 2, z = 3) => ({ x, y, z, elapsedMs: t, receivedAtUnixMs: 1700000000000 + t, sensorTimestampSeconds: 123 + t / 1000 });
 function rig() {

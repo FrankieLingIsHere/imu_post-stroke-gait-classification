@@ -148,3 +148,11 @@ Deployment review and exact proposed source scope: [DEPLOYMENT_REVIEW.md](DEPLOY
 The web export is a single-page progressive web app. On a supported phone browser, open the hosted app, then use **Install on this phone** or the browser's **Add to Home screen** menu. It opens in its own phone-shaped app window and caches the app shell for offline reopening. A connection is still required to load the latest deployment and browser sensor permissions/availability still apply. In particular, installing the PWA cannot expose a magnetometer that the browser has withheld.
 
 The PWA is rebuilt from this same `/android` source on every Pages deployment. The service worker uses network-first navigation and cached static assets as an offline fallback; versioned JavaScript files update with a new deployment. Browser recordings remain tab-memory only and must be exported before refresh, closing, or browser storage eviction.
+
+## Horizontal belt and sampling update (2026-09-21)
+
+See [sampling and placement protocol](SAMPLING_AND_PLACEMENT.md) for the new landscape belt orientation, browser consent limitations, measured rates and experimental JSON comparison projections. Raw capture remains unchanged.
+
+## GaitTrace release and device validation
+
+The installed app is named GaitTrace. See [distribution and versioning](NATIVE_DISTRIBUTION.md) and [physical-device validation checklist](PHYSICAL_DEVICE_VALIDATION.md). The original 0.1.0 APK must be replaced with the update-enabled 0.2.0 APK.

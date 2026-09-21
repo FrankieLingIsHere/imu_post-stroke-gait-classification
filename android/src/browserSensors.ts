@@ -1,4 +1,5 @@
-import { REQUESTED_HZ, SENSOR_NAMES, SensorName } from './recording';
+import { SENSOR_NAMES, SensorName } from './recording';
+export const BROWSER_REQUESTED_HZ: Record<SensorName, number> = { accelerometer:60, gyroscope:60, magnetometer:50 };
 
 type Reading = { x:number; y:number; z:number; timestamp:number };
 type Sensor = { x:number|null; y:number|null; z:number|null; timestamp:number|null; start():void; stop():void; addEventListener(type:string,fn:()=>void):void; removeEventListener(type:string,fn:()=>void):void };
@@ -13,7 +14,7 @@ export function subscribeBrowserSensor(name:SensorName, callback:(r:Reading)=>vo
   const env=environment();
   if (!env.isSecureContext || typeof env[constructors[name]]!=='function') throw new Error('Browser sensor access unavailable.');
   const Ctor=env[constructors[name]] as Constructor;
-  const sensor=new Ctor({frequency:REQUESTED_HZ[name],referenceFrame:'device'});
+  const sensor=new Ctor({frequency:BROWSER_REQUESTED_HZ[name],referenceFrame:'device'});
   let removed=false; let previousTimestamp=-Infinity;
   const remove=()=>{if(removed)return;removed=true;sensor.removeEventListener('reading',reading);sensor.removeEventListener('error',error);sensor.stop();};
   const error=()=>{remove();failed();};

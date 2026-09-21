@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <g transform="scale(.5)"><rect width="1024" height="1024" fill="#176B62"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#176B62"/>
   <g fill="#F6F3EC">
     <path transform="translate(395 420) rotate(-12)" d="M-30-150C-78-145-98-106-96-54C-94-14-78 15-59 44C-43 69-46 83-50 111C-55 148-36 171-4 173C32 175 56 151 60 117L73-24C79-86 64-143 20-150C4-153-15-153-30-150Z"/>
     <path transform="translate(638 586) rotate(12) scale(-1 1)" d="M-30-150C-78-145-98-106-96-54C-94-14-78 15-59 44C-43 69-46 83-50 111C-55 148-36 171-4 173C32 175 56 151 60 117L73-24C79-86 64-143 20-150C4-153-15-153-30-150Z"/>
   </g>
-</g></svg>
+</svg>

@@ -1,10 +1,11 @@
 ﻿import { Accelerometer, Gyroscope, Magnetometer } from 'expo-sensors';
 import { Platform } from 'react-native';
-import { browserHardware, checkBrowserSensors } from './browserSensors';
+import { browserHardware, checkBrowserSensors, BROWSER_REQUESTED_HZ } from './browserSensors';
 import { DirectionTracker, emptyStreams, REQUESTED_HZ, SENSOR_NAMES, SENSOR_UNITS, validAxes } from './recording';
 import type { Recording, Sample, SensorName } from './recording';
 import { motionWindow, StrongMotionTracker } from './movement';
 import { highFrequencyRms, ShiftMonitor } from './placement';
+import { releaseInfo } from './releaseInfo';
 const nativeHardware = { accelerometer: Accelerometer, gyroscope: Gyroscope, magnetometer: Magnetometer };
 const hardware = Platform.OS === 'web' ? browserHardware : nativeHardware;
 export async function checkSensors(): Promise<void> {
@@ -68,9 +69,11 @@ export class SensorRecorder {
       for (const a of ['x', 'y', 'z'] as const) this.gravity[a] = this.gravity[a] * 0.92 + m[a] * 0.08;
     }
     const g = Math.hypot(this.gravity.x, this.gravity.y, this.gravity.z);
-    const upright = now - this.accelAt < 250 && g > 0.85 && g < 1.15 && this.gravity.y / g > 0.9;
+    const upright = now - this.accelAt < 250 && g > 0.85 && g < 1.15 && Math.abs(this.gravity.x) / g > 0.9;
+    // Angular velocity about measured gravity works for either landscape orientation.
+    const verticalRotation = g > 0 ? (m.x*this.gravity.x + m.y*this.gravity.y + m.z*this.gravity.z)/g : 0;
     if (this.startTime === null) {
-      if (name === 'gyroscope') this.direction.calibrate(m.y, now, upright && Math.hypot(m.x, m.y, m.z) < 0.15);
+      if (name === 'gyroscope') this.direction.calibrate(verticalRotation, now, upright && Math.hypot(m.x, m.y, m.z) < 0.15);
       return;
     }
     const sample: Sample = { x: m.x, y: m.y, z: m.z, elapsedMs: now - this.startTime, receivedAtUnixMs: Date.now(), sensorTimestampSeconds: Number.isFinite(m.timestamp) ? m.timestamp! : null };
@@ -86,7 +89,7 @@ export class SensorRecorder {
     }
     if (name === 'gyroscope') {
       this.lastGyroAt = now;
-      const angle = this.direction.update(m.y, now, upright);
+      const angle = this.direction.update(verticalRotation, now, upright);
       if (this.options.guidanceEnabled && angle !== null && this.motionStatus.context === 'movement') {
         this.events.push({ elapsedMs: sample.elapsedMs, type: 'possible-turn', angleDegrees: angle });
         this.cue(angle);
@@ -104,7 +107,7 @@ export class SensorRecorder {
   get guidanceReady() { return this.direction.ready && performance.now() - this.lastGyroAt < 250; }
   get motionStatus() {
     const now = performance.now();
-    return motionWindow(this.recent.accelerometer.filter(s => now - s.elapsedMs <= 1000), this.recent.gyroscope.filter(s => now - s.elapsedMs <= 1000));
+    return motionWindow(this.recent.accelerometer.filter(s => now - s.elapsedMs <= 1000), this.recent.gyroscope.filter(s => now - s.elapsedMs <= 1000), true);
   }
   get baselineReady() {
     const now = performance.now();
@@ -135,8 +138,9 @@ export class SensorRecorder {
     this.disconnect();
     this.stopped = {
       schemaVersion: 2, source: 'device', startedAt: this.startedAt, elapsedSeconds: this.startTime === null ? 0 : (performance.now() - this.startTime) / 1000,
-      requestedHz: REQUESTED_HZ, units: SENSOR_UNITS, platform: Platform.OS, osVersion: String(Platform.Version),
-      placement: 'lower-back-upright-screen-out', coordinateFrame: 'device', accelerationIncludesGravity: true,
+      appRelease: releaseInfo(),
+      requestedHz: Platform.OS === 'web' ? BROWSER_REQUESTED_HZ : REQUESTED_HZ, units: SENSOR_UNITS, platform: Platform.OS, osVersion: String(Platform.Version),
+      placement: 'lower-back-landscape-screen-out', coordinateFrame: 'device', accelerationIncludesGravity: true,
       magnetometerCalibration: Platform.OS === 'web' ? 'Browser-provided; calibration unverified' : 'OS-calibrated; app accuracy unverified',
       acquisition: Platform.OS === 'web' ? { api:'generic-sensor-api-v1', timestampSource:'browser-sensor-timestamp-ms-to-seconds', accelerationConversion:'m/s2 divided by 9.80665', validation:'not-validated-against-native', userAgent:typeof navigator === 'undefined' ? '' : navigator.userAgent } : undefined,
       timestampBasis: Platform.OS === 'web' ? 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: browser Sensor.timestamp / 1000' : 'elapsedMs: monotonic JS receipt; receivedAtUnixMs: wall clock; sensorTimestampSeconds: native event',

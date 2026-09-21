@@ -2,8 +2,10 @@
 import { SENSOR_NAMES, SENSOR_UNITS } from './recording';
 import { describeMovement } from './movement';
 import { researchFeatures } from './researchFeatures';
+import { comparisonSignals } from './comparisonSignals';
+import { alternatingTiming } from './alternatingTiming';
 export function exportJSON(session: SessionRecord): string {
-  return JSON.stringify({ exportSchemaVersion: 3, source: session.recording ? 'device' : 'legacy-simulation', note: 'Research capture, not diagnosis. Device streams are asynchronous and unresampled.', analysisOrigin: 'computed-from-saved-signals', movementSummary: session.recording ? describeMovement(session.recording) : null, researchFeatures: session.recording ? researchFeatures(session.recording) : null, session }, null, 2);
+  return JSON.stringify({ exportSchemaVersion: 3, source: session.recording ? 'device' : 'legacy-simulation', note: 'Research capture, not diagnosis. Device streams are asynchronous and unresampled.', analysisOrigin: 'computed-from-saved-signals', alternatingTiming: session.recording ? alternatingTiming(session.recording) : null, comparisonSignals: session.recording ? comparisonSignals(session.recording) : null, movementSummary: session.recording ? describeMovement(session.recording) : null, researchFeatures: session.recording ? researchFeatures(session.recording) : null, session }, null, 2);
 }
 /** Separate tidy feature CSV; raw event CSV remains unchanged. JSON carries full provenance. */
 export function exportFeatureCSV(session: SessionRecord): string {

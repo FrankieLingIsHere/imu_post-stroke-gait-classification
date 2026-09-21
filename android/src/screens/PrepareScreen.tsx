@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { View, Pressable, Switch, AppState, Platform } from 'react-native';
+import { View, Pressable, Switch, AppState, Platform, Modal } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
 import { Screen, Body, ui } from '../components/Screen';
@@ -25,6 +25,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   const [error, setError] = useState('');
   const [browserCheck, setBrowserCheck] = useState<BrowserCheck | null>(null);
   const [checkingBrowser, setCheckingBrowser] = useState(false);
+  const [sensorConsent, setSensorConsent] = useState(false);
   const browserRequest = useRef<AbortController | null>(null);
   const webReady = Platform.OS === 'web' && browserCheck?.ready === true;
   const timer = useRef<ReturnType<typeof setTimeout>>();
@@ -84,7 +85,17 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     <LanguagePicker />
     {Platform.OS === 'web' && <View style={{gap:8}}>
       <Text style={ui.caption}>Keep this page visible and the phone unlocked. Browser recordings stay in this tab: export before refreshing or closing. Vibration may be unavailable.</Text>
-      <BigButton label={checkingBrowser?'Checking live sensors…':'Check this phone’s sensors'} variant="outline" onPress={checkBrowser} disabled={busy || checkingBrowser} />
+      <BigButton label={checkingBrowser?'Checking live sensors…':'Check this phone’s sensors'} variant="outline" onPress={()=>setSensorConsent(true)} disabled={busy || checkingBrowser} />
+      <Modal visible={sensorConsent} transparent animationType="fade" onRequestClose={()=>setSensorConsent(false)}>
+        <View style={{flex:1,backgroundColor:'#0008',justifyContent:'center',padding:24}}>
+          <View accessibilityViewIsModal style={{backgroundColor:colours.surface,borderRadius:20,padding:24,gap:16,maxWidth:430,alignSelf:'center'}}>
+            <Text style={ui.label}>Allow a sensor check?</Text>
+            <Body>We will read acceleration, rotation and magnetic field for three seconds. This is app consent. Your browser controls access and may not show another prompt. Consent cannot enable an unavailable magnetometer.</Body>
+            <BigButton label="Agree and check sensors" onPress={()=>{setSensorConsent(false);void checkBrowser();}} />
+            <BigButton label="Cancel" variant="outline" onPress={()=>setSensorConsent(false)} />
+          </View>
+        </View>
+      </Modal>
       {browserCheck && <View accessibilityLiveRegion="polite">
         {SENSOR_NAMES.map(name=><View key={name}><Text style={ui.label}>{name === 'accelerometer'?'Accelerometer':name === 'gyroscope'?'Gyroscope':'Magnetometer'}</Text><Text style={ui.caption}>{t(browserCheck.sensors[name].status === 'ready'?'Live readings received':browserCheck.sensors[name].status === 'unavailable'?'Not exposed by this browser':browserCheck.sensors[name].status === 'blocked'?'Permission denied or sensor error':browserCheck.sensors[name].status === 'slow'?'Readings too slow or interrupted':browserCheck.sensors[name].status === 'invalid'?'Invalid sensor timestamps':'No fresh readings')}{' · '}{browserCheck.sensors[name].hz.toFixed(1)} Hz</Text></View>)}
         <Text style={ui.caption}>{webReady?'All three sensors are responding. Start will recheck them before setup.':'All three sensors are required. Preview the steps or use the Android app.'}</Text>

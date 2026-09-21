@@ -4,7 +4,7 @@ function load(name,globals={},mocks={},cache={}) {
  const file=path.resolve(__dirname,'../src',name+'.ts');if(cache[file])return cache[file].exports;
  const module={exports:{}};cache[file]=module;
  const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,esModuleInterop:true}}).outputText;
- vm.runInNewContext(code,{module,exports:module.exports,console,Date,Math,performance,setTimeout,clearTimeout,...globals,require:id=>id in mocks?mocks[id]:id.startsWith('.')?load(path.relative(path.resolve(__dirname,'../src'),path.resolve(path.dirname(file),id)),globals,mocks,cache):require(id)});return module.exports;
+ vm.runInNewContext(code,{module,exports:module.exports,console,Date,Math,performance,setTimeout,clearTimeout,...globals,require:id=>id==='./releaseInfo'?{releaseInfo:()=>({appVersion:'test',buildNumber:'0',runtimeVersion:null,updateId:null,channel:null,embedded:true})}:id in mocks?mocks[id]:id.startsWith('.')?load(path.relative(path.resolve(__dirname,'../src'),path.resolve(path.dirname(file),id)),globals,mocks,cache):require(id)});return module.exports;
 }
 function rig(missing) {
  let now=0;const instances={},timers=new Map();let id=0;

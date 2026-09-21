@@ -1,0 +1,36 @@
+name: Publish compatible Android update
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/publish-android-update.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-preview-updates
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: android/package-lock.json
+      - name: Require Expo credential
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: test -n "$EXPO_TOKEN" || { echo 'Set the repository EXPO_TOKEN secret before publishing updates.'; exit 1; }
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      - run: npm run ts:check && npm test
+      - name: Publish Android preview update
+        run: eas update --platform android --channel preview --environment preview --message "main $GITHUB_SHA" --non-interactive

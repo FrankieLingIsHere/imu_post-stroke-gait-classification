@@ -1,8 +1,15 @@
 {
   "expo": {
-    "name": "Gait Steps",
+    "name": "GaitTrace",
     "slug": "gait-steps",
-    "version": "0.1.0",
+    "version": "0.2.0",
+    "icon": "./assets/branding/icon.png",
+    "runtimeVersion": { "policy": "fingerprint" },
+    "updates": {
+      "url": "https://u.expo.dev/3db4ae90-2d4d-41f9-9689-f70f656ac581",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -18,11 +25,12 @@
     },
     "android": {
       "package": "com.gaitsteps.app",
-      "versionCode": 1
+      "versionCode": 1,
+      "adaptiveIcon": { "foregroundImage": "./assets/branding/icon.png", "backgroundColor": "#176B62" }
     },
     "web": {
-      "name": "Gait Steps",
-      "shortName": "Gait Steps",
+      "name": "GaitTrace",
+      "shortName": "GaitTrace",
       "themeColor": "#176B62",
       "backgroundColor": "#F6F3EC"
     },
@@ -33,15 +41,19 @@
       "web"
     ],
     "extra": {
-      "appDescription": "Guided movement recording for research"
+      "appDescription": "Guided movement recording for research",
+      "eas": {
+        "projectId": "3db4ae90-2d4d-41f9-9689-f70f656ac581"
+      }
     },
     "plugins": [
       [
         "expo-sensors",
         {
-          "motionPermission": "Allow Gait Steps to record motion for your walking research session."
+          "motionPermission": "Allow GaitTrace to record motion for your walking research session."
         }
       ]
-    ]
+    ],
+    "owner": "frankielingishere"
   }
 }

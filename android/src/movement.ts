@@ -5,7 +5,7 @@ export interface MotionWindow {
   context: 'rest-or-quiet' | 'movement' | 'possible-handling' | 'uncertain' | 'missing-data';
   accelerationChangeRms: number;
 }
-export function motionWindow(accel: Sample[], gyro: Sample[]): MotionWindow {
+export function motionWindow(accel: Sample[], gyro: Sample[], landscape = false): MotionWindow {
   const span = (a: Sample[]) => a.length > 1 ? a[a.length - 1].elapsedMs - a[0].elapsedMs : 0;
   const continuous = (a: Sample[]) => a.every((s, i) => i === 0 || (s.elapsedMs > a[i - 1].elapsedMs && s.elapsedMs - a[i - 1].elapsedMs <= 250));
   const enough = accel.length >= 10 && gyro.length >= 10 && span(accel) >= 700 && span(gyro) >= 700 && continuous(accel) && continuous(gyro);
@@ -34,7 +34,8 @@ export function motionWindow(accel: Sample[], gyro: Sample[]): MotionWindow {
   const magnitudes = accel.map(s => Math.hypot(s.x, s.y, s.z));
   const magnitudeMean = magnitudes.reduce((sum, v) => sum + v, 0) / Math.max(1, magnitudes.length);
   const magnitudeSd = Math.sqrt(magnitudes.reduce((sum, v) => sum + (v - magnitudeMean) ** 2, 0) / Math.max(1, magnitudes.length));
-  const upright = g > 0.8 && g < 1.2 && mean.y / g >= Math.cos(20 * Math.PI / 180);
+  // Legacy summaries retain portrait semantics. New belt setup accepts either landscape end up.
+  const upright = g > 0.8 && g < 1.2 && (landscape ? Math.abs(mean.x) : mean.y) / g >= Math.cos(20 * Math.PI / 180);
   return { enough, upright, steady: enough && magnitudeSd < 0.05 && accelerationRmsG < 0.06 && rotationRms < 0.15,
     strong, accelerationRmsG, rotationRms, accelerationChangeRms, context };
 }

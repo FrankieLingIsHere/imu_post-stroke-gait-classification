@@ -63,7 +63,7 @@ function harness(screen, platform='android', browserResult=null) {
   constructor(){currentEngine=this;this.motionStatus={...steady};this.allReceiving=true;this.baselineReady=true;this.guidanceReady=true;this.begun=false;}
   connect(){} disconnect(){} restoreFitCheck(v){this.savedFitCheck=v} startFit(){this.fitStarted=true} finishFit(){this.savedFitCheck={status:'movement-then-settled',version:'guided-fit-v2'}} begin(){this.begun=true}
  }
- const native={Platform:{OS:platform},Text:'text',View:'view',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
+ const native={Platform:{OS:platform},Text:'text',Modal:({visible,children})=>visible?React.createElement('modal',null,children):null,View:'view',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
  const mocks={'react-native':native,'expo-keep-awake':{activateKeepAwakeAsync:async()=>{},deactivateKeepAwake:async()=>{}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
  '../components/Screen':{Screen:({children,actions,...p})=>React.createElement('screen',p,children,actions),Card:'card',Body:'body',ui:{row:{},fill:{},caption:{}}},'../components/BigButton':{default:'button',__esModule:true},
  '../i18n':{Text:'text',LanguagePicker:()=>null,t:x=>x,useLanguage:()=> 'en'},
@@ -170,6 +170,8 @@ test('Browser capture starts only after all-sensor check and separate user conse
  const sensors=Object.fromEntries(['accelerometer','gyroscope','magnetometer'].map(n=>[n,{status:'ready',count:150,hz:50}]));
  const h=harness('PrepareScreen','web',{ready:true,sensors});
  await act(async()=>h.button('Check this phone’s sensors').props.onPress());
+ assert.equal(h.button('Start test'),undefined);
+ await act(async()=>h.button('Agree and check sensors').props.onPress());
  assert.equal(h.button('Start test').props.disabled,true);
  assert.ok(h.button('Preview hands-free flow'));
  const consent=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='checkbox');
@@ -181,6 +183,7 @@ test('Failed browser capability check cannot unlock recording',async()=>{
  const sensors=Object.fromEntries(['accelerometer','gyroscope','magnetometer'].map(n=>[n,{status:n==='magnetometer'?'unavailable':'ready',count:0,hz:0}]));
  const h=harness('PrepareScreen','web',{ready:false,sensors});
  await act(async()=>h.button('Check this phone’s sensors').props.onPress());
+ await act(async()=>h.button('Agree and check sensors').props.onPress());
  assert.equal(h.button('Start test'),undefined);assert.ok(h.button('Preview hands-free flow'));h.close();
 });
 

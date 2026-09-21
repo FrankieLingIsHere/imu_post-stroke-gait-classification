@@ -243,3 +243,15 @@ App settings clarification: [[classification-project-status]] and [Week 4 progre
 Browser capture update: [[classification-project-status]] records local implementation and pending publication/device checks.
 
 PWA delivery: [[classification-project-status]] records the shared-source installable web app and its browser-sensor limits.
+
+Horizontal belt and sampling update: [[classification-project-status]] records browser consent, landscape setup and experimental comparison projections, with validation still pending.
+
+Sampling-rate evidence and native Android delivery: [[classification-project-status]] and [executed audit](../docs/classification/PHONE_SAMPLING_AND_ASYMMETRY.md).
+
+Standalone Android distribution: [[classification-project-status]] records the linked Expo project and current APK build.
+
+Android APK build completed: [[classification-project-status]] contains the download link and physical-validation status.
+
+GaitTrace branding, update compatibility and device validation: [[classification-project-status]] and [device checklist](../android/PHYSICAL_DEVICE_VALIDATION.md).
+
+GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the replacement download and matching OTA verification.

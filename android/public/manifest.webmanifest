@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Gait Steps",
-  "short_name": "Gait Steps",
+  "name": "GaitTrace",
+  "short_name": "GaitTrace",
   "description": "Guided gait data collection for research.",
   "start_url": "./",
   "scope": "./",
@@ -10,6 +10,11 @@
   "background_color": "#F6F3EC",
   "theme_color": "#176B62",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }

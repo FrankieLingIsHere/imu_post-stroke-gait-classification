@@ -8,6 +8,7 @@ import { Screen, Card, Body } from '../components/Screen';
 import BigButton from '../components/BigButton';
 import { colours as c } from '../theme';
 import PwaInstall from '../components/PwaInstall';
+import ReleaseInfo from '../components/ReleaseInfo';
 export default function HomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) {
   return <Screen eyebrow="YOUR DAILY WALK" title={'A little walk.\nAt your pace.'} actions={<>
     <BigButton label="Start a walk" onPress={() => navigation.navigate('Prepare', { duration: 20, audioEnabled: true, isPractice: false })} />
@@ -15,6 +16,7 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
     <BigButton label="How to use the app" variant="ghost" onPress={() => navigation.navigate('Onboarding')} />
   </>}>
     <LanguagePicker />
+    <ReleaseInfo />
     {Platform.OS === 'web' && <PwaInstall />}
     <View style={s.hero}><Text style={s.arrow} accessible={false}>↑</Text><Text style={s.heroText}>One step at a time</Text><Body>10–30 seconds · Guided by voice</Body></View>
     <Card><Text style={s.label}>Your walk can help research</Text><Body muted>{Platform.OS==='web'?'Check whether this browser can record all three sensors, or preview the steps and review an exported file.':'Record your movement and choose when to share it. Your recordings stay on this phone.'}</Body></Card>

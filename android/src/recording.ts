@@ -14,7 +14,8 @@ export interface Recording {
   schemaVersion: 2; source: 'device'; startedAt: string; elapsedSeconds: number;
   requestedHz: Record<SensorName, number>; units: Record<SensorName, string>;
   platform: string; osVersion: string;
-  placement: 'lower-back-upright-screen-out'; coordinateFrame: 'device';
+  appRelease?: { appVersion:string|null; buildNumber:string|null; runtimeVersion:string|null; updateId:string|null; channel:string|null; embedded:boolean };
+  placement: 'lower-back-upright-screen-out' | 'lower-back-landscape-screen-out'; coordinateFrame: 'device';
   accelerationIncludesGravity: true;
   magnetometerCalibration: 'OS-calibrated; app accuracy unverified' | 'Browser-provided; calibration unverified';
   acquisition?: { api:'generic-sensor-api-v1'; timestampSource:'browser-sensor-timestamp-ms-to-seconds'; accelerationConversion:'m/s2 divided by 9.80665'; validation:'not-validated-against-native'; userAgent:string };
