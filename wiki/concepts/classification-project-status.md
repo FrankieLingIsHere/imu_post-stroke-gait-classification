@@ -373,3 +373,5 @@ GitHub Actions run 35563700262 completed successfully after authentication, chec
 ## 2026-09-22 capture experience update
 
 The hands-free native flow now announces baseline and three-step completion, asks the user to stop and stand still before advancing, and shows a progress cue during setup. The pre-walk hold is nine seconds with translated five-to-one countdown prompts emitted at the same one-second boundaries as the displayed timer; each short cue interrupts stale speech. Recording remains movement-gated and completion persistence is delayed briefly so the short stop cue can finish. Malay and Chinese catalog entries cover every new phrase. Automated TypeScript and 73-test validation pass.
+
+History bulk export is selectable: saved sessions can be individually checked across pages, selected as a group, cleared, and exported to the existing combined raw CSV. This keeps the export research-oriented while avoiding an all-recordings-only action. Selection controls are catalogued in English, Malay and Chinese.
