@@ -91,7 +91,7 @@ test('Completed fit survives a later interruption, but retry cannot start until 
  assert.equal(h.renderer.root.findByType('screen').props.title,'Ready to begin');h.background();
  act(()=>h.button('Retry this check').props.onPress());assert.ok(h.engine.savedFitCheck);
  h.engine.baselineReady=false;h.advance(12000);assert.equal(h.engine.begun,false);
- h.engine.baselineReady=true;h.advance(6500);assert.equal(h.engine.begun,false);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);assert.equal(h.engine.begun,true);assert.equal(h.engine.fitStarted,undefined);h.close();
+ h.engine.baselineReady=true;h.advance(13000);assert.equal(h.engine.begun,false);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);assert.equal(h.engine.begun,true);assert.equal(h.engine.fitStarted,undefined);h.close();
 });
 test('Sound sample is optional on setup and can be skipped after two seconds without disabling guidance', async () => {
  const h=harness('PrepareScreen');
@@ -191,10 +191,10 @@ test('Browser sensor loss or hidden tab interrupts and saves an active walk',asy
  for(const cause of ['hidden','lost']){
   const h=harness('RecordScreen','web');
   h.advance(23500);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1500);
-  h.engine.motionStatus={enough:true,steady:true,upright:true,context:'rest-or-quiet'};h.advance(10500);assert.equal(h.engine.begun,false);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);assert.equal(h.engine.begun,true);
+  h.engine.motionStatus={enough:true,steady:true,upright:true,context:'rest-or-quiet'};h.advance(18500);assert.equal(h.engine.begun,false);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);assert.equal(h.engine.begun,true);
   let reason;
   h.engine.stop=r=>{reason=r;return {stopReason:r,startedAt:'2026-09-17T00:00:00Z',elapsedSeconds:1,streams:{accelerometer:[],gyroscope:[],magnetometer:[]},guidanceEvents:[]}};
   await act(async()=>{if(cause==='hidden')h.hide();else{h.engine.allReceiving=false;h.advance(100)}});
-  assert.equal(reason,'interrupted');assert.equal(h.navigated.at(-1)[0],'Result');h.close();
+    await act(async()=>{h.advance(2000);await Promise.resolve();});assert.equal(reason,'interrupted');assert.equal(h.navigated.at(-1)[0],'Result');h.close();
  }
 });

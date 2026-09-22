@@ -2524,6 +2524,10 @@ GitHub token authentication and tests passed, but first CI update fingerprint di
 
 ## [2026-09-21] Automatic Android updates verified
 
+## [2026-09-22] Hands-free transition pacing and multilingual completion cues
+
+Baseline and three-step fit completion now have explicit spoken confirmations, including a stop-and-stand pause before countdown. Setup phases show a progress cue, the pre-walk hold is nine seconds, and the final five-to-one prompts remain translated and tied to the same one-second boundaries as the visible timer. Stale countdown speech is interrupted before the next number. First-step gating is unchanged; completion speech is short and saving waits 1.8 seconds to avoid TTS being cut off. TypeScript and all 73 tests pass.
+
 ## [2026-09-21] Hands-free setup cues and native review import
 
 Adjusted setup speech timing and placement wording for the horizontal lower-back pouch. Added Android document-picker import for validated JSON and raw CSV exports, saved locally for review without upload. TypeScript and 73 tests pass. Asymmetry remains an experimental candidate alternation descriptor rather than a clinical left-right diagnosis.

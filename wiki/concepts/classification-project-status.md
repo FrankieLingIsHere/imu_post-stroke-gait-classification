@@ -369,3 +369,7 @@ History now offers a combined raw CSV export for all saved sessions, retaining s
 Signal charts retain five-second pages for readability and display performance; each X/Y/Z legend can now be tapped or hovered to highlight that axis, with multilingual explanations.
 
 GitHub Actions run 35563700262 completed successfully after authentication, checks and publication. The update endpoint returned HTTP 200 and Android update 01a0c261-f5cf-761a-b117-fcd21738811e for installed build 2 runtime ead45ff05f56ff8de69ce960cb9af9126a4cc015. EXPO_TOKEN and CI publication are now verified. No replacement APK is needed. Physical cold-launch adoption remains a device check.
+
+## 2026-09-22 capture experience update
+
+The hands-free native flow now announces baseline and three-step completion, asks the user to stop and stand still before advancing, and shows a progress cue during setup. The pre-walk hold is nine seconds with translated five-to-one countdown prompts emitted at the same one-second boundaries as the displayed timer; each short cue interrupts stale speech. Recording remains movement-gated and completion persistence is delayed briefly so the short stop cue can finish. Malay and Chinese catalog entries cover every new phrase. Automated TypeScript and 73-test validation pass.

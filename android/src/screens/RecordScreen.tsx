@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, AppState, BackHandler, StyleSheet, Platform } from 'react-native';
+import { View, AppState, BackHandler, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { Text } from '../i18n';
 import { getLanguage } from '../language';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
@@ -16,6 +16,8 @@ import type { Recording } from '../recording';
 import { saveSession, generateSessionId, SessionRecord } from '../store';
 import { SettlingGate } from '../movement';
 import { FitCheck } from '../placement';
+
+const ProgressIndicator: React.ComponentType<any> = ActivityIndicator ?? View;
 
 export default function RecordScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'Record'>) {
   useEffect(() => {
@@ -40,16 +42,17 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
   const phaseRef = useRef('prep');
   const recorder = useRef<SensorRecorder | null>(null);
   const pending = useRef<SessionRecord | null>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveBusy = useRef(false);
   const mounted = useRef(true);
   const hintExpires = useRef(0);
-  const say = (text: string) => { if (audioEnabled) void speak(text, { onError: () => {
+  const say = (text: string, options?: Parameters<typeof speak>[1], interrupt = false) => { if (audioEnabled) { if (interrupt) stopSpeaking(); void speak(text, { ...options, onError: () => {
     if (!mounted.current) return;
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
     if (phaseRef.current === 'walk') finish('interrupted');
     else if (['prep','checking','fit','countdown','waiting'].includes(phaseRef.current)) { recorder.current?.disconnect(); phaseRef.current = 'error'; setPhase('error'); }
     setError('Could not play the voice. Check phone speech and volume settings, or use a helper with voice off.');
-  } }); };
+  } }); } };
   function retry() {
     if (phaseRef.current !== 'error' || retryRequested.current) return;
     retryRequested.current = true;
@@ -72,9 +75,9 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     recording.setupCheck = { version: 'guided-fit-v2', anatomicalPlacementVerified: false, steadySeconds: 3, retries: attempt, language: getLanguage() };
     pending.current = { id: generateSessionId(), date: recording.startedAt, duration, isPractice, demographics,
       quality: recordingIssues(recording).length ? 'repeat' : 'good', windowCount: 0, windows: [], recording };
-    say('Recording has ended. Stop safely, then check your phone.');
+    say('Recording complete. Stop safely.');
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    void persist();
+    saveTimer.current = setTimeout(() => { saveTimer.current = null; void persist(); }, 1800);
   }
   function cancel() {
     if (phaseRef.current === 'walk') finish('user-stopped');
@@ -129,9 +132,9 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           if (gate.update(now, engine.allReceiving, motion) && engine.baselineReady) {
             if (!fitComplete) {
               engine.startFit(); phaseRef.current = 'fit'; setPhase('fit'); deadline = now + 45000; lastSetupCue = now;
-              say('Take three comfortable steps forward, then stop. You can rest. No need to touch the phone.');
+              say('Baseline check complete. Take three comfortable steps forward, then stop. You can rest. No need to touch the phone.');
             } else {
-              phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 6000; lastSecond = 6;
+              phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9;
               say('Phone check complete. Stay still. The walk starts shortly.');
             }
           } else if (now - checkStarted >= 20000) {
@@ -151,8 +154,8 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
         } else if (status === 'settled' && engine.baselineReady) {
           engine.finishFit(); passedFit.current = engine.savedFitCheck; fitComplete = true; gate = new SettlingGate();
-          phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 6000;
-          say('Phone check complete. Stay still. The walk starts shortly.');
+          phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9;
+          say('Three-step check complete. Stop and stand still. The recording will start shortly.');
         } else if (now - lastSetupCue >= 15000) {
           lastSetupCue = now; say('After your comfortable steps, stop and let the phone settle. Rest if you need.');
         }
@@ -163,7 +166,11 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
         } else if (seconds === 0) {
           phaseRef.current = 'waiting'; setPhase('waiting'); walkArmedAt = now; setRemaining(duration);
           say('Begin walking now. The recording starts when you take your first step.');
-        } else if (seconds <= 5 && seconds !== lastSecond) say(seconds === 5 ? 'Five seconds. Stay still. Do not walk yet.' : String(seconds));
+        } else if (seconds <= 5 && seconds !== lastSecond) {
+          // The displayed value and this cue use the same ceil() boundary. Keep
+          // each cue to one short number so TTS cannot run into the next tick.
+          say(String(seconds), { rate: 1.1 }, true);
+        }
       } else if (phaseRef.current === 'waiting') {
         // Keep subscriptions alive but do not start the saved recording clock
         // until motion begins. This removes the confusing idle lead-in.
@@ -207,7 +214,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     if (Platform.OS === 'web') document.addEventListener('visibilitychange', hidden);
     const back = BackHandler.addEventListener('hardwareBackPress', () => { cancel(); return true; });
     return () => {
-      mounted.current = false; if (Platform.OS === 'web') document.removeEventListener('visibilitychange', hidden); clearInterval(timer); app.remove(); back.remove(); engine.disconnect();
+      mounted.current = false; if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } if (Platform.OS === 'web') document.removeEventListener('visibilitychange', hidden); clearInterval(timer); app.remove(); back.remove(); engine.disconnect();
       // Let the hands-free completion cue finish across the transition to results.
       if (phaseRef.current !== 'done') stopSpeaking();
     };
@@ -223,6 +230,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     </View>}
     <Card>
       <Text accessible={false} style={s.arrow}>{phase === 'walk' ? '↑' : '•'}</Text>
+      {['checking', 'fit', 'countdown', 'waiting'].includes(phase) && <ProgressIndicator size="large" color={c.primary} style={s.progressIndicator} />}
       <Body>{phase === 'prep' ? 'Secure the phone horizontally at your lower back, screen facing out. Listen for the phone check, three comfortable steps and a stop, then the final countdown.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Take three comfortable steps, then stop. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Do not walk until you hear begin. ${remaining} seconds.` : phase === 'waiting' ? 'Begin walking now. The recording starts when your first step is detected.' : phase === 'walk' ? hint || 'Follow your clear path. Keep your eyes ahead.' : 'Recording stopped. Check your phone when safely settled.'}</Body>
       {phase === 'checking' && <Text style={ui.caption}>Checks sensor readings, phone angle and settling. Lower-back location cannot be verified.</Text>}
       {phase === 'walk' && <Text style={ui.caption}>{guidanceEnabled ? directionReady ? 'Gentle reminders on · arrow is a path reminder' : 'Direction estimate unavailable · walk only as comfortable' : 'Direction reminders off · arrow is a path reminder'}</Text>}
@@ -232,4 +240,4 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     {!!error && <Text accessibilityRole="alert" style={ui.error}>{error}</Text>}
   </Screen>;
 }
-const s = StyleSheet.create({ timer: { padding: 12, alignItems: 'center', gap: 6, backgroundColor: c.surfaceAlt, borderRadius: 24 }, number: { fontSize: 76, fontWeight: '700', color: c.primary, fontVariant: ['tabular-nums'] }, track: { height: 8, backgroundColor: c.border, width: '100%', borderRadius: 4, overflow: 'hidden', marginTop: 8 }, progress: { height: 8, backgroundColor: c.primary }, arrow: { fontSize: 42, textAlign: 'center', color: c.primary } });
+const s = StyleSheet.create({ timer: { padding: 12, alignItems: 'center', gap: 6, backgroundColor: c.surfaceAlt, borderRadius: 24 }, number: { fontSize: 76, fontWeight: '700', color: c.primary, fontVariant: ['tabular-nums'] }, track: { height: 8, backgroundColor: c.border, width: '100%', borderRadius: 4, overflow: 'hidden', marginTop: 8 }, progress: { height: 8, backgroundColor: c.primary }, arrow: { fontSize: 42, textAlign: 'center', color: c.primary }, progressIndicator: { marginVertical: 10 } });
