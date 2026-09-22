@@ -95,7 +95,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       <Text style={ui.caption}>Optional research information. It is saved with this recording and is not used for a diagnosis.</Text>
       <AgeInput accessibilityLabel={t('Age in years')} value={ageText} onChangeText={setAgeText} placeholder={t('Age in years (optional)')} keyboardType="number-pad" maxLength={3} style={{ minHeight: 52, borderWidth: 1, borderColor: colours.border, borderRadius: 12, paddingHorizontal: 14, fontSize: 18, color: colours.textPrimary, backgroundColor: colours.surface }} />
       <Text style={ui.caption}>Sex</Text>
-      <View style={ui.row}>{(['female','male','intersex','prefer-not-to-say'] as const).map(value => <Pressable key={value} accessibilityRole="radio" accessibilityState={{ selected: sex === value }} onPress={() => setSex(value)} style={[ui.choice, sex === value && ui.selected]}><Text style={ui.caption}>{value === 'prefer-not-to-say' ? 'Prefer not to say' : value[0].toUpperCase() + value.slice(1)}</Text></Pressable>)}</View>
+      <View style={ui.row}>{(['female','male','prefer-not-to-say'] as const).map(value => <Pressable key={value} accessibilityRole="radio" accessibilityState={{ selected: sex === value }} onPress={() => setSex(value)} style={[ui.choice, sex === value && ui.selected]}><Text style={ui.caption}>{value === 'prefer-not-to-say' ? 'Prefer not to say' : value[0].toUpperCase() + value.slice(1)}</Text></Pressable>)}</View>
     </View>
     {Platform.OS === 'web' && <View style={{gap:8}}>
       <Text style={ui.caption}>Keep this page visible and the phone unlocked. Browser recordings stay in this tab: export before refreshing or closing. Vibration may be unavailable.</Text>
