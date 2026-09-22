@@ -254,4 +254,4 @@ Android APK build completed: [[classification-project-status]] contains the down
 
 GaitTrace branding, update compatibility and device validation: [[classification-project-status]] and [device checklist](../android/PHYSICAL_DEVICE_VALIDATION.md).
 
-GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the replacement download and matching OTA verification.
+GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the replacement download, matching OTA verification, hands-free setup cues and native JSON/CSV review import.

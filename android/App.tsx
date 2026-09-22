@@ -14,7 +14,8 @@ import DetailsScreen from './src/screens/DetailsScreen';
 import { colours } from './src/theme';
 import PhoneFrame from './src/components/PhoneFrame';
 import WalkthroughScreen from './src/screens/WalkthroughScreen';
-type Setup = { duration: 10 | 20 | 30; audioEnabled: boolean; isPractice: boolean };
+import type { ParticipantDemographics } from './src/store';
+type Setup = { duration: 10 | 20 | 30; audioEnabled: boolean; isPractice: boolean; demographics?: ParticipantDemographics };
 export type RootStackParamList = {
   Home: undefined; Onboarding: undefined; Prepare: Setup; Walkthrough: undefined;
   Record: Setup & { guidanceEnabled: boolean };

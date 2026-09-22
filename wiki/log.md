@@ -2524,4 +2524,16 @@ GitHub token authentication and tests passed, but first CI update fingerprint di
 
 ## [2026-09-21] Automatic Android updates verified
 
+## [2026-09-21] Hands-free setup cues and native review import
+
+Adjusted setup speech timing and placement wording for the horizontal lower-back pouch. Added Android document-picker import for validated JSON and raw CSV exports, saved locally for review without upload. TypeScript and 73 tests pass. Asymmetry remains an experimental candidate alternation descriptor rather than a clinical left-right diagnosis.
+
+Native build c7aa3b2d-0be1-42fd-84a3-1d0f905033ca finished successfully as Android preview build 3: https://expo.dev/artifacts/eas/Dc2u_B5IwAcQqQ8orWvaVqB_fm0yAHyTzYSqGTb0NrA.apk
+
+Changed the final walk transition to speak a clear countdown and wait for first detected movement before starting the saved recording clock. All 73 tests pass.
+
+Added a combined raw CSV export for all saved sessions, preserving session identifiers, participant metadata and asynchronous three-sensor rows.
+
+Added translated tappable/hoverable signal legends; five-second paging remains a display choice so dense high-rate data stays readable on phones.
+
 GitHub Actions run 35563700262 completed successfully after authentication, checks and publication. The update endpoint returned HTTP 200 and Android update 01a0c261-f5cf-761a-b117-fcd21738811e for installed build 2 runtime ead45ff05f56ff8de69ce960cb9af9126a4cc015. EXPO_TOKEN and CI publication are now verified. No replacement APK is needed. Physical cold-launch adoption remains a device check.

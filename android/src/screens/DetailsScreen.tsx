@@ -49,6 +49,7 @@ export default function DetailsScreen({ route }: NativeStackScreenProps<RootStac
     {session && !r && <Text style={ui.error}>Older simulated recording · not patient sensor data</Text>}
     {session && tab === 'Summary' && <>
       {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
+    {session.demographics && <Card><Text style={ui.label}>Participant information</Text><Body>{t('Age')}: {session.demographics.ageYears ?? t('Not provided')} · {t('Sex')}: {t(session.demographics.sex === 'prefer-not-to-say' ? 'Prefer not to say' : session.demographics.sex[0].toUpperCase() + session.demographics.sex.slice(1))}</Body><Text style={ui.caption}>Self-reported research metadata; not used for diagnosis.</Text></Card>}
     {r ? <PatientSummary recording={r} /> : <Body>No gait summary is calculated from older simulated recordings.</Body>}
     </>}
     {session && tab === 'Signals' && <>

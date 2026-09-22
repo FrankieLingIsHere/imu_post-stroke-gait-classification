@@ -3,9 +3,13 @@ import { locale } from './language';
 import * as FileSystem from 'expo-file-system';
 import type { RecordingQuality, IMUWindow } from './sensorSim';
 import type { Recording } from './recording';
+import { parseReviewRecording, parseReviewRecordingCsv } from './reviewRecording';
+export type ParticipantSex = 'female' | 'male' | 'intersex' | 'prefer-not-to-say';
+export interface ParticipantDemographics { ageYears: number | null; sex: ParticipantSex; }
 export interface SessionRecord {
   id: string; date: string; duration: number; isPractice: boolean;
   quality: RecordingQuality; windowCount: number; windows: IMUWindow;
+  demographics?: ParticipantDemographics;
   recording?: Recording;
 }
 const LEGACY_KEY = 'gaitsteps:sessions';
@@ -29,6 +33,12 @@ export async function saveSession(session: SessionRecord) {
   const existing = await index();
   const { recording, windows, ...summary } = session;
   await AsyncStorage.setItem(INDEX_KEY, JSON.stringify([...existing.filter(s => s.id !== session.id), { ...summary, windows: [] }]));
+}
+/** Import an app JSON export or raw long-format CSV into this phone's local history. */
+export async function importReviewRecording(text: string, format: 'json' | 'csv' = 'json') {
+  const session = format === 'csv' ? parseReviewRecordingCsv(text) : parseReviewRecording(text);
+  await saveSession(session);
+  return session.id;
 }
 export async function getSessions(): Promise<SessionRecord[]> {
   const [current, raw] = await Promise.all([index(), AsyncStorage.getItem(LEGACY_KEY)]);

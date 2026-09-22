@@ -356,4 +356,16 @@ GitHub token authentication and tests passed, but first CI update fingerprint di
 
 ## [2026-09-21] Automatic Android updates verified
 
+## [2026-09-21] Hands-free setup cues and native review import
+
+Android setup now schedules the spoken five-second cue early enough to account for text-to-speech startup and gives first-time users explicit horizontal lower-back placement instructions. The native review control accepts the app's JSON export and raw long-format CSV through the Android document picker and stores the validated recording locally; files are not uploaded. TypeScript checks and 73 automated tests pass. Current asymmetry remains an experimental alternating candidate-interval descriptor with unknown foot identity and no clinical threshold.
+
+Native build c7aa3b2d-0be1-42fd-84a3-1d0f905033ca finished successfully as Android preview build 3. [APK](https://expo.dev/artifacts/eas/Dc2u_B5IwAcQqQ8orWvaVqB_fm0yAHyTzYSqGTb0NrA.apk)
+
+The walk transition now gives an explicit no-walking countdown, announces the start, and arms capture until movement is detected. The saved duration begins at detected movement to reduce idle lead-in time. All 73 tests pass; publication remains pending review.
+
+History now offers a combined raw CSV export for all saved sessions, retaining session ID, participant metadata, sensor identity, asynchronous timestamps, units and raw axes.
+
+Signal charts retain five-second pages for readability and display performance; each X/Y/Z legend can now be tapped or hovered to highlight that axis, with multilingual explanations.
+
 GitHub Actions run 35563700262 completed successfully after authentication, checks and publication. The update endpoint returned HTTP 200 and Android update 01a0c261-f5cf-761a-b117-fcd21738811e for installed build 2 runtime ead45ff05f56ff8de69ce960cb9af9126a4cc015. EXPO_TOKEN and CI publication are now verified. No replacement APK is needed. Physical cold-launch adoption remains a device check.

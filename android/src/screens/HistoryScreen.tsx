@@ -6,13 +6,15 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
 import { Screen, Card, Body, ui } from '../components/Screen';
 import BigButton from '../components/BigButton';
-import { getSessions, SessionRecord, formatSessionDate } from '../store';
+import { getSessions, getSession, SessionRecord, formatSessionDate } from '../store';
+import { shareRecordingsCSV } from '../export';
 export default function HistoryScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'History'>) {
   useLanguage();
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [page, setPage] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const { height, fontScale } = useWindowDimensions();
   const pageSize = height < 700 || fontScale > 1.3 ? 2 : 3;
   const load = useCallback(() => { let active = true; setLoading(true); setError('');
@@ -20,10 +22,20 @@ export default function HistoryScreen({ navigation }: NativeStackScreenProps<Roo
     return () => { active = false; };
   }, []);
   useFocusEffect(load);
+  async function exportAll() {
+    if (!sessions.length || exporting) return;
+    setExporting(true); setError('');
+    try {
+      const full = (await Promise.all(sessions.map(s => getSession(s.id)))).filter((s): s is SessionRecord => !!s);
+      await shareRecordingsCSV(full);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not export recordings.'); }
+    finally { setExporting(false); }
+  }
   const pages = Math.max(1, Math.ceil(sessions.length / pageSize));
   const current = Math.min(page, pages - 1);
   return <Screen eyebrow="SAVED ON THIS PHONE" title="Every walk, in one place" actions={<>
     <View style={ui.row}><BigButton style={ui.fill} label="Previous" variant="outline" disabled={current === 0} onPress={() => setPage(current - 1)} /><BigButton style={ui.fill} label="Next" variant="outline" disabled={current + 1 >= pages} onPress={() => setPage(current + 1)} /></View>
+    <BigButton label={exporting ? 'Preparing CSV...' : 'Export all recordings CSV'} variant="outline" disabled={!sessions.length || exporting} onPress={() => { void exportAll(); }} />
     <BigButton label="Back to home" variant="ghost" onPress={() => navigation.popToTop()} />
   </>}>
     <Body muted>{loading ? 'Loading recordings…' : sessions.length ? `Page ${current + 1} of ${pages} · Tap a walk to explore or export` : 'Your first recording will appear here.'}</Body>

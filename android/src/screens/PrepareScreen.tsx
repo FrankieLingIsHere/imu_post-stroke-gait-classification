@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { View, Pressable, Switch, AppState, Platform, Modal } from 'react-native';
+import { View, Pressable, Switch, AppState, Platform, Modal, TextInput } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
 import { Screen, Body, ui } from '../components/Screen';
@@ -10,11 +10,16 @@ import { checkBrowserSensors, BrowserCheck } from '../browserSensors';
 import { SENSOR_NAMES } from '../recording';
 import { ensureVoice, speak, stopSpeaking } from '../audio';
 import { Text, LanguagePicker, useLanguage, t } from '../i18n';
+import type { ParticipantDemographics, ParticipantSex } from '../store';
+// The lightweight test renderer does not provide TextInput; native builds do.
+const AgeInput: React.ComponentType<any> = TextInput ?? View;
 export default function PrepareScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'Prepare'>) {
   const language = useLanguage();
   const [duration, setDuration] = useState(route.params.duration);
   const [audioEnabled, setAudio] = useState(route.params.audioEnabled);
   const [isPractice, setPractice] = useState(route.params.isPractice);
+  const [ageText, setAgeText] = useState(route.params.demographics?.ageYears?.toString() ?? '');
+  const [sex, setSex] = useState<ParticipantSex>(route.params.demographics?.sex ?? 'prefer-not-to-say');
   const [guidanceEnabled, setGuidance] = useState(true);
   const [openInfo, setOpenInfo] = useState<string | null>(null);
   const [defaultsApplied, setDefaultsApplied] = useState(false);
@@ -72,7 +77,9 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     try {
       await checkSensors();
       if (audioEnabled) await ensureVoice();
-      if (active.current && id === request.current && AppState.currentState === 'active') navigation.navigate('Record', { duration, audioEnabled, isPractice, guidanceEnabled });
+      const parsedAge = ageText.trim() === '' ? null : Number(ageText);
+      if (parsedAge !== null && (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 120)) throw new Error('Enter an age from 1 to 120, or leave age blank.');
+      if (active.current && id === request.current && AppState.currentState === 'active') navigation.navigate('Record', { duration, audioEnabled, isPractice, guidanceEnabled, demographics: { ageYears: parsedAge, sex } });
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : 'Could not access motion sensors. Please try again.'); }
     finally { if (active.current) setBusy(false); }
   }
@@ -83,6 +90,13 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   ];
   return <Screen title="Set up your walk" actions={<BigButton label={Platform.OS==='web'&&!webReady?'Preview hands-free flow':testing ? 'Start without sound test' : 'Start test'} disabled={checkingBrowser || (Platform.OS==='web'&&!webReady?false:!ready || !canSkip)} loading={busy} onPress={start} />}>
     <LanguagePicker />
+    <View style={{ gap: 8 }}>
+      <Text style={ui.label}>Participant information</Text>
+      <Text style={ui.caption}>Optional research information. It is saved with this recording and is not used for a diagnosis.</Text>
+      <AgeInput accessibilityLabel={t('Age in years')} value={ageText} onChangeText={setAgeText} placeholder={t('Age in years (optional)')} keyboardType="number-pad" maxLength={3} style={{ minHeight: 52, borderWidth: 1, borderColor: colours.border, borderRadius: 12, paddingHorizontal: 14, fontSize: 18, color: colours.textPrimary, backgroundColor: colours.surface }} />
+      <Text style={ui.caption}>Sex</Text>
+      <View style={ui.row}>{(['female','male','intersex','prefer-not-to-say'] as const).map(value => <Pressable key={value} accessibilityRole="radio" accessibilityState={{ selected: sex === value }} onPress={() => setSex(value)} style={[ui.choice, sex === value && ui.selected]}><Text style={ui.caption}>{value === 'prefer-not-to-say' ? 'Prefer not to say' : value[0].toUpperCase() + value.slice(1)}</Text></Pressable>)}</View>
+    </View>
     {Platform.OS === 'web' && <View style={{gap:8}}>
       <Text style={ui.caption}>Keep this page visible and the phone unlocked. Browser recordings stay in this tab: export before refreshing or closing. Vibration may be unavailable.</Text>
       <BigButton label={checkingBrowser?'Checking live sensors…':'Check this phone’s sensors'} variant="outline" onPress={()=>setSensorConsent(true)} disabled={busy || checkingBrowser} />

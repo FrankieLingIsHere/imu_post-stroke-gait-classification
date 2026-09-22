@@ -22,14 +22,23 @@ export function exportFeatureCSV(session: SessionRecord): string {
 function cell(value: unknown) { return '"' + String(value ?? '').replace(/"/g, '""') + '"'; }
 /** Long format: one event per row, never invent a synchronized nine-axis sample. */
 export function exportCSV(session: SessionRecord): string {
-  const header = ['session_id', 'source', 'practice', 'started_at', 'planned_seconds', 'recorded_seconds', 'stop_reason', 'placement', 'coordinate_frame', 'sensor', 'units', 'requested_hz', 'elapsed_ms', 'received_at_unix_ms', 'sensor_timestamp_seconds', 'x', 'y', 'z', 'placement_review_required','platform','sensor_api','timestamp_basis'];
+  return csvForSessions([session]);
+}
+export function exportCSVBundle(sessions: SessionRecord[]): string {
+  return csvForSessions(sessions);
+}
+function csvForSessions(sessions: SessionRecord[]): string {
+  const header = ['session_id', 'source', 'practice', 'age_years', 'sex', 'started_at', 'planned_seconds', 'recorded_seconds', 'stop_reason', 'placement', 'coordinate_frame', 'sensor', 'units', 'requested_hz', 'elapsed_ms', 'received_at_unix_ms', 'sensor_timestamp_seconds', 'x', 'y', 'z', 'placement_review_required','platform','sensor_api','timestamp_basis'];
   const rows: unknown[][] = [header];
+  for (const session of sessions) appendCsvRows(rows, session);
+  return rows.map(row => row.map(cell).join(',')).join('\r\n') + '\r\n';
+}
+function appendCsvRows(rows: unknown[][], session: SessionRecord) {
   const r = session.recording;
   if (r) for (const name of SENSOR_NAMES) for (const s of r.streams[name]) rows.push([
-    session.id, 'device', session.isPractice, r.startedAt, session.duration, r.elapsedSeconds, r.stopReason,
+    session.id, 'device', session.isPractice, session.demographics?.ageYears ?? '', session.demographics?.sex ?? 'prefer-not-to-say', r.startedAt, session.duration, r.elapsedSeconds, r.stopReason,
     r.placement, r.coordinateFrame, name, SENSOR_UNITS[name], r.requestedHz[name],
     s.elapsedMs, s.receivedAtUnixMs, s.sensorTimestampSeconds, s.x, s.y, s.z, r.guidanceEvents.some(e => e.type === 'possible-placement-shift'),r.platform,r.acquisition?.api ?? 'expo-sensors',r.timestampBasis,
   ]);
-  else for (const s of session.windows) rows.push([session.id, 'legacy-simulation', session.isPractice, session.date, session.duration, '', '', 'simulated', 'simulated', 'accelerometer', 'g', 100, s.timestamp - (session.windows[0]?.timestamp ?? 0), s.timestamp, '', s.x, s.y, s.z, 'unknown','','','']);
-  return rows.map(row => row.map(cell).join(',')).join('\r\n') + '\r\n';
+  else for (const s of session.windows) rows.push([session.id, 'legacy-simulation', session.isPractice, '', '', session.date, session.duration, '', '', 'simulated', 'simulated', 'accelerometer', 'g', 100, s.timestamp - (session.windows[0]?.timestamp ?? 0), s.timestamp, '', s.x, s.y, s.z, 'unknown','','','']);
 }
