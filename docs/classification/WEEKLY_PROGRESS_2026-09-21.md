@@ -51,6 +51,10 @@ Improved the native recording flow for users who cannot watch the phone after pl
 
 The History export control now supports selecting individual recordings across pages, selecting all, clearing the selection, and exporting only the chosen sessions as one combined raw CSV. Selection controls and export status are translated for English, Malay and Chinese. TypeScript checks and all 73 automated tests pass.
 
+## [2026-09-23] Speech completion and recording-stage translation repair
+
+Recording guidance now serializes ordinary stage instructions through a completion-aware speech queue, while countdown numbers remain the only intentionally interruptible cues. The nine-second countdown clock is held until the preceding phone/fit completion sentence finishes, so that sentence cannot be cut by the 5–1 prompts. The first-step detector no longer immediately replaces the “Begin walking now” instruction with a second start track. The hands-free waiting sentence now has an exact Malay and Chinese catalog entry, preventing the recording-start screen from falling back to English. The speech queue has a bounded callback fallback so a platform TTS failure cannot block later guidance. TypeScript checks and all 73 automated tests pass; a simulated capture confirmed that first-step detection does not emit a replacement start cue.
+
 ## [2026-09-21] Hands-free setup cues and native review import
 
 Adjusted Android setup speech timing and placement wording for the horizontal lower-back pouch. The native review control now opens validated JSON and raw long-format CSV exports with the Android document picker and stores them locally for detail review; no upload occurs. TypeScript checks and all 73 automated tests pass. Asymmetry remains an experimental candidate alternation descriptor with unknown foot identity and no clinical threshold.

@@ -280,6 +280,7 @@ export const messages: Record<string, readonly [string, string]> = {
   'Three-step check complete. Stop and stand still. The recording will start shortly.': ['Pemeriksaan tiga langkah selesai. Berhenti dan berdiri diam. Rakaman akan bermula sebentar lagi.', '三步检查完成。请停下并站稳，记录即将开始。'],
   'Recording complete. Stop safely.': ['Rakaman selesai. Berhenti dengan selamat.', '记录完成。请安全停下。'],
   'Begin walking now. The recording starts when you take your first step.': ['Mula berjalan sekarang. Rakaman bermula apabila anda mengambil langkah pertama.', '现在开始走。您迈出第一步时才会开始记录。'],
+  'Begin walking now. The recording starts when your first step is detected.': ['Mula berjalan sekarang. Rakaman bermula apabila langkah pertama anda dikesan.', '现在开始走。检测到您的第一步时才会开始记录。'],
   'Recording started. Walk at your comfortable pace.': ['Rakaman bermula. Berjalan mengikut rentak selesa anda.', '记录已开始，请按舒适的节奏行走。'],
   'No walking movement was detected. No recording was saved. Rest, then try again when ready.': ['Tiada gerakan berjalan dikesan. Tiada rakaman disimpan. Berehat dan cuba lagi apabila bersedia.', '未检测到步行动作，未保存记录。请休息后准备好再试。'],
   'No walking movement was detected. Rest, then try again when you are ready.': ['Tiada gerakan berjalan dikesan. Berehat dan cuba lagi apabila bersedia.', '未检测到步行动作，请休息后准备好再试。'],

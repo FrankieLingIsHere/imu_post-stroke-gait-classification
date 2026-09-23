@@ -375,3 +375,7 @@ GitHub Actions run 35563700262 completed successfully after authentication, chec
 The hands-free native flow now announces baseline and three-step completion, asks the user to stop and stand still before advancing, and shows a progress cue during setup. The pre-walk hold is nine seconds with translated five-to-one countdown prompts emitted at the same one-second boundaries as the displayed timer; each short cue interrupts stale speech. Recording remains movement-gated and completion persistence is delayed briefly so the short stop cue can finish. Malay and Chinese catalog entries cover every new phrase. Automated TypeScript and 73-test validation pass.
 
 History bulk export is selectable: saved sessions can be individually checked across pages, selected as a group, cleared, and exported to the existing combined raw CSV. This keeps the export research-oriented while avoiding an all-recordings-only action. Selection controls are catalogued in English, Malay and Chinese.
+
+## 2026-09-23 speech guidance repair
+
+Stage instructions are serialized until their TTS completion callback; the countdown clock itself waits for the preceding phone/fit completion sentence, then countdown digits remain interruptible to preserve timing. First-step detection no longer starts a second overlapping announcement. The exact recording-start waiting sentence is now present in the Malay and Chinese catalog, and a bounded fallback prevents a missing platform callback from blocking the queue. Automated TypeScript and 73-test validation pass.

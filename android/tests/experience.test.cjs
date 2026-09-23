@@ -67,7 +67,7 @@ function harness(screen, platform='android', browserResult=null) {
  const mocks={'react-native':native,'expo-keep-awake':{activateKeepAwakeAsync:async()=>{},deactivateKeepAwake:async()=>{}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
  '../components/Screen':{Screen:({children,actions,...p})=>React.createElement('screen',p,children,actions),Card:'card',Body:'body',ui:{row:{},fill:{},caption:{}}},'../components/BigButton':{default:'button',__esModule:true},
  '../i18n':{Text:'text',LanguagePicker:()=>null,t:x=>x,useLanguage:()=> 'en'},
- '../audio':{speak:async(text,opts)=>{spoke.push(text);voiceOptions=opts},stopSpeaking(){},ensureVoice:async()=>({identifier:'en',language:'en-MY'})},
+ '../audio':{speak:async(text,opts)=>{spoke.push(text);voiceOptions=opts},speakQueued:(text,opts)=>{spoke.push(text);voiceOptions=opts;return {finally(fn){fn();return Promise.resolve();}}},stopSpeaking(){},ensureVoice:async()=>({identifier:'en',language:'en-MY'})},
  '../browserSensors':{checkBrowserSensors:async()=>browserResult},
  '../sensors':{SensorRecorder:Engine,checkSensors:async()=>{if(platform==='web'&&!browserResult?.ready)throw new Error('Browser must not check live sensors')}},'../store':{saveSession:async()=>{},generateSessionId:()=> 'test'},
  };
@@ -91,7 +91,7 @@ test('Completed fit survives a later interruption, but retry cannot start until 
  assert.equal(h.renderer.root.findByType('screen').props.title,'Ready to begin');h.background();
  act(()=>h.button('Retry this check').props.onPress());assert.ok(h.engine.savedFitCheck);
  h.engine.baselineReady=false;h.advance(12000);assert.equal(h.engine.begun,false);
- h.engine.baselineReady=true;h.advance(13000);assert.equal(h.engine.begun,false);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);assert.equal(h.engine.begun,true);assert.equal(h.engine.fitStarted,undefined);h.close();
+ h.engine.baselineReady=true;h.advance(13000);assert.equal(h.engine.begun,false);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);assert.equal(h.engine.begun,true);assert.equal(h.spoke.includes('Recording started. Walk at your comfortable pace.'),false);assert.equal(h.engine.fitStarted,undefined);h.close();
 });
 test('Sound sample is optional on setup and can be skipped after two seconds without disabling guidance', async () => {
  const h=harness('PrepareScreen');

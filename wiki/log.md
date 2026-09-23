@@ -2530,6 +2530,10 @@ Baseline and three-step fit completion now have explicit spoken confirmations, i
 
 History bulk export now lets the researcher select individual saved sessions across pages, select all or clear the selection, and export only the chosen recordings in the existing combined raw CSV format. Selection labels are translated in all three app languages.
 
+## [2026-09-23] Speech completion and recording-stage translation repair
+
+Ordinary hands-free stage guidance now uses a completion-aware speech queue; only countdown numbers interrupt intentionally. The countdown clock waits for the preceding phone/fit completion sentence to finish before the 5–1 prompts begin. First-step detection no longer replaces the preceding start instruction with another track. Added the exact multilingual waiting-screen sentence and a bounded TTS callback fallback. TypeScript and all 73 tests pass; simulated capture showed no replacement start cue after movement detection.
+
 ## [2026-09-21] Hands-free setup cues and native review import
 
 Adjusted setup speech timing and placement wording for the horizontal lower-back pouch. Added Android document-picker import for validated JSON and raw CSV exports, saved locally for review without upload. TypeScript and 73 tests pass. Asymmetry remains an experimental candidate alternation descriptor rather than a clinical left-right diagnosis.

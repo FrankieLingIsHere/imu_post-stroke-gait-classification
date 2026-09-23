@@ -9,7 +9,7 @@ import type { RootStackParamList } from '../../App';
 import { Screen, Card, Body, ui } from '../components/Screen';
 import BigButton from '../components/BigButton';
 import { colours as c } from '../theme';
-import { speak, stopSpeaking } from '../audio';
+import { speak, speakQueued, stopSpeaking } from '../audio';
 import { SensorRecorder } from '../sensors';
 import { recordingIssues } from '../recording';
 import type { Recording } from '../recording';
@@ -46,13 +46,13 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
   const saveBusy = useRef(false);
   const mounted = useRef(true);
   const hintExpires = useRef(0);
-  const say = (text: string, options?: Parameters<typeof speak>[1], interrupt = false) => { if (audioEnabled) { if (interrupt) stopSpeaking(); void speak(text, { ...options, onError: () => {
+  const say = (text: string, options?: Parameters<typeof speak>[1], interrupt = false): Promise<void> => { if (!audioEnabled) return Promise.resolve(); if (interrupt) stopSpeaking(); const talk = interrupt ? speak : speakQueued; return talk(text, { ...options, onError: () => {
     if (!mounted.current) return;
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
     if (phaseRef.current === 'walk') finish('interrupted');
     else if (['prep','checking','fit','countdown','waiting'].includes(phaseRef.current)) { recorder.current?.disconnect(); phaseRef.current = 'error'; setPhase('error'); }
     setError('Could not play the voice. Check phone speech and volume settings, or use a helper with voice off.');
-  } }); } };
+  } }); };
   function retry() {
     if (phaseRef.current !== 'error' || retryRequested.current) return;
     retryRequested.current = true;
@@ -110,6 +110,14 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     let lastSetupCue = 0;
     let directionExplained = false;
     let walkArmedAt = 0;
+    let countdownIntroPending = false;
+    const enterCountdown = (now: number, introduction: string) => {
+      phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9; countdownIntroPending = true;
+      void say(introduction).finally(() => {
+        if (phaseRef.current !== 'countdown' || !countdownIntroPending) return;
+        countdownIntroPending = false; deadline = performance.now() + 9000; lastSecond = 9; setRemaining(9);
+      });
+    };
     if (phaseRef.current === 'prep') say(attempt > 0 ? 'You have 8 seconds to put the phone back. Stay comfortable.' : `You have ${placementSeconds} seconds. Put the phone horizontally in the middle of your lower back, screen facing out. Keep it snug, then stand still.`);
     const timer = setInterval(() => {
       const now = performance.now();
@@ -134,8 +142,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
               engine.startFit(); phaseRef.current = 'fit'; setPhase('fit'); deadline = now + 45000; lastSetupCue = now;
               say('Baseline check complete. Take three comfortable steps forward, then stop. You can rest. No need to touch the phone.');
             } else {
-              phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9;
-              say('Phone check complete. Stay still. The walk starts shortly.');
+              enterCountdown(now, 'Phone check complete. Stay still. The walk starts shortly.');
             }
           } else if (now - checkStarted >= 20000) {
             engine.disconnect(); phaseRef.current = 'error'; setPhase('error');
@@ -154,12 +161,15 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
         } else if (status === 'settled' && engine.baselineReady) {
           engine.finishFit(); passedFit.current = engine.savedFitCheck; fitComplete = true; gate = new SettlingGate();
-          phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9;
-          say('Three-step check complete. Stop and stand still. The recording will start shortly.');
+          enterCountdown(now, 'Three-step check complete. Stop and stand still. The recording will start shortly.');
         } else if (now - lastSetupCue >= 15000) {
           lastSetupCue = now; say('After your comfortable steps, stop and let the phone settle. Rest if you need.');
         }
       } else if (phaseRef.current === 'countdown') {
+        if (countdownIntroPending) {
+          setRemaining(9);
+          return;
+        }
         if (!engine.allReceiving || !engine.motionStatus.steady || !engine.motionStatus.upright || !engine.baselineReady) {
           gate = new SettlingGate(); phaseRef.current = 'checking'; setPhase('checking'); checkStarted = now; lastSetupCue = now;
           say('Waiting for the phone to settle again. Stay comfortable.');
@@ -176,7 +186,8 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
         // until motion begins. This removes the confusing idle lead-in.
         if (engine.motionStatus.context === 'movement') {
           engine.begin(); phaseRef.current = 'walk'; setPhase('walk'); deadline = now + duration * 1000; setRemaining(duration);
-          say('Recording started. Walk at your comfortable pace.');
+          // The preceding “Begin walking now” cue is the start announcement.
+          // Do not replace it immediately when the first step is detected.
         } else if (now - walkArmedAt >= 15000) {
           engine.disconnect(); phaseRef.current = 'error'; setPhase('error');
           setError('No walking movement was detected. Rest, then try again when you are ready.');

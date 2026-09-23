@@ -16,6 +16,8 @@ import * as Speech from 'expo-speech';
 import { getLanguage, locale, translate } from './language';
 
 let speechRequest = 0;
+let queuedSpeech: Promise<void> = Promise.resolve();
+let queueGeneration = 0;
 
 export async function ensureVoice() {
   const language = getLanguage();
@@ -77,10 +79,35 @@ export async function speak(
 }
 
 /**
+ * Speak after the current utterance finishes. This is for stage guidance where
+ * cutting off an instruction is more confusing than waiting a moment. The
+ * regular speak() API remains interruptible for countdown cues.
+ */
+export function speakQueued(text: string, options?: Partial<Speech.SpeechOptions>): Promise<void> {
+  const generation = queueGeneration;
+  const task = queuedSpeech.then(() => new Promise<void>(resolve => {
+    if (generation !== queueGeneration) { resolve(); return; }
+    let settled = false;
+    const finish = () => { if (!settled) { settled = true; resolve(); } };
+    void speak(text, {
+      ...options,
+      onDone: () => { options?.onDone?.(); finish(); },
+      onError: error => { options?.onError?.(error); finish(); },
+    });
+    // A broken platform TTS callback must not block every later instruction.
+    setTimeout(finish, 15000);
+  }));
+  queuedSpeech = task.catch(() => {});
+  return task;
+}
+
+/**
  * Stop any currently playing speech immediately.
  */
 export function stopSpeaking(): void {
   speechRequest += 1;
+  queueGeneration += 1;
+  queuedSpeech = Promise.resolve();
   try {
     void Speech.stop().catch(() => {});
   } catch (error) {
