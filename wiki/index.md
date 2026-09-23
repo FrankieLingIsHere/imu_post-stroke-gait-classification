@@ -4,6 +4,8 @@ type: index
 
 # Index
 
+GaitTrace capture update (2026-09-23): [[classification-project-status#2026-09-23 Stationary-start and obsolete speech correction|stationary-start and speech correction]] documents provisional candidate-step gating, automated checks and pending physical validation.
+
 Current implementation: [workspace guide](../docs/classification/README.md) and [weekly progress](../docs/classification/WEEKLY_PROGRESS_2026-09-07.md). Completed public results are in Week 3 commit `b462795`; remaining local files include both completed work and active research.
 
 Catalog of every page in this wiki. Read this first when answering a query — drill into specific pages from here rather than grepping the vault blind.

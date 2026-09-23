@@ -18,6 +18,8 @@ import { getLanguage, locale, translate } from './language';
 let speechRequest = 0;
 let queuedSpeech: Promise<void> = Promise.resolve();
 let queueGeneration = 0;
+/** Discard pending reminders while letting the currently audible sentence finish. */
+export function discardPendingSpeech(): void { queueGeneration += 1; }
 
 export async function ensureVoice() {
   const language = getLanguage();
@@ -88,14 +90,18 @@ export function speakQueued(text: string, options?: Partial<Speech.SpeechOptions
   const task = queuedSpeech.then(() => new Promise<void>(resolve => {
     if (generation !== queueGeneration) { resolve(); return; }
     let settled = false;
-    const finish = () => { if (!settled) { settled = true; resolve(); } };
+    const finish = () => { if (!settled) { settled = true; clearTimeout(timeout); resolve(); } };
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      options?.onError?.(new Error('Speech completion was not confirmed.'));
+      stopSpeaking(); finish();
+    }, 30000);
     void speak(text, {
       ...options,
       onDone: () => { options?.onDone?.(); finish(); },
       onError: error => { options?.onError?.(error); finish(); },
     });
     // A broken platform TTS callback must not block every later instruction.
-    setTimeout(finish, 15000);
   }));
   queuedSpeech = task.catch(() => {});
   return task;

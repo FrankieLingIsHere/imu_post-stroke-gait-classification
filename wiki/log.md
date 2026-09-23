@@ -2547,3 +2547,20 @@ Added a combined raw CSV export for all saved sessions, preserving session ident
 Added translated tappable/hoverable signal legends; five-second paging remains a display choice so dense high-rate data stays readable on phones.
 
 GitHub Actions run 35563700262 completed successfully after authentication, checks and publication. The update endpoint returned HTTP 200 and Android update 01a0c261-f5cf-761a-b117-fcd21738811e for installed build 2 runtime ead45ff05f56ff8de69ce960cb9af9126a4cc015. EXPO_TOKEN and CI publication are now verified. No replacement APK is needed. Physical cold-launch adoption remains a device check.
+
+
+## [2026-09-23] Stationary-start and obsolete speech correction
+
+Local repair: discard obsolete queued reminders at fit/countdown transitions while allowing the active utterance to finish; remove repeated fit reminders. Begin fit evidence collection after the instruction completes. Fit requires three fresh candidate acceleration pulses plus non-steady movement and subsequent settling. Recording requires a fresh post-countdown pulse with live non-steady movement evidence; waiting does not decrement the recording duration. The candidate pulse thresholds (0.06 g rise, 0.04 g fall, 300 ms refractory period) are provisional engineering settings, not validated foot-contact detection. Gentle gait may be missed and handling can mimic steps; first-step onset is not exact and no pre-trigger walking samples are backfilled. Speech timeout now reports failure rather than treating unconfirmed completion as success. TypeScript and 76 automated tests pass, including stationary noise/rotation, overlapping steady/movement labels, absent fresh pulses and obsolete queued speech. Physical-device validation remains pending.
+
+
+## [2026-09-23] sync | Short movement check wording
+
+
+User-facing wording now calls this a Short movement check: take a few comfortable steps and stop. Onboarding, walkthrough, recording prompts and completion messages use this wording in English, Malay and Chinese. The setup gate now requires sustained non-steady movement followed by settling; it does not require a fixed number of pulses or claim to verify three footsteps or belt tightness. A separate fresh candidate pulse remains only as the conservative first-step trigger for the actual recording clock. TypeScript and the automated tests pass.
+
+## [2026-09-23] correction | Movement gate simplified
+
+The fit/setup phase now checks only for sensor-backed movement followed by a stable, upright settle. The earlier provisional three-pulse fit gate was removed because it could reject valid gentle movement and falsely suggest that the app had counted footsteps. Candidate pulse detection remains an onset safeguard at recording start, where it prevents the duration timer from beginning during idle handling. This distinction is reflected in the screen wording, tests and implementation.
+
+The hands-free fit instruction now explains the sequence aloud: move comfortably for a short moment, stop when prompted, and stand still until the movement check is announced complete. The revised instruction is translated in all three supported languages and is covered by the translation-catalog test.

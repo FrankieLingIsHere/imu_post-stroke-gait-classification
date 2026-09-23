@@ -4,7 +4,7 @@ import { browserHardware, checkBrowserSensors, BROWSER_REQUESTED_HZ } from './br
 import { DirectionTracker, emptyStreams, REQUESTED_HZ, SENSOR_NAMES, SENSOR_UNITS, validAxes } from './recording';
 import type { Recording, Sample, SensorName } from './recording';
 import { motionWindow, StrongMotionTracker } from './movement';
-import { highFrequencyRms, ShiftMonitor } from './placement';
+import { candidateStepsSince, highFrequencyRms, ShiftMonitor } from './placement';
 import { releaseInfo } from './releaseInfo';
 const nativeHardware = { accelerometer: Accelerometer, gyroscope: Gyroscope, magnetometer: Magnetometer };
 const hardware = Platform.OS === 'web' ? browserHardware : nativeHardware;
@@ -104,6 +104,7 @@ export class SensorRecorder {
     })) as Record<SensorName, boolean>;
   }
   get allReceiving() { return SENSOR_NAMES.every(n => this.readiness[n]); }
+  candidateStepsAfter(since: number) { return candidateStepsSince(this.recent.accelerometer, since); }
   get guidanceReady() { return this.direction.ready && performance.now() - this.lastGyroAt < 250; }
   get motionStatus() {
     const now = performance.now();

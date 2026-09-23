@@ -1,6 +1,30 @@
 ﻿import type { Sample } from './recording';
 import type { MotionWindow } from './movement';
 
+/** Provisional magnitude pulses, not verified foot contacts. Never reuse pre-stage samples. */
+export function candidateStepsSince(samples: Sample[], since: number): number {
+  const fresh = samples.filter(s => s.elapsedMs >= since);
+  let count = 0, lastPeak = -Infinity, valley = 1, peak = 1, rising = false;
+  for (let i = 0; i < fresh.length; i++) {
+    const s = fresh[i], value = Math.hypot(s.x, s.y, s.z);
+    if (!Number.isFinite(value) || (i && (s.elapsedMs <= fresh[i - 1].elapsedMs || s.elapsedMs - fresh[i - 1].elapsedMs > 100))) {
+      count = 0; rising = false; valley = peak = value; continue;
+    }
+    if (i === 0) { valley = peak = value; continue; }
+    if (!rising) {
+      valley = Math.min(valley, value);
+      if (value - valley >= 0.06) { rising = true; peak = value; }
+    } else {
+      peak = Math.max(peak, value);
+      if (peak - value >= 0.04) {
+        if (s.elapsedMs - lastPeak >= 300) { count++; lastPeak = s.elapsedMs; }
+        rising = false; valley = value;
+      }
+    }
+  }
+  return count;
+}
+
 /** Engineering descriptors only. No anatomical placement or strap-tightness verdict. */
 export function highFrequencyRms(samples: Sample[]): number | null {
   if (samples.length < 50) return null;
@@ -33,7 +57,7 @@ export class FitCheck {
       this.handlingSince ??= now;
       if (now - this.handlingSince >= 1500) return 'review';
     } else this.handlingSince = null;
-    if (motion.context === 'movement') {
+    if (motion.context === 'movement' && !motion.steady) {
       this.movementSince ??= now;
       if (now - this.movementSince >= 1000) this.movementSeen = true;
     } else this.movementSince = null;

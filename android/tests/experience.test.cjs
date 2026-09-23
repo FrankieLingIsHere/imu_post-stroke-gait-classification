@@ -52,6 +52,31 @@ test('Cancelling while voice availability is loading prevents late speech', asyn
  const audio=load('audio',{'expo-speech':speech});const task=audio.speak('Start');await entered;
  audio.stopSpeaking();resolveVoice([{language:'en-MY',identifier:'en'}]);await task;assert.equal(spoken,false);
 });
+test('Speech queue discards obsolete reminders without cutting the active instruction', async () => {
+ const spoken=[]; let stops=0;
+ const speech={async isSpeakingAsync(){return false},async stop(){stops++},async getAvailableVoicesAsync(){return [{language:'en-MY',identifier:'en'}]},speak(text,options){spoken.push({text,options})}};
+ const audio=load('audio',{'expo-speech':speech});
+ const flush=()=>new Promise(resolve=>setImmediate(resolve));
+ const first=audio.speakQueued('Active instruction'); await flush();
+ const obsolete=audio.speakQueued('Old fit reminder');
+ audio.discardPendingSpeech();
+ const next=audio.speakQueued('Fit complete'); await flush();
+ assert.equal(spoken.length,1); assert.equal(stops,0);
+ spoken[0].options.onDone(); await first; await obsolete; await flush();
+ assert.deepEqual(spoken.map(s=>s.text),['Active instruction','Fit complete']);
+ spoken[1].options.onDone(); await next;
+});
+test('Fresh candidate pulses reject stationary noise, rotation and pre-stage motion', () => {
+ const {candidateStepsSince,FitCheck}=load('placement');
+ const samples=fn=>Array.from({length:201},(_,i)=>({elapsedMs:i*20,sensorTimestampSeconds:i*.02,...fn(i*.02)}));
+ assert.equal(candidateStepsSince(samples(t=>({x:1+.005*Math.sin(t*30),y:0,z:0})),0),0);
+ assert.equal(candidateStepsSince(samples(t=>({x:Math.cos(t),y:Math.sin(t),z:0})),0),0);
+ const walking=samples(t=>({x:1+.1*Math.sin(t*4*Math.PI),y:0,z:0}));
+ assert.ok(candidateStepsSince(walking,0)>=3);
+ assert.equal(candidateStepsSince(walking,4100),0);
+ const fit=new FitCheck();
+ for(let now=0;now<10000;now+=100) assert.equal(fit.update(now,true,{enough:true,upright:true,steady:true,context:'movement'}),'waiting');
+});
 function harness(screen, platform='android', browserResult=null) {
  let now=0,nextId=0,currentEngine,navigated=[],spoke=[],voiceOptions,appListener;
  const timers=new Map();let visibilityListener;
@@ -61,13 +86,13 @@ function harness(screen, platform='android', browserResult=null) {
  const steady={enough:true,steady:true,upright:true,context:'rest-or-quiet'};
  class Engine {
   constructor(){currentEngine=this;this.motionStatus={...steady};this.allReceiving=true;this.baselineReady=true;this.guidanceReady=true;this.begun=false;}
-  connect(){} disconnect(){} restoreFitCheck(v){this.savedFitCheck=v} startFit(){this.fitStarted=true} finishFit(){this.savedFitCheck={status:'movement-then-settled',version:'guided-fit-v2'}} begin(){this.begun=true}
+  connect(){} disconnect(){} restoreFitCheck(v){this.savedFitCheck=v} startFit(){this.fitStarted=true} candidateStepsAfter(){return this.motionStatus.context==='movement'?1:0} finishFit(){this.savedFitCheck={status:'movement-then-settled',version:'guided-fit-v2'}} begin(){this.begun=true}
  }
  const native={Platform:{OS:platform},Text:'text',Modal:({visible,children})=>visible?React.createElement('modal',null,children):null,View:'view',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
  const mocks={'react-native':native,'expo-keep-awake':{activateKeepAwakeAsync:async()=>{},deactivateKeepAwake:async()=>{}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
  '../components/Screen':{Screen:({children,actions,...p})=>React.createElement('screen',p,children,actions),Card:'card',Body:'body',ui:{row:{},fill:{},caption:{}}},'../components/BigButton':{default:'button',__esModule:true},
  '../i18n':{Text:'text',LanguagePicker:()=>null,t:x=>x,useLanguage:()=> 'en'},
- '../audio':{speak:async(text,opts)=>{spoke.push(text);voiceOptions=opts},speakQueued:(text,opts)=>{spoke.push(text);voiceOptions=opts;return {finally(fn){fn();return Promise.resolve();}}},stopSpeaking(){},ensureVoice:async()=>({identifier:'en',language:'en-MY'})},
+ '../audio':{speak:async(text,opts)=>{spoke.push(text);voiceOptions=opts},speakQueued:(text,opts)=>{spoke.push(text);voiceOptions=opts;return {finally(fn){fn();return Promise.resolve();}}},discardPendingSpeech(){},stopSpeaking(){},ensureVoice:async()=>({identifier:'en',language:'en-MY'})},
  '../browserSensors':{checkBrowserSensors:async()=>browserResult},
  '../sensors':{SensorRecorder:Engine,checkSensors:async()=>{if(platform==='web'&&!browserResult?.ready)throw new Error('Browser must not check live sensors')}},'../store':{saveSession:async()=>{},generateSessionId:()=> 'test'},
  };
@@ -83,6 +108,20 @@ test('Failed setup retries locally with eight seconds and does not navigate thro
  assert.equal(h.renderer.root.findByType('screen').props.title,'Settle in. No rush.');
  assert.ok(h.spoke.some(s=>s.startsWith('You have 8 seconds')));
  assert.equal(h.navigated.length,0);h.advance(11500);assert.equal(h.engine.fitStarted,true);h.close();
+});
+test('Stationary fit cannot advance and generic movement without a fresh pulse cannot start recording', () => {
+ const h=harness('RecordScreen'); h.advance(24000);
+ h.engine.motionStatus={enough:true,steady:true,upright:true,context:'movement'};h.advance(10000);
+ assert.equal(h.renderer.root.findByType('screen').props.title,'Short movement check');
+ assert.equal(h.engine.begun,false);
+ h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1500);
+ h.engine.motionStatus={enough:true,steady:true,upright:true,context:'rest-or-quiet'};h.advance(13000);
+ assert.equal(h.engine.begun,false);
+ h.engine.candidateStepsAfter=()=>0;
+ h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);
+ assert.equal(h.engine.begun,false);
+ h.engine.candidateStepsAfter=()=>1;h.advance(100);
+ assert.equal(h.engine.begun,true);h.close();
 });
 test('Completed fit survives a later interruption, but retry cannot start until a new baseline passes', () => {
  const h=harness('RecordScreen');h.advance(24000);assert.equal(h.engine.fitStarted,true);

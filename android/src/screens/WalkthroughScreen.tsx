@@ -9,7 +9,7 @@ import BigButton from '../components/BigButton';
 const stages=[
   ['Mount the phone','The Android app gives 20 seconds to secure the phone at the lower back. This browser walkthrough does not check placement.'],
   ['Check live sensors','The Android app waits for live readings and a steady baseline. Missing readings or movement can pause the check.'],
-  ['Comfortable steps, then stop','Voice guidance asks for three comfortable steps and a stop. The app checks movement and settling, not an exact step count or anatomical placement.'],
+  ['Move, then stop and stand still','Voice guidance asks you to move comfortably for a short moment, then stop and stand still until the app confirms the movement check. It checks movement and settling, not an exact step count or anatomical placement.'],
   ['Countdown and recording','The countdown starts automatically after checks pass. Walking and rests are saved. A failed check can be retried without repeating completed fit checks.'],
   ['Review and export','The Android app saves the recording locally. Review the signals and export raw data or experimental features. No diagnosis or classification is provided.'],
 ];

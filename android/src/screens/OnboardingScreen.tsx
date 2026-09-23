@@ -9,7 +9,7 @@ import { speak, stopSpeaking } from '../audio';
 const steps = [
   ['Choose a clear path', 'Choose a clear, level space. Use your usual walking aid and support. Stop if you feel unwell or unsteady.'],
   ['Secure your phone', 'Place it horizontally at your lower back, screen facing out, in a firm belt pouch. Ask someone to help if needed. Do not hold it while walking.'],
-  ['Listen, then walk', 'Listen for the phone check, three comfortable steps and a stop, then the final countdown. Rest whenever needed.'],
+  ['Listen, then move and stop', 'Listen for the phone check. Move comfortably for a short moment, then stop and stand still until the movement check is complete. Rest whenever needed.'],
   ['Rest, then review', 'The voice tells you when recording ends. Stop safely before checking your phone. Open your recording to see movement signals or share a file.'],
 ];
 const illustrations = [require('../../assets/guides/path.png'), require('../../assets/guides/placement.png'), require('../../assets/guides/walk.png'), require('../../assets/guides/review.png')];
