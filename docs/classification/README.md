@@ -4,13 +4,13 @@ Start here. **Uncommitted does not mean unfinished:** this workspace contains
 completed experiments and executable prototypes as well as active research.
 Only the Week 3 public page and builder were published in commit `b462795`.
 
-Current week: [Week 4 app-development progress](WEEKLY_PROGRESS_2026-09-14.md), recorded through 17 September. Week 3 below remains the historical model-development record.
+Current week: [Week 5 local rehabilitation assessment workflow](WEEKLY_PROGRESS_2026-09-28.md). Week 4 remains the historical app-development and browser-sampling record; Week 3 below remains the model-development record.
 
 ## Read these first
 
 | Need | Document |
 |---|---|
-| This week's completed results and internal progress | [Weekly progress](WEEKLY_PROGRESS_2026-09-07.md) |
+| This week's completed results and internal progress | [Week 5 weekly progress](WEEKLY_PROGRESS_2026-09-28.md) |
 | Current research objective and remaining evidence | [Current handoff](../../wiki/concepts/classification-project-status.md) |
 | Executable stroke prototype and verified metrics | [Benchmark](BENCHMARK.md) and [prototype registry](../../models/prototypes/README.md) |
 | Active synthesis implementation | [Parameter contract and executed virtual-IMU pilot](STROKE_SYNTHESIS_PARAMETER_SPEC.md) |

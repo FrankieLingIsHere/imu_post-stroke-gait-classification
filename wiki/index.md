@@ -8,6 +8,14 @@ GaitTrace capture update (2026-09-23): [[classification-project-status#2026-09-2
 
 Current implementation: [workspace guide](../docs/classification/README.md) and [weekly progress](../docs/classification/WEEKLY_PROGRESS_2026-09-07.md). Completed public results are in Week 3 commit `b462795`; remaining local files include both completed work and active research.
 
+Client-facing app scope and measurement limits: [gait app client requirements](../docs/GAIT_APP_CLIENT_REQUIREMENTS.md).
+
+Rehabilitation protocol and profile/dashboard specification: [rehab assessment product spec](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md).
+
+GaitTrace local participant, protocol-form, optional GPS distance cross-check and measurement status: [[gait-app-collection-workflow]] and [Week 5 app progress](../docs/classification/WEEKLY_PROGRESS_2026-09-28.md).
+
+Protocol-guide wording and source boundaries, updated 2026-09-29, are documented in [[gait-app-collection-workflow#test-protocol-explanations]] and the [rehabilitation assessment specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md#protocol-workflow).
+
 Catalog of every page in this wiki. Read this first when answering a query — drill into specific pages from here rather than grepping the vault blind.
 
 ## Start here

@@ -29,11 +29,32 @@ test('All three languages preserve dynamic times, sensor notes and captions', ()
 });
 test('Translation catalog retains every placeholder and includes each active static speech cue', () => {
  const {messages}=load('translations');
+ assert.ok(messages['For a standardized 6MWT, switch off both Voice Guidance and Direction Reminders during the walk. A worker should give only the standard timed messages.']);
  for(const [key,values] of Object.entries(messages)) for(const value of values) {
   assert.ok(value.trim(),key);assert.deepEqual((value.match(/\{\d+\}/g)||[]).sort(),(key.match(/\{\d+\}/g)||[]).sort(),key);
  }
  const file=fs.readFileSync(path.resolve(__dirname,'../src/screens/RecordScreen.tsx'),'utf8');
  for(const match of file.matchAll(/say\('([^']+)'\)/g)) assert.ok(messages[match[1]],match[1]);
+});
+test('Every gait protocol has full source-aligned instructions translated to English, Malay and Chinese', () => {
+ const {messages}=load('translations');
+ const guideKeys=[
+  'Research walk: what it measures','Short sensor capture for research. It is not a standardized clinical walking test.',
+  'This option records phone motion during a short walk for research. Choose 10, 20 or 30 seconds. Walk on a clear, straight path at a comfortable pace and use your usual walking aid. The app starts its sensor timer after it detects the first step, so this is not a fixed-distance speed test. For a measured distance or speed, a worker must separately measure the route and timed interval. Phone-only distance is experimental.',
+  '10-Meter Walk Test (10MWT)','Measures speed over a marked distance. This project uses 1 m to accelerate, 10 m timed, then 1 m to slow down.',
+  'Purpose: measure walking speed over a known distance. This project’s selected layout is 12 m in a straight line: 1 m to accelerate, a central 10 m timed zone, and 1 m to slow down. The worker starts and stops the stopwatch as the participant crosses the two timed-zone marks; speed is 10 metres divided by those seconds. Keep the same usual aid and speed condition when comparing visits. The source describes two comfortable-speed trials and two fast-as-safe trials, averaged separately. GaitTrace records phone sensors but does not detect the marks, run those four trials, or time the central 10 m. The app’s 180-second sensor window is not the test time; the worker must time and enter the 10 m result.',
+  'Two-Minute Walk Test (2MWT)','Measures the distance covered in 2 minutes on a measured course. Rest is allowed; the clock continues.',
+  'Purpose: measure how far the participant can walk in two minutes. Use a measured, clear course and the same usual walking aid on repeat tests. The standardized instruction asks the person to cover as much distance as safely possible; slowing down or stopping to rest is allowed, and the clock keeps running. No hands-on help is allowed for the standard test. The worker starts the protocol stopwatch at Go, counts complete laps and measures the final partial distance, then records rests. GaitTrace’s sensor timer waits for a detected first step and is not a substitute for the stopwatch or measured distance. Enter the course length before starting.',
+  'Six-Minute Walk Test (6MWT)','Measures distance covered in 6 minutes on a consistent measured course. Rest is allowed; the clock continues.',
+  'Purpose: measure the distance walked in six minutes as a self-paced test of functional walking capacity. Use a measured, level course and keep the same course and aid across visits. The ATS standard uses a 30 m corridor with turn markers; shorter courses add turns and can change the distance, so document the actual course. The participant may slow down or stand and rest, but the timer continues. The worker uses the standardized timed encouragement, counts laps and partial distance, and records rests. GaitTrace’s sensor timer waits for a detected first step and does not count laps or administer the standardized protocol. Its live prompts are not the ATS script; for a standardized 6MWT, have a worker administer the test and do not use extra app walking cues as a replacement.',
+  'Timed Up and Go (TUG)','From a chair, stand, walk 3 m, turn, return and sit. A worker times the complete sequence.',
+  'Purpose: observe functional mobility through a chair transfer, short walk, turn and return. Use a standard armchair, mark a line 3 m away, and use the person’s usual footwear and walking aid. On Go, the person stands, walks at a comfortable and safe pace to the line, turns, walks back and sits. The worker starts the stopwatch at Go and stops when the person is seated again (buttocks on the chair). Record the aid and any assistance; standard instructions include a practice trial. GaitTrace does not detect standing, the 3 m line, turning completion or seat contact. Its 180-second sensor capture is not the TUG time; a worker must time and enter the complete sequence.'
+ ];
+ for(const key of guideKeys){assert.ok(messages[key],`Missing test guide translation: ${key.slice(0,70)}`);for(const value of messages[key])assert.ok(value.trim(),key);}
+ assert.match(messages[guideKeys[5]][1],/四次测试|四次/);
+ assert.match(messages[guideKeys[10]][0],/Rehat/);
+ assert.match(messages[guideKeys[10]][1],/休息/);
+ assert.match(messages[guideKeys[14]][1],/臀部接触椅面/);
 });
 test('Speech uses translated text and matching installed voice; missing Malay voice errors explicitly', async () => {
  const l=load('language');l.setLanguage('zh');let spoken,failed;
@@ -88,8 +109,8 @@ function harness(screen, platform='android', browserResult=null) {
   constructor(){currentEngine=this;this.motionStatus={...steady};this.allReceiving=true;this.baselineReady=true;this.guidanceReady=true;this.begun=false;}
   connect(){} disconnect(){} restoreFitCheck(v){this.savedFitCheck=v} startFit(){this.fitStarted=true} candidateStepsAfter(){return this.motionStatus.context==='movement'?1:0} finishFit(){this.savedFitCheck={status:'movement-then-settled',version:'guided-fit-v2'}} begin(){this.begun=true}
  }
- const native={Platform:{OS:platform},Text:'text',Modal:({visible,children})=>visible?React.createElement('modal',null,children):null,View:'view',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
- const mocks={'react-native':native,'expo-keep-awake':{activateKeepAwakeAsync:async()=>{},deactivateKeepAwake:async()=>{}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
+ const native={Platform:{OS:platform},Text:'text',Modal:({visible,children})=>visible?React.createElement('modal',null,children):null,View:'view',ScrollView:'scrollview',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
+ const mocks={'react-native':native,'expo-location':{Accuracy:{High:4},requestForegroundPermissionsAsync:async()=>({status:'granted'}),getProviderStatusAsync:async()=>({locationServicesEnabled:true}),watchPositionAsync:async()=>({remove(){}})},'expo-keep-awake':{activateKeepAwakeAsync:async()=>{},deactivateKeepAwake:async()=>{}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
  '../components/Screen':{Screen:({children,actions,...p})=>React.createElement('screen',p,children,actions),Card:'card',Body:'body',ui:{row:{},fill:{},caption:{}}},'../components/BigButton':{default:'button',__esModule:true},
  '../i18n':{Text:'text',LanguagePicker:()=>null,t:x=>x,useLanguage:()=> 'en'},
  '../audio':{speak:async(text,opts)=>{spoke.push(text);voiceOptions=opts},speakQueued:(text,opts)=>{spoke.push(text);voiceOptions=opts;return {finally(fn){fn();return Promise.resolve();}}},discardPendingSpeech(){},stopSpeaking(){},ensureVoice:async()=>({identifier:'en',language:'en-MY'})},
@@ -101,13 +122,11 @@ function harness(screen, platform='android', browserResult=null) {
  const button=label=>renderer.root.findAllByType('button').find(n=>n.props.label===label);
  return {renderer,button,advance,get engine(){return currentEngine},get voiceOptions(){return voiceOptions},navigated,spoke,hide:()=>act(()=>{doc.visibilityState='hidden';visibilityListener?.()}),background:()=>act(()=>appListener('background')),close:()=>act(()=>renderer.unmount())};
 }
-test('Failed setup retries locally with eight seconds and does not navigate through setup or sound again', () => {
+test('Setup waits for the participant instead of expiring automatically', () => {
  const h=harness('RecordScreen');h.engine.allReceiving=false;h.advance(40500);
- assert.ok(h.button('Retry this check'));
- act(()=>h.button('Retry this check').props.onPress());
- assert.equal(h.renderer.root.findByType('screen').props.title,'Settle in. No rush.');
- assert.ok(h.spoke.some(s=>s.startsWith('You have 8 seconds')));
- assert.equal(h.navigated.length,0);h.advance(11500);assert.equal(h.engine.fitStarted,true);h.close();
+ assert.equal(h.button('Retry this check'),undefined);
+ assert.equal(h.renderer.root.findByType('screen').props.title,'Checking the phone');
+ assert.equal(h.navigated.length,0);h.close();
 });
 test('Stationary fit cannot advance and generic movement without a fresh pulse cannot start recording', () => {
  const h=harness('RecordScreen'); h.advance(24000);
@@ -134,7 +153,7 @@ test('Completed fit survives a later interruption, but retry cannot start until 
 });
 test('Sound sample is optional on setup and can be skipped after two seconds without disabling guidance', async () => {
  const h=harness('PrepareScreen');
- const consent=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='checkbox');
+ const consent=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='checkbox'&&String(n.props.accessibilityLabel).startsWith('I can walk without hands-on help'));
  act(()=>consent.props.onPress());assert.equal(h.button('Start test').props.disabled,false);
  await act(async()=>h.button('Play voice sample').props.onPress());
  assert.equal(h.button('Start without sound test').props.disabled,true);

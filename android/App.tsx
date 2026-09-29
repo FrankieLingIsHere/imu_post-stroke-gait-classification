@@ -14,10 +14,12 @@ import DetailsScreen from './src/screens/DetailsScreen';
 import { colours } from './src/theme';
 import PhoneFrame from './src/components/PhoneFrame';
 import WalkthroughScreen from './src/screens/WalkthroughScreen';
-import type { ParticipantDemographics } from './src/store';
-type Setup = { duration: 10 | 20 | 30; audioEnabled: boolean; isPractice: boolean; demographics?: ParticipantDemographics };
+import ParticipantsScreen from './src/screens/ParticipantsScreen';
+import DashboardScreen from './src/screens/DashboardScreen';
+import type { AssessmentSetup, ParticipantDemographics, ParticipantProfile } from './src/store';
+type Setup = { duration: number; audioEnabled: boolean; isPractice: boolean; demographics?: ParticipantDemographics; participantId?: string; participantLabel?: string; participantSnapshot?: ParticipantProfile; assessmentSetup?: AssessmentSetup; useGpsDistance?: boolean };
 export type RootStackParamList = {
-  Home: undefined; Onboarding: undefined; Prepare: Setup; Walkthrough: undefined;
+  Home: undefined; Onboarding: undefined; Prepare: Setup; Walkthrough: undefined; Participants: undefined; Dashboard: undefined;
   Record: Setup & { guidanceEnabled: boolean };
   Result: { sessionId: string }; Details: { sessionId: string }; History: undefined;
 };
@@ -35,6 +37,8 @@ export default function App() {
       <Stack.Screen name="History" component={HistoryScreen} options={{ title: t('My recordings') }} />
       <Stack.Screen name="Details" component={DetailsScreen} options={{ title: t('Recording details') }} />
       <Stack.Screen name="Walkthrough" component={WalkthroughScreen} options={{ title: t('Supervisor walkthrough') }} />
+      <Stack.Screen name="Participants" component={ParticipantsScreen} options={{ title: 'Participants' }} />
+      <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Progress dashboard' }} />
     </Stack.Navigator>
   </NavigationContainer></SafeAreaProvider></PhoneFrame>;
 }

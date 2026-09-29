@@ -26,6 +26,8 @@ export interface Recording {
   motionRulesVersion?: 'motion-context-v2';
   setupCheck?: { version: 'steady-upright-v1' | 'guided-fit-v2'; anatomicalPlacementVerified: false; steadySeconds: number; retries?: number; language?: 'en' | 'ms' | 'zh' };
   fitCheck?: { version: 'guided-fit-v2'; status: 'movement-then-settled'; proximity: 'unavailable'; tightnessVerified: false; stepsCounted: false; highPass10HzRmsG: number | null; streams: Streams };
+  /** Optional Android outdoor cross-check. Raw coordinates are deliberately never persisted. */
+  locationDistance?: import('./locationDistance').LocationDistanceSummary;
   baseline?: {
     version: 'stationary-reference-v1'; requestedSeconds: 3;
     startedAt: string; streams: Streams;

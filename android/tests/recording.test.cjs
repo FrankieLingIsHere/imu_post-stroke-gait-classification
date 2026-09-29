@@ -15,6 +15,19 @@ function load(name, mocks = {}, globals = {}, cache = {}) {
   return module.exports;
 }
 const pure = load('recording');
+test('GPS cross-check rejects poor fixes and reports only aggregate location quality', () => {
+  const {ForegroundDistanceTracker}=load('locationDistance');
+  const tracker=new ForegroundDistanceTracker();
+  for(let i=0;i<4;i++) tracker.add({latitude:i*0.0001,longitude:0,accuracy:4,timestamp:i*5000});
+  const summary=tracker.finish();
+  assert.equal(summary.status,'usable-cross-check');
+  assert.ok(summary.distanceM>30&&summary.distanceM<35);
+  assert.equal(summary.rawCoordinatesSaved,false);
+  assert.equal('latitude' in summary,false);
+  const poor=new ForegroundDistanceTracker();
+  poor.add({latitude:0,longitude:0,accuracy:30,timestamp:0});
+  assert.equal(poor.finish().status,'unavailable');
+});
 test('Candidate alternation measures interval differences without a foot or disease verdict', () => {
   const mock = intervals => load('alternatingTiming', {'./gaitTiming': {estimateGaitTiming:()=>({bouts:[{intervalsSeconds:intervals,eventTimesSeconds:[0]}]})}}).alternatingTiming({});
   assert.equal(mock(Array(10).fill(.5)).differencePercent,0);
@@ -139,6 +152,22 @@ test('CSV preserves all asynchronous events and explicit units without aligned r
   for (const unit of ['g', 'rad/s', 'uT']) assert.ok(csv.includes('"' + unit + '"'));
   assert.equal(JSON.parse(exporting.exportJSON(session)).session.recording.streams.magnetometer.length, 50);
 });
+test('Optional GPS aggregate exports distance quality but never coordinates', () => {
+  const r=recordFixture();r.locationDistance={version:'foreground-gps-distance-v1',source:'android-fused-location',distanceM:42.5,acceptedFixes:17,medianAccuracyM:3.2,status:'usable-cross-check',rawCoordinatesSaved:false,note:'summary'};
+  const session={id:'gps',date:r.startedAt,duration:10,isPractice:false,windows:[],recording:r};
+  const csv=exporting.exportCSV(session),features=exporting.exportFeatureCSV(session);
+  assert.match(csv,/gps_distance_m/);assert.match(csv,/"42\.5","3\.2","17","usable-cross-check","false"/);
+  assert.match(features,/42\.5/);assert.doesNotMatch(csv,/latitude|longitude/);
+});
+test('Spoken completion feedback reflects recorded motion and avoids diagnostic claims', () => {
+  const {spokenWalkFeedback}=load('patientSummary');
+  const movement={usableSeconds:8,movementSeconds:7,quietSeconds:1,possibleHandlingSeconds:0,uncertainSeconds:0,repeatingMotion:true,segments:[{context:'movement'}]};
+  assert.match(spokenWalkFeedback(movement,null),/repeating movement rhythm/);
+  assert.match(spokenWalkFeedback(movement,movement),/similar to your previous walk/);
+  const unclear={...movement,usableSeconds:2,segments:[{context:'missing-data'}]};
+  assert.match(spokenWalkFeedback(unclear,null),/could not get a clear movement reading/);
+  assert.doesNotMatch(spokenWalkFeedback(movement,null),/symmetry|stroke|diagnos/i);
+});
 test('Legacy exports always identify simulated data and do not invent extra sensors', () => {
   const session = { id: 'old', date: '2026-09-01', duration: 10, isPractice: false, windows: [{ x: 1, y: 2, z: 3, timestamp: 100 }] };
   assert.equal(JSON.parse(exporting.exportJSON(session)).source, 'legacy-simulation');
@@ -223,6 +252,13 @@ test('Phone checks distinguish steady upright, sideways and strong-motion signal
   const shaken = upright.map((s,i) => ({...s, x: i % 2 ? 1 : -1}));
   assert.equal(movement.motionWindow(shaken, gyro).strong, true);
   assert.equal(movement.motionWindow(shaken, gyro).steady, false);
+});
+test('Walk feedback follows measured context instead of giving a fixed compliment', () => {
+  const base={enough:true,upright:true,steady:false,strong:false,accelerationRmsG:.1,rotationRms:.2,context:'movement',accelerationChangeRms:1};
+  assert.equal(movement.walkFeedback(base),'encourage');
+  assert.equal(movement.walkFeedback({...base,context:'rest-or-quiet',steady:true}),'pause');
+  assert.equal(movement.walkFeedback({...base,context:'possible-handling',strong:true}),'handling');
+  assert.equal(movement.walkFeedback({...base,context:'uncertain'}),'none');
 });
 test('Strong motion needs persistence and has a twelve-second cue cooldown', () => {
   const tracker = new movement.StrongMotionTracker();

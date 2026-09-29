@@ -1,9 +1,11 @@
 import { Recording, SENSOR_NAMES, SENSOR_UNITS, recordingIssues, streamStats } from './recording';
 import { describeMovement } from './movement';
 import { estimateGaitTiming } from './gaitTiming';
+import { estimateFromCalibration, estimateFromHeight } from './distanceEstimation';
+import type { DistanceCalibration } from './distanceEstimation';
 
 /** Export-only signal descriptors. No reference comparison, classification or score. */
-export function researchFeatures(r: Recording) {
+export function researchFeatures(r: Recording, heightCm: number | null = null, distanceCalibration?: DistanceCalibration) {
   const features: Record<string, { value: number | null; unit: string; status: string; definition: string; reason: string | null }> = {};
   for (const sensor of SENSOR_NAMES) {
     const rows = r.streams[sensor];
@@ -24,6 +26,7 @@ export function researchFeatures(r: Recording) {
     features[name] = { value:null, unit, status:'unavailable', definition:'Not estimated by this feature pipeline.', reason:'No validated compatible walking/event estimator or distance protocol implemented.' };
   }
   const gaitTiming = estimateGaitTiming(r);
+  const distanceEstimate = distanceCalibration ? estimateFromCalibration(r,distanceCalibration) : estimateFromHeight(r, heightCm);
   Object.assign(features, gaitTiming.features);
   return {
     gaitTiming,
@@ -34,6 +37,6 @@ export function researchFeatures(r: Recording) {
     comparisonEligibility:'not-established', clinicalValidation:false,
     captureNotes:recordingIssues(r),
     streamCoverage:Object.fromEntries(SENSOR_NAMES.map(n => { const stats=streamStats(r.streams[n],r.elapsedSeconds); return [n,{...stats,timing:r.platform==='web'&&stats.timing==='native'?'browser-sensor':stats.timing}]; })),
-    motionContext:describeMovement(r), features,
+    motionContext:describeMovement(r), distanceEstimate, features,
   };
 }

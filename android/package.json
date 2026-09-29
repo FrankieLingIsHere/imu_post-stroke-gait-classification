@@ -22,6 +22,7 @@
     "expo-file-system": "~18.0.12",
     "expo-haptics": "~14.0.0",
     "expo-keep-awake": "~14.0.0",
+    "expo-location": "~18.0.10",
     "expo-sensors": "~14.0.2",
     "expo-sharing": "~13.0.1",
     "expo-speech": "~13.0.0",

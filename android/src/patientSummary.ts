@@ -25,7 +25,41 @@ export function patientSummary(s: MovementSummary, shifted: boolean) {
   ];
 }
 
+/** Compare only interpretable movement coverage across a participant's own runs. */
+export function compareMovement(current: MovementSummary, previous: MovementSummary | null) {
+  if (!previous || current.usableSeconds < 6 || previous.usableSeconds < 6) return null;
+  const clarity = (s: MovementSummary) => (s.movementSeconds - s.possibleHandlingSeconds - s.uncertainSeconds) / Math.max(s.usableSeconds, 1);
+  const delta = clarity(current) - clarity(previous);
+  if (Math.abs(delta) < 0.1) return { title: 'Similar movement consistency to your previous run', text: 'Your clear movement signal was similar to the previous run. This is an observation of the recording, not a clinical stability score.' };
+  return delta > 0
+    ? { title: 'More consistent movement than your previous run', text: 'More of this recording showed a clear paired movement pattern than your previous run. Keep your comfortable pace; this does not identify the cause of any gait difference.' }
+    : { title: 'Less consistent movement than your previous run', text: 'Less of this recording showed a clear paired movement pattern than your previous run. You may have paused, moved gently, or had phone motion; this does not by itself mean your walking worsened.' };
+}
+
+/** Short spoken finish note based on sensor coverage and comparable personal history. */
+export function spokenWalkFeedback(current: MovementSummary, previous: MovementSummary | null) {
+  const comparison = compareMovement(current, previous);
+  if (comparison) {
+    if (comparison.title.startsWith('More consistent')) return 'Compared with your previous walk, this recording showed clearer movement for more of the time. Keep your comfortable pace.';
+    if (comparison.title.startsWith('Less consistent')) return 'This recording had less clear movement than your previous one. You may have paused, moved gently, or the phone may have shifted. This does not mean your walking got worse.';
+    return 'Your clear movement recording was similar to your previous walk. Keep going at a comfortable pace.';
+  }
+  if (current.usableSeconds < 6 || current.segments.some(x => x.context === 'missing-data')) return 'I could not get a clear movement reading this time. The recording is saved for review.';
+  if (current.possibleHandlingSeconds > 0 || current.segments.some(x => x.context === 'possible-handling')) return 'The phone may have shifted, so I cannot describe this walk clearly. The recording is saved for review.';
+  if (current.repeatingMotion === true && current.movementSeconds >= 4) return 'Your recording picked up a repeating movement rhythm. Keep your pace comfortable, and rest whenever you need.';
+  if (current.quietSeconds > 0) return 'I noticed a quieter period in the walk. Rest is okay; continue only when you feel ready.';
+  return 'Your walk is saved. Keep using your usual support and stop whenever you feel unsafe.';
+}
+
 export const patientMessages: Record<string, [string, string]> = {
+  'Compared with your previous walk, this recording showed clearer movement for more of the time. Keep your comfortable pace.': ['Berbanding rakaman sebelumnya, rakaman ini menunjukkan pergerakan yang lebih jelas untuk tempoh lebih lama. Kekalkan kelajuan yang selesa.', '与上次步行相比，这次记录中较清晰的动作持续时间更长。请保持舒适的步速。'],
+  'This recording had less clear movement than your previous one. You may have paused, moved gently, or the phone may have shifted. This does not mean your walking got worse.': ['Rakaman ini menunjukkan pergerakan yang kurang jelas berbanding sebelumnya. Anda mungkin berhenti, bergerak perlahan atau telefon mungkin beralih. Ini tidak bermakna cara berjalan anda merosot.', '这次记录中清晰动作较少。您可能暂停了、动作较轻，或手机发生了移动。这并不表示您的步行能力变差。'],
+  'Your clear movement recording was similar to your previous walk. Keep going at a comfortable pace.': ['Rakaman pergerakan jelas anda serupa dengan rakaman sebelumnya. Teruskan pada kelajuan yang selesa.', '这次清晰动作的记录与上次相近。请继续保持舒适的步速。'],
+  'I could not get a clear movement reading this time. The recording is saved for review.': ['Bacaan pergerakan kali ini tidak cukup jelas. Rakaman disimpan untuk semakan.', '这次没有获得清晰的动作读数。记录已保存供查看。'],
+  'The phone may have shifted, so I cannot describe this walk clearly. The recording is saved for review.': ['Telefon mungkin beralih, jadi rakaman ini tidak dapat diterangkan dengan jelas. Rakaman disimpan untuk semakan.', '手机可能发生了移动，因此无法清楚描述这次步行。记录已保存供查看。'],
+  'Your recording picked up a repeating movement rhythm. Keep your pace comfortable, and rest whenever you need.': ['Rakaman mengesan rentak pergerakan berulang. Kekalkan kelajuan yang selesa dan berehat apabila perlu.', '记录到重复的动作节律。请保持舒适的步速，需要时随时休息。'],
+  'I noticed a quieter period in the walk. Rest is okay; continue only when you feel ready.': ['Terdapat tempoh yang lebih tenang dalam rakaman. Anda boleh berehat; sambung hanya apabila bersedia.', '记录中出现了较安静的一段。可以休息，感觉准备好后再继续。'],
+  'Your walk is saved. Keep using your usual support and stop whenever you feel unsafe.': ['Rakaman berjalan disimpan. Terus gunakan alat sokongan biasa dan berhenti jika berasa tidak selamat.', '步行记录已保存。请继续使用平时的辅助工具，如感到不安全请立即停止。'],
   'Pauses': ['Jeda', '停顿'],
   'Rhythm': ['Rentak', '节奏'],
   'Changes': ['Perubahan', '变化'],

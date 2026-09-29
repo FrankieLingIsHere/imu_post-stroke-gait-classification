@@ -13,6 +13,8 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
   return <Screen eyebrow="YOUR DAILY WALK" title={'A little walk.\nAt your pace.'} actions={<>
     <BigButton label="Start a walk" onPress={() => navigation.navigate('Prepare', { duration: 20, audioEnabled: true, isPractice: false })} />
     <BigButton label="My recordings" variant="outline" onPress={() => navigation.navigate('History')} />
+    <BigButton label="Participants and profiles" variant="outline" onPress={() => navigation.navigate('Participants')} />
+    <BigButton label="Progress dashboard" variant="outline" onPress={() => navigation.navigate('Dashboard')} />
     <BigButton label="How to use the app" variant="ghost" onPress={() => navigation.navigate('Onboarding')} />
   </>}>
     <LanguagePicker />

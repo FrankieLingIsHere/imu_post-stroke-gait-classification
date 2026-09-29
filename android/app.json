@@ -48,6 +48,12 @@
     },
     "plugins": [
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow GaitTrace to estimate an optional outdoor walking distance while a test is in progress. Coordinates are not stored or uploaded."
+        }
+      ],
+      [
         "expo-sensors",
         {
           "motionPermission": "Allow GaitTrace to record motion for your walking research session."

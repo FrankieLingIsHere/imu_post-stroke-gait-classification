@@ -5,6 +5,17 @@ export interface MotionWindow {
   context: 'rest-or-quiet' | 'movement' | 'possible-handling' | 'uncertain' | 'missing-data';
   accelerationChangeRms: number;
 }
+/**
+ * Selects a hands-free cue from the current measured motion window.
+ * This is a coaching signal, not a gait-quality or safety verdict.
+ */
+export function walkFeedback(motion: MotionWindow): 'encourage' | 'pause' | 'handling' | 'none' {
+  if (!motion.enough || motion.context === 'missing-data' || motion.context === 'uncertain') return 'none';
+  if (motion.context === 'possible-handling' || motion.strong) return 'handling';
+  if (motion.context === 'rest-or-quiet' || motion.steady) return 'pause';
+  if (motion.context === 'movement' && !motion.steady) return 'encourage';
+  return 'none';
+}
 export function motionWindow(accel: Sample[], gyro: Sample[], landscape = false): MotionWindow {
   const span = (a: Sample[]) => a.length > 1 ? a[a.length - 1].elapsedMs - a[0].elapsedMs : 0;
   const continuous = (a: Sample[]) => a.every((s, i) => i === 0 || (s.elapsedMs > a[i - 1].elapsedMs && s.elapsedMs - a[i - 1].elapsedMs <= 250));
