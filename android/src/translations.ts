@@ -1,7 +1,9 @@
 import { patientMessages } from './patientSummary';
+import { experienceMessages } from './experienceMessages';
 /** English source -> Bahasa Melayu, Simplified Chinese. Export schema remains English. */
 export const messages: Record<string, readonly [string, string]> = {
   ...patientMessages,
+  ...experienceMessages,
   'Search participants by study ID': ['Cari peserta mengikut ID kajian', '按研究编号搜索参与者'],
   'Save profile changes': ['Simpan perubahan profil', '保存档案更改'],
   'Edit': ['Edit', '编辑'],

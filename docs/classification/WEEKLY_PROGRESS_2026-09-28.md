@@ -29,3 +29,42 @@ Added an optional Android foreground GPS distance cross-check. The participant m
 The local participant registry now supports coded-label search and editing. Editing updates the current profile while previous session snapshots remain unchanged. Completion voice feedback now uses current movement evidence and compares only against the same participant on a matching protocol, duration and walking-aid setup; unclear movement gets an uncertainty message. Added deterministic checks for GPS filtering/export privacy and evidence-based spoken feedback. TypeScript check and application tests pass after updating the test harness to mock the new Expo native module. No physical GPS validation or Android build was performed. Because this adds an Expo native module and Android location permission, distributing this change requires a new APK build; it cannot be delivered as an OTA-only update.
 
 The setup screen now provides a full, listenable guide for the research walk, 10MWT, 2MWT, 6MWT and TUG in English, Malay and Simplified Chinese. The guide distinguishes source protocol timing from the app's sensor-recording timer, describes worker course/stopwatch/lap duties, allows 2MWT/6MWT rest without stopping the protocol clock, and notes that ATS 6MWT cueing and the 30 m course are not reproduced by GaitTrace. It directs workers to turn off app voice and direction reminders during a standardized 6MWT. The 10MWT guidance uses the project's 12 m layout but identifies it as the selected project setup, not the sole accepted format. Added translation-coverage checks for every complete protocol guide. Validation: all 81 app tests pass and TypeScript check passes; no native build or physical-device review was performed.
+
+
+## Follow-up: 30 September 2026 ? layout and participant usability
+
+Replaced the five-button home footer with one primary Start action and a compact navigation grid. Setup now separates person, protocol and sound/readiness into three pages with persistent Previous/Continue/Start controls. The sound sample appears first on the readiness page; optional settings open in a separate More menu. Language, voice/direction/practice settings, GPS and optional participant details no longer expand the underlying setup page. Saved participants have a searchable separate selector, and the test chooser shows only the current selection until opened. Menus use safe-area insets and bounded scrolling with a persistent Done action. Two additional renderer checks verify menu state preservation and protocol selection. Shared screen action areas are height-bounded and scrollable for constrained screens and larger fonts, and full-width button styling no longer conflicts with horizontal rows.
+
+New participants are created directly on starting a test, requiring a study label, age and explicit sex choice (Prefer not to say is accepted). Existing profiles can be selected in setup. Duplicate labels cannot silently merge people, storage failures block recording, and retrying preserves the participant identity. Historical session snapshots remain separate. Browser participant functions now support the same tab-only lifetime as browser recordings.
+
+Replaced the patient-facing paragraphs with three short tutorial steps per protocol, scalable path/chair diagrams and read-aloud. Detailed protocol notes remain available separately. Malay and Chinese coverage is checked against the actual guide/tutorial objects, correcting two pre-existing exact-key mismatches in the longer notes. This batch adds no native dependencies.
+
+Verification: TypeScript passes, all 88 app tests pass, and both Android and web production bundles export successfully to the ignored local `android/dist/ui-review/` directory. Tests include creation/linking, identity changes, retry deduplication, storage-failure gating, translation coverage from actual guide data, and tutorial navigation/speech cancellation. Browser visual inspection was unavailable because the browser runtime reported no connected browsers. Phone screen geometry and device speech playback therefore remain pending physical review; renderer tests and bundle export are not presented as that review. Changes are local and unpublished.
+
+
+## Proposed publication scope for the 30 September fixes
+
+These local source/documentation changes are ready for review. Generated bundles and dependencies remain ignored. No native configuration or dependency changes are included.
+
+```text
+M android/App.tsx
+ M android/src/components/BigButton.tsx
+ M android/src/components/Screen.tsx
+ M android/src/screens/HomeScreen.tsx
+ M android/src/screens/ParticipantsScreen.tsx
+ M android/src/screens/PrepareScreen.tsx
+ M android/src/store.web.ts
+ M android/src/translations.ts
+ M android/tests/experience.test.cjs
+ M docs/GAIT_APP_CLIENT_REQUIREMENTS.md
+ M docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md
+ M docs/classification/WEEKLY_PROGRESS_2026-09-28.md
+ M wiki/concepts/gait-app-collection-workflow.md
+ M wiki/index.md
+ M wiki/log.md
+?? android/src/components/ProtocolTutorial.tsx
+?? android/src/experienceMessages.ts
+?? android/src/protocolGuides.ts
+?? android/src/protocolTutorials.ts
+?? android/src/testParticipant.ts
+```

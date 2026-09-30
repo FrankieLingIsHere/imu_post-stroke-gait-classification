@@ -1,9 +1,16 @@
-import type { SessionRecord } from './store';
+import type { SessionRecord, ParticipantProfile } from './store';
+import type { DistanceCalibration } from './distanceEstimation';
 import { locale } from './language';
 import { parseReviewRecording } from './reviewRecording';
 
 // Browser capture and review are memory-only. Export before closing or refreshing.
 const sessions = new Map<string, SessionRecord>();
+const participants = new Map<string, ParticipantProfile>();
+export async function getParticipants() { return [...participants.values()]; }
+export async function saveParticipant(profile: ParticipantProfile) { participants.set(profile.id, JSON.parse(JSON.stringify(profile))); }
+export async function toggleParticipantFavorite(id: string) { const p=participants.get(id);if(p)await saveParticipant({...p,favorite:!p.favorite,updatedAt:new Date().toISOString()}); }
+export async function archiveParticipant(id: string) { const p=participants.get(id);if(p)await saveParticipant({...p,archived:true,updatedAt:new Date().toISOString()}); }
+export async function saveParticipantDistanceCalibration(id:string, distanceCalibration:DistanceCalibration) { const p=participants.get(id);if(!p)return undefined;const updated={...p,distanceCalibration,updatedAt:new Date().toISOString()};await saveParticipant(updated);return updated; }
 export function importReviewRecording(text: string) {
   const session = parseReviewRecording(text); sessions.set(session.id, session); return session.id;
 }

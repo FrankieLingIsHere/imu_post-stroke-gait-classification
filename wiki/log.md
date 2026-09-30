@@ -2583,3 +2583,12 @@ Added an opt-in Android foreground GPS cross-check that begins only after walkin
 ## [2026-09-29] sync | Added source-aligned clinical test explanations
 
 Updated GaitTrace's protocol chooser with complete read-aloud guides for research walk, 10MWT, 2MWT, 6MWT and TUG in English, Malay and Simplified Chinese. Documented the clinical/app timing boundary and protocol-specific setup, pacing/rest and worker duties in the product spec, client requirements, weekly progress and collection workflow concept page. Checked the descriptions against the Shirley Ryan AbilityLab RehabMeasures entries, 2MWT/TUG instruction sheets and ATS 6MWT statement. GaitTrace remains a sensor-capture aid rather than a validated standardized test administrator.
+
+
+## [2026-09-30] sync | Responsive setup, participant creation and illustrated tutorials
+
+Updated the collection workflow concept, index, client requirements, assessment specification and current weekly page. Home and setup have fewer simultaneous controls, scrollable bounded action areas and wrapping button labels. Test setup saves a new participant on Start with required study label, age and explicit sex choice; stable IDs prevent demographic-based merging and duplicate retries. All five protocols have short illustrated/read-aloud tutorials in English, Malay and Chinese, with full worker notes available separately. No native module was added. Browser/device visual review remains unperformed because no browser connection was available; automated checks are documented in the weekly page. No publication in this batch.
+
+## [2026-09-30] refinement | Bounded setup menus
+
+Moved secondary setup controls, participant search and protocol selection into separate safe-area menus to reduce main-page crowding. Added menu persistence/selection checks; 88 tests and TypeScript pass. Updated the workflow and weekly progress locally; no push. Physical layout review remains pending.

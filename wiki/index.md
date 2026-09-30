@@ -14,7 +14,7 @@ Rehabilitation protocol and profile/dashboard specification: [rehab assessment p
 
 GaitTrace local participant, protocol-form, optional GPS distance cross-check and measurement status: [[gait-app-collection-workflow]] and [Week 5 app progress](../docs/classification/WEEKLY_PROGRESS_2026-09-28.md).
 
-Protocol-guide wording and source boundaries, updated 2026-09-29, are documented in [[gait-app-collection-workflow#test-protocol-explanations]] and the [rehabilitation assessment specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md#protocol-workflow).
+Responsive setup, automatic participant creation and brief illustrated tutorials, updated 2026-09-30, are documented in [[gait-app-collection-workflow#test-protocol-explanations]] and the [rehabilitation assessment specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md#protocol-workflow).
 
 Catalog of every page in this wiki. Read this first when answering a query — drill into specific pages from here rather than grepping the vault blind.
 
@@ -265,3 +265,5 @@ Android APK build completed: [[classification-project-status]] contains the down
 GaitTrace branding, update compatibility and device validation: [[classification-project-status]] and [device checklist](../android/PHYSICAL_DEVICE_VALIDATION.md).
 
 GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the replacement download, matching OTA verification, hands-free setup cues and native JSON/CSV review import.
+
+- 2026-09-30 setup refinement: [[gait-app-collection-workflow]] documents separate More, participant-search and test-selection menus, with bounded scrolling and preserved selections.

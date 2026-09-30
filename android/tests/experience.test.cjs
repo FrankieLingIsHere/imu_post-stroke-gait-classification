@@ -36,25 +36,16 @@ test('Translation catalog retains every placeholder and includes each active sta
  const file=fs.readFileSync(path.resolve(__dirname,'../src/screens/RecordScreen.tsx'),'utf8');
  for(const match of file.matchAll(/say\('([^']+)'\)/g)) assert.ok(messages[match[1]],match[1]);
 });
-test('Every gait protocol has full source-aligned instructions translated to English, Malay and Chinese', () => {
- const {messages}=load('translations');
- const guideKeys=[
-  'Research walk: what it measures','Short sensor capture for research. It is not a standardized clinical walking test.',
-  'This option records phone motion during a short walk for research. Choose 10, 20 or 30 seconds. Walk on a clear, straight path at a comfortable pace and use your usual walking aid. The app starts its sensor timer after it detects the first step, so this is not a fixed-distance speed test. For a measured distance or speed, a worker must separately measure the route and timed interval. Phone-only distance is experimental.',
-  '10-Meter Walk Test (10MWT)','Measures speed over a marked distance. This project uses 1 m to accelerate, 10 m timed, then 1 m to slow down.',
-  'Purpose: measure walking speed over a known distance. This project’s selected layout is 12 m in a straight line: 1 m to accelerate, a central 10 m timed zone, and 1 m to slow down. The worker starts and stops the stopwatch as the participant crosses the two timed-zone marks; speed is 10 metres divided by those seconds. Keep the same usual aid and speed condition when comparing visits. The source describes two comfortable-speed trials and two fast-as-safe trials, averaged separately. GaitTrace records phone sensors but does not detect the marks, run those four trials, or time the central 10 m. The app’s 180-second sensor window is not the test time; the worker must time and enter the 10 m result.',
-  'Two-Minute Walk Test (2MWT)','Measures the distance covered in 2 minutes on a measured course. Rest is allowed; the clock continues.',
-  'Purpose: measure how far the participant can walk in two minutes. Use a measured, clear course and the same usual walking aid on repeat tests. The standardized instruction asks the person to cover as much distance as safely possible; slowing down or stopping to rest is allowed, and the clock keeps running. No hands-on help is allowed for the standard test. The worker starts the protocol stopwatch at Go, counts complete laps and measures the final partial distance, then records rests. GaitTrace’s sensor timer waits for a detected first step and is not a substitute for the stopwatch or measured distance. Enter the course length before starting.',
-  'Six-Minute Walk Test (6MWT)','Measures distance covered in 6 minutes on a consistent measured course. Rest is allowed; the clock continues.',
-  'Purpose: measure the distance walked in six minutes as a self-paced test of functional walking capacity. Use a measured, level course and keep the same course and aid across visits. The ATS standard uses a 30 m corridor with turn markers; shorter courses add turns and can change the distance, so document the actual course. The participant may slow down or stand and rest, but the timer continues. The worker uses the standardized timed encouragement, counts laps and partial distance, and records rests. GaitTrace’s sensor timer waits for a detected first step and does not count laps or administer the standardized protocol. Its live prompts are not the ATS script; for a standardized 6MWT, have a worker administer the test and do not use extra app walking cues as a replacement.',
-  'Timed Up and Go (TUG)','From a chair, stand, walk 3 m, turn, return and sit. A worker times the complete sequence.',
-  'Purpose: observe functional mobility through a chair transfer, short walk, turn and return. Use a standard armchair, mark a line 3 m away, and use the person’s usual footwear and walking aid. On Go, the person stands, walks at a comfortable and safe pace to the line, turns, walks back and sits. The worker starts the stopwatch at Go and stops when the person is seated again (buttocks on the chair). Record the aid and any assistance; standard instructions include a practice trial. GaitTrace does not detect standing, the 3 m line, turning completion or seat contact. Its 180-second sensor capture is not the TUG time; a worker must time and enter the complete sequence.'
- ];
- for(const key of guideKeys){assert.ok(messages[key],`Missing test guide translation: ${key.slice(0,70)}`);for(const value of messages[key])assert.ok(value.trim(),key);}
- assert.match(messages[guideKeys[5]][1],/四次测试|四次/);
- assert.match(messages[guideKeys[10]][0],/Rehat/);
- assert.match(messages[guideKeys[10]][1],/休息/);
- assert.match(messages[guideKeys[14]][1],/臀部接触椅面/);
+test('All actual tutorial and worker-guide text has Malay and Chinese translations', () => {
+ const {messages}=load('translations');const {protocolGuides}=load('protocolGuides');const {protocolTutorials}=load('protocolTutorials');
+ for(const [protocol,guide] of Object.entries(protocolGuides)) {
+  for(const text of [guide.title,guide.short,guide.body,guide.extra].filter(Boolean))assert.ok(messages[text],`${protocol}: ${text}`);
+  assert.equal(protocolTutorials[protocol].length,3);
+  for(const step of protocolTutorials[protocol])for(const text of [step.title,step.text]) {
+   assert.ok(messages[text],text);for(const value of messages[text])assert.ok(value.trim(),text);
+   assert.ok(step.text.split(/\s+/).length<=35,'Patient steps must remain brief');
+  }
+ }
 });
 test('Speech uses translated text and matching installed voice; missing Malay voice errors explicitly', async () => {
  const l=load('language');l.setLanguage('zh');let spoken,failed;
@@ -109,18 +100,21 @@ function harness(screen, platform='android', browserResult=null) {
   constructor(){currentEngine=this;this.motionStatus={...steady};this.allReceiving=true;this.baselineReady=true;this.guidanceReady=true;this.begun=false;}
   connect(){} disconnect(){} restoreFitCheck(v){this.savedFitCheck=v} startFit(){this.fitStarted=true} candidateStepsAfter(){return this.motionStatus.context==='movement'?1:0} finishFit(){this.savedFitCheck={status:'movement-then-settled',version:'guided-fit-v2'}} begin(){this.begun=true}
  }
- const native={Platform:{OS:platform},Text:'text',Modal:({visible,children})=>visible?React.createElement('modal',null,children):null,View:'view',ScrollView:'scrollview',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
+ const native={Platform:{OS:platform},Text:'text',TextInput:'input',Modal:({visible,children})=>visible?React.createElement('modal',null,children):null,View:'view',ScrollView:'scrollview',Pressable:'pressable',Switch:'switch',StyleSheet:{create:x=>x},AppState:{currentState:'active',addEventListener:(_,fn)=>{appListener=fn;return {remove(){}}}},BackHandler:{addEventListener:()=>({remove(){}})}};
+ const savedProfiles=new Map();let saveFails=false;
  const mocks={'react-native':native,'expo-location':{Accuracy:{High:4},requestForegroundPermissionsAsync:async()=>({status:'granted'}),getProviderStatusAsync:async()=>({locationServicesEnabled:true}),watchPositionAsync:async()=>({remove(){}})},'expo-keep-awake':{activateKeepAwakeAsync:async()=>{},deactivateKeepAwake:async()=>{}},'expo-haptics':{NotificationFeedbackType:{Error:'error',Warning:'warning',Success:'success'},notificationAsync:async()=>{}},
  '../components/Screen':{Screen:({children,actions,...p})=>React.createElement('screen',p,children,actions),Card:'card',Body:'body',ui:{row:{},fill:{},caption:{}}},'../components/BigButton':{default:'button',__esModule:true},
+ '../components/ProtocolTutorial':{default:()=>null,__esModule:true},
  '../i18n':{Text:'text',LanguagePicker:()=>null,t:x=>x,useLanguage:()=> 'en'},
  '../audio':{speak:async(text,opts)=>{spoke.push(text);voiceOptions=opts},speakQueued:(text,opts)=>{spoke.push(text);voiceOptions=opts;return {finally(fn){fn();return Promise.resolve();}}},discardPendingSpeech(){},stopSpeaking(){},ensureVoice:async()=>({identifier:'en',language:'en-MY'})},
  '../browserSensors':{checkBrowserSensors:async()=>browserResult},
- '../sensors':{SensorRecorder:Engine,checkSensors:async()=>{if(platform==='web'&&!browserResult?.ready)throw new Error('Browser must not check live sensors')}},'../store':{saveSession:async()=>{},generateSessionId:()=> 'test'},
+ '../sensors':{SensorRecorder:Engine,checkSensors:async()=>{if(platform==='web'&&!browserResult?.ready)throw new Error('Browser must not check live sensors')}},'../store':{getParticipants:async()=>[...savedProfiles.values()],saveParticipant:async p=>{if(saveFails)throw new Error('Storage unavailable');savedProfiles.set(p.id,JSON.parse(JSON.stringify(p)));},saveSession:async()=>{},generateSessionId:()=> 'test'},
  };
  const Component=load('screens/'+screen,mocks,globals).default;
  let renderer;act(()=>{renderer=create(React.createElement(Component,{navigation:{navigate:(...p)=>navigated.push(p),replace:(...p)=>navigated.push(p),goBack:()=>navigated.push(['back'])},route:{params:{duration:10,audioEnabled:true,isPractice:true,guidanceEnabled:true}}}))});
  const button=label=>renderer.root.findAllByType('button').find(n=>n.props.label===label);
- return {renderer,button,advance,get engine(){return currentEngine},get voiceOptions(){return voiceOptions},navigated,spoke,hide:()=>act(()=>{doc.visibilityState='hidden';visibilityListener?.()}),background:()=>act(()=>appListener('background')),close:()=>act(()=>renderer.unmount())};
+ async function finishSetup(){await act(async()=>{});act(()=>{renderer.root.findByProps({accessibilityLabel:'Study ID or participant label'}).props.onChangeText('STUDY-001');renderer.root.findByProps({accessibilityLabel:'Age in years'}).props.onChangeText('67');});act(()=>renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='radio').props.onPress());act(()=>button('Continue').props.onPress());act(()=>button('Continue').props.onPress());}
+ return {renderer,button,advance,finishSetup,savedProfiles,failSave:()=>{saveFails=true},get engine(){return currentEngine},get voiceOptions(){return voiceOptions},navigated,spoke,hide:()=>act(()=>{doc.visibilityState='hidden';visibilityListener?.()}),background:()=>act(()=>appListener('background')),close:()=>act(()=>renderer.unmount())};
 }
 test('Setup waits for the participant instead of expiring automatically', () => {
  const h=harness('RecordScreen');h.engine.allReceiving=false;h.advance(40500);
@@ -152,7 +146,7 @@ test('Completed fit survives a later interruption, but retry cannot start until 
  h.engine.baselineReady=true;h.advance(13000);assert.equal(h.engine.begun,false);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1000);assert.equal(h.engine.begun,true);assert.equal(h.spoke.includes('Recording started. Walk at your comfortable pace.'),false);assert.equal(h.engine.fitStarted,undefined);h.close();
 });
 test('Sound sample is optional on setup and can be skipped after two seconds without disabling guidance', async () => {
- const h=harness('PrepareScreen');
+ const h=harness('PrepareScreen');await h.finishSetup();
  const consent=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='checkbox'&&String(n.props.accessibilityLabel).startsWith('I can walk without hands-on help'));
  act(()=>consent.props.onPress());assert.equal(h.button('Start test').props.disabled,false);
  await act(async()=>h.button('Play voice sample').props.onPress());
@@ -162,6 +156,70 @@ test('Sound sample is optional on setup and can be skipped after two seconds wit
  assert.equal(h.navigated[0][0],'Record');assert.equal(h.navigated[0][1].audioEnabled,true);h.close();
 });
 
+test('Setup validates identity and saves one participant with the recording, even on retry', async () => {
+ const h=harness('PrepareScreen');await act(async()=>{});
+ act(()=>h.button('Continue').props.onPress());
+ assert.equal(h.renderer.root.findByType('screen').props.title,'Who is walking?');assert.equal(h.savedProfiles.size,0);
+ await h.finishSetup();assert.equal(h.savedProfiles.size,0);
+ act(()=>h.renderer.root.findAllByType('pressable').find(p=>p.props.accessibilityRole==='checkbox').props.onPress());
+ await act(async()=>h.button('Start test').props.onPress());
+ const first=h.navigated[0][1];assert.equal(h.savedProfiles.size,1);assert.equal(first.demographics.ageYears,67);assert.equal(first.participantSnapshot.id,first.participantId);
+ await act(async()=>h.button('Start test').props.onPress());assert.equal(h.savedProfiles.size,1);assert.equal(h.navigated[1][1].participantId,first.participantId);h.close();
+});
+test('A participant write failure blocks recording and reports a translated error',async()=>{
+ const h=harness('PrepareScreen');await h.finishSetup();h.failSave();
+ act(()=>h.renderer.root.findAllByType('pressable').find(p=>p.props.accessibilityRole==='checkbox').props.onPress());
+ await act(async()=>h.button('Start test').props.onPress());assert.equal(h.navigated.length,0);assert.equal(h.savedProfiles.size,0);
+ assert.equal(h.renderer.root.findByProps({accessibilityRole:'alert'}).children.join(''),'Could not save participant. Try again.');h.close();
+});
+test('Changing person after a saved test creates a new identity rather than rewriting the first person',async()=>{
+ const h=harness('PrepareScreen');await h.finishSetup();
+ act(()=>h.renderer.root.findAllByType('pressable').find(p=>p.props.accessibilityRole==='checkbox').props.onPress());
+ await act(async()=>h.button('Start test').props.onPress());const first=h.navigated[0][1];
+ act(()=>h.button('Previous').props.onPress());act(()=>h.button('Previous').props.onPress());
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'Study ID or participant label'}).props.onChangeText('STUDY-002'));
+ assert.equal(h.renderer.root.findByProps({accessibilityLabel:'Age in years'}).props.value,'');
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'Age in years'}).props.onChangeText('70'));
+ act(()=>h.renderer.root.findAllByType('pressable').find(p=>p.props.accessibilityRole==='radio').props.onPress());
+ act(()=>h.button('Continue').props.onPress());act(()=>h.button('Continue').props.onPress());
+ await act(async()=>h.button('Start test').props.onPress());const second=h.navigated[1][1];
+ assert.notEqual(first.participantId,second.participantId);assert.equal(h.savedProfiles.size,2);
+ assert.equal(h.savedProfiles.get(first.participantId).label,'STUDY-001');assert.equal(first.participantSnapshot.demographics.ageYears,67);h.close();
+});
+test('Participant resolution never merges by demographics and preserves existing clinical fields',()=>{
+ const {resolveTestParticipant:resolve}=load('testParticipant');
+ const input={newId:'new',label:'P01',ageYears:67,sex:'female',heightCm:null,assistiveDevice:'none'};
+ for(const change of [{ageYears:null},{ageYears:NaN},{ageYears:12.5},{sex:null},{label:''}])assert.throws(()=>resolve([],{...input,...change}));
+ const existing=resolve([],input);existing.favorite=true;existing.clinical.lesionLocation='recorded site';existing.demographics.weightKg=70;
+ assert.throws(()=>resolve([existing],{...input,newId:'other',label:' p01 '}),/already exists/);
+ const different=resolve([existing],{...input,newId:'other',label:'P02'});assert.equal(different.id,'other');
+ const updated=resolve([existing],{...input,id:'new',ageYears:68});assert.equal(updated.clinical.lesionLocation,'recorded site');assert.equal(updated.demographics.weightKg,70);assert.equal(updated.favorite,true);assert.equal(existing.demographics.ageYears,67);
+ assert.throws(()=>resolve([{...existing,archived:true}],{...input,id:'new'}),/unavailable/);
+});
+test('Tutorial renders every diagram and stops speech when moving between steps or notes',async()=>{
+ let spoken=[],stops=0,closed=0;
+ const Component=load('components/ProtocolTutorial',{
+  'react-native':{Modal:'modal',View:'view',useWindowDimensions:()=>({height:568,width:320,fontScale:1.5})},
+  'react-native-safe-area-context':{SafeAreaView:'safe'},
+  'react-native-svg':{__esModule:true,default:'svg',Path:'path',Rect:'rect',Circle:'circle',Line:'line',Text:'svgtext'},
+  '../i18n':{Text:'text',t:x=>x,useLanguage:()=> 'en'},
+  '../audio':{speak:async text=>spoken.push(text),stopSpeaking:()=>stops++},
+  './Screen':{Screen:({children,actions,...p})=>React.createElement('screen',p,children,actions),Body:'body',ui:{row:{},fill:{}}},
+  './BigButton':{__esModule:true,default:'button'},
+ }).default;
+ for(const protocol of ['research-walk','10mwt','2mwt','6mwt','tug']){
+  let renderer;act(()=>{renderer=create(React.createElement(Component,{protocol,onClose:()=>closed++}))});
+  const button=name=>renderer.root.findAllByType('button').find(n=>n.props.label===name);
+  for(let step=0;step<3;step++){
+   assert.equal(renderer.root.findAllByType('svg').length,1);
+   await act(async()=>button('Read aloud').props.onPress());const before=stops;
+   if(step===0){act(()=>button('Worker protocol notes').props.onPress());assert.ok(stops>before);act(()=>button('Back to tutorial').props.onPress());}
+   act(()=>button(step===2?'Done':'Next step').props.onPress());
+  }
+  act(()=>renderer.unmount());
+ }
+ assert.equal(closed,5);assert.equal(spoken.length,15);
+});
 test('Language selection updates rendered text, persists, and wins over a delayed saved preference', async () => {
  const l=load('language');let resolveRead;const writes=[];
  const i18n=load('i18n',{'react-native':{Text:'text',View:'view',Pressable:'pressable'},'./language':l,'@react-native-async-storage/async-storage':{getItem:()=>new Promise(r=>resolveRead=r),setItem:async(k,v)=>writes.push([k,v])}});
@@ -215,7 +273,7 @@ test('Browser frame remains phone-sized on laptops and fills narrow mobile scree
 
 test('Browser setup opens explanation without sensor checks, consent or creating a recording',async()=>{
  const h=harness('PrepareScreen','web');
- assert.equal(h.button('Preview hands-free flow').props.disabled,false);
+ assert.notEqual(h.button('Preview hands-free flow').props.disabled,true);
  assert.equal(h.renderer.root.findAllByType('pressable').filter(p=>p.props.accessibilityRole==='checkbox').length,0);
  await act(async()=>h.button('Preview hands-free flow').props.onPress());
  assert.deepEqual(h.navigated,[['Walkthrough']]);
@@ -226,7 +284,7 @@ test('Browser setup opens explanation without sensor checks, consent or creating
 
 test('Browser capture starts only after all-sensor check and separate user consent; preview stays available',async()=>{
  const sensors=Object.fromEntries(['accelerometer','gyroscope','magnetometer'].map(n=>[n,{status:'ready',count:150,hz:50}]));
- const h=harness('PrepareScreen','web',{ready:true,sensors});
+ const h=harness('PrepareScreen','web',{ready:true,sensors});await h.finishSetup();
  await act(async()=>h.button('Check this phone’s sensors').props.onPress());
  assert.equal(h.button('Start test'),undefined);
  await act(async()=>h.button('Agree and check sensors').props.onPress());
@@ -239,7 +297,7 @@ test('Browser capture starts only after all-sensor check and separate user conse
 });
 test('Failed browser capability check cannot unlock recording',async()=>{
  const sensors=Object.fromEntries(['accelerometer','gyroscope','magnetometer'].map(n=>[n,{status:n==='magnetometer'?'unavailable':'ready',count:0,hz:0}]));
- const h=harness('PrepareScreen','web',{ready:false,sensors});
+ const h=harness('PrepareScreen','web',{ready:false,sensors});await h.finishSetup();
  await act(async()=>h.button('Check this phone’s sensors').props.onPress());
  await act(async()=>h.button('Agree and check sensors').props.onPress());
  assert.equal(h.button('Start test'),undefined);assert.ok(h.button('Preview hands-free flow'));h.close();
@@ -255,4 +313,37 @@ test('Browser sensor loss or hidden tab interrupts and saves an active walk',asy
   await act(async()=>{if(cause==='hidden')h.hide();else{h.engine.allReceiving=false;h.advance(100)}});
     await act(async()=>{h.advance(2000);await Promise.resolve();});assert.equal(reason,'interrupted');assert.equal(h.navigated.at(-1)[0],'Result');h.close();
  }
+});
+
+
+test('Setup menus preserve settings and optional participant details without expanding the main page',async()=>{
+ const h=harness('PrepareScreen');await h.finishSetup();
+ assert.equal(h.renderer.root.findAllByType('switch').length,0);
+ act(()=>h.button('More options').props.onPress());
+ assert.equal(h.renderer.root.findAllByType('modal').length,1);
+ const voice=h.renderer.root.findByProps({accessibilityLabel:'Voice guidance'});
+ act(()=>voice.props.onValueChange(false));
+ act(()=>h.button('More participant details').props.onPress());
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'Height in centimetres'}).props.onChangeText('168'));
+ act(()=>h.button('Done').props.onPress());
+ assert.equal(h.renderer.root.findAllByType('modal').length,0);
+ assert.equal(h.renderer.root.findAllByProps({accessibilityLabel:'Height in centimetres'}).length,0);
+ act(()=>h.button('More options').props.onPress());
+ assert.equal(h.renderer.root.findByProps({accessibilityLabel:'Voice guidance'}).props.value,false);
+ act(()=>h.button('More participant details').props.onPress());
+ assert.equal(h.renderer.root.findByProps({accessibilityLabel:'Height in centimetres'}).props.value,'168');
+ act(()=>h.button('Done').props.onPress());
+ h.close();
+});
+
+test('Test selection closes its menu and preserves the chosen protocol on return',async()=>{
+ const h=harness('PrepareScreen');await h.finishSetup();
+ act(()=>h.button('Previous').props.onPress());
+ act(()=>h.button('Research walk').props.onPress());
+ const choice=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='radio'&&n.findAllByType('text').some(t=>t.props.children==='6MWT'));
+ act(()=>choice.props.onPress());
+ assert.equal(h.renderer.root.findAllByType('modal').length,0);
+ assert.ok(h.button('6MWT'));
+ assert.ok(h.renderer.root.findByProps({accessibilityLabel:'Measured course length in metres'}));
+ h.close();
 });

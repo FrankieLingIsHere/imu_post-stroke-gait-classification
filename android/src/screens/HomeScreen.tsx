@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import ReviewImport from '../components/ReviewImport';
 import { Text, LanguagePicker } from '../i18n';
@@ -10,20 +10,26 @@ import { colours as c } from '../theme';
 import PwaInstall from '../components/PwaInstall';
 import ReleaseInfo from '../components/ReleaseInfo';
 export default function HomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) {
-  return <Screen eyebrow="YOUR DAILY WALK" title={'A little walk.\nAt your pace.'} actions={<>
+  const [more, setMore] = useState(false);
+  return <Screen title="Your walking space" actions={<>
     <BigButton label="Start a walk" onPress={() => navigation.navigate('Prepare', { duration: 20, audioEnabled: true, isPractice: false })} />
-    <BigButton label="My recordings" variant="outline" onPress={() => navigation.navigate('History')} />
-    <BigButton label="Participants and profiles" variant="outline" onPress={() => navigation.navigate('Participants')} />
-    <BigButton label="Progress dashboard" variant="outline" onPress={() => navigation.navigate('Dashboard')} />
-    <BigButton label="How to use the app" variant="ghost" onPress={() => navigation.navigate('Onboarding')} />
   </>}>
     <LanguagePicker />
+    <Body>Take your time. We will guide you.</Body>
+    <View style={{flexDirection:'row',flexWrap:'wrap',gap:10}}>
+      <BigButton style={s.tile} label="My recordings" variant="outline" onPress={() => navigation.navigate('History')} />
+      <BigButton style={s.tile} label="Participants and profiles" variant="outline" onPress={() => navigation.navigate('Participants')} />
+      <BigButton style={s.tile} label="How to use the app" variant="outline" onPress={() => navigation.navigate('Onboarding')} />
+      <BigButton style={s.tile} label={more?'Close more options':'More options'} variant="outline" onPress={()=>setMore(!more)} />
+    </View>
+    {more && <View style={{gap:12}}>
+    <BigButton label="Progress dashboard" variant="outline" onPress={() => navigation.navigate('Dashboard')} />
     <ReleaseInfo />
     {Platform.OS === 'web' && <PwaInstall />}
-    <View style={s.hero}><Text style={s.arrow} accessible={false}>↑</Text><Text style={s.heroText}>One step at a time</Text><Body>10–30 seconds · Guided by voice</Body></View>
     <Card><Text style={s.label}>Your walk can help research</Text><Body muted>{Platform.OS==='web'?'Check whether this browser can record all three sensors, or preview the steps and review an exported file.':'Record your movement and choose when to share it. Your recordings stay on this phone.'}</Body></Card>
     <ReviewImport onOpen={id=>navigation.navigate('Details',{sessionId:id})}/>
     <Text style={s.note}>For movement research. This app does not diagnose stroke or assess whether it is safe to walk.</Text>
+    </View>}
   </Screen>;
 }
-const s = StyleSheet.create({ hero: { backgroundColor: c.surfaceAlt, borderRadius: 24, padding: 18, alignItems: 'center', gap: 5 }, arrow: { fontSize: 60, color: c.primary }, heroText: { fontSize: 22, color: c.textPrimary, fontWeight: '700' }, label: { fontSize: 20, fontWeight: '700', color: c.textPrimary }, note: { fontSize: 16, lineHeight: 22, color: c.textSecondary } });
+const s = StyleSheet.create({ tile:{flexBasis:'45%',flexGrow:1,minWidth:120},label: { fontSize: 20, fontWeight: '700', color: c.textPrimary }, note: { fontSize: 16, lineHeight: 22, color: c.textSecondary } });

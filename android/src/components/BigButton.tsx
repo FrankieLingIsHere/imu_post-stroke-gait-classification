@@ -131,7 +131,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
+    alignSelf: 'stretch',
+    minWidth: 0,
     ...shadows.button,
   },
 
@@ -166,6 +167,7 @@ const styles = StyleSheet.create({
 
   // ── Content layout ──
   content: {
+    maxWidth: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

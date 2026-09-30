@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useLanguage, restoreLanguage, t } from './src/i18n';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -37,8 +37,8 @@ export default function App() {
       <Stack.Screen name="History" component={HistoryScreen} options={{ title: t('My recordings') }} />
       <Stack.Screen name="Details" component={DetailsScreen} options={{ title: t('Recording details') }} />
       <Stack.Screen name="Walkthrough" component={WalkthroughScreen} options={{ title: t('Supervisor walkthrough') }} />
-      <Stack.Screen name="Participants" component={ParticipantsScreen} options={{ title: 'Participants' }} />
-      <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Progress dashboard' }} />
+      <Stack.Screen name="Participants" component={ParticipantsScreen} options={{ title: t('Participants') }} />
+      <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: t('Progress dashboard') }} />
     </Stack.Navigator>
   </NavigationContainer></SafeAreaProvider></PhoneFrame>;
 }
