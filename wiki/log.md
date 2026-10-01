@@ -2592,3 +2592,19 @@ Updated the collection workflow concept, index, client requirements, assessment 
 ## [2026-09-30] refinement | Bounded setup menus
 
 Moved secondary setup controls, participant search and protocol selection into separate safe-area menus to reduce main-page crowding. Added menu persistence/selection checks; 88 tests and TypeScript pass. Updated the workflow and weekly progress locally; no push. Physical layout review remains pending.
+
+## [2026-10-01] sync | Discoverable settings and complete recording inventory
+
+Updated the collection workflow, index and weekly progress after named settings/test controls, visible height/walking-aid entry, ID-based profile recovery, explicit unassigned-recording confirmation, raw CSV identity preservation and six-minute JSON imports. Dashboard includes practice and archived histories, while restricting trends to comparable measured device outcomes. Unknown identities are not inferred. Local changes await publication review; physical usability remains untested.
+
+## [2026-10-01] sync | Protocol-specific recording and preview
+
+Added clinical start/finish policies, instructions, independent endurance clocks and suppression of generic walking cues. Documented worker-managed standardized encouragement and outcome timing, preserved standing calibration before TUG, shared clinical preview/controller, export provenance and multilingual encoding checks. Updated client requirements, product spec, workflow, index and weekly progress. Physical validation and publication remain pending.
+
+## [2026-10-01] sync | GaitTrace AI model research strategy
+
+Reviewed the current app protocol, classification evidence map and synthesis pilot against primary stroke gait, smartphone IMU, digital-mobility validation and rehabilitation-measure sources. Added [[gait-app-ai-model-strategy]] and indexed it. The recommended first model target is quality-gated within-person measurement; the grant's clinically parameterized stroke-like synthesis remains a separate uncompleted objective. No model training, new dataset acquisition, app code change or clinical validation was performed. Changes remain local for review.
+
+## [2026-10-01] sync | Approved app and research-note publication
+
+Verified the protocol, participant-linkage and research-note scope with 102 app tests, TypeScript, Android and web exports, and a Git whitespace check. Updated the current weekly page and collection-workflow concept. Physical-device validation remains pending.

@@ -68,3 +68,43 @@ M android/App.tsx
 ?? android/src/protocolTutorials.ts
 ?? android/src/testParticipant.ts
 ```
+
+## Follow-up: 1 October 2026 ? discoverability and recording identity
+
+Replaced ambiguous setup More options with Language and audio settings, exposed height/walking aid on the person page, and labelled the current test Change test with radio marks. Home exposes Progress dashboard and labels its secondary controls Import and app information. Height remains optional with an explanation that it supports an experimental heuristic, not measured distance; users should not invent an unknown height.
+
+Saved/imported explicit participant IDs can restore missing local profiles. Unknown identities remain in a visible Needs participant assignment queue; recording details allow explicit selection and confirmation or creation of a profile followed by return. Assignment preserves raw signals, demographics and existing historical snapshots. The dashboard now includes practice and archived-profile recordings but excludes practice/simulation from measured-speed trends and requires known comparable protocol/course/aid. New native index entries identify device recordings; older entries are checked against the saved file without retaining all raw streams in dashboard state.
+
+Raw CSV includes participant ID, label and height and imports those columns when present; older CSV remains supported and unassigned when identity is absent. JSON imports now accept six-minute recordings within a ten-minute safety bound. Single-recording raw CSV import remains the supported format; a combined multi-session CSV is not a bulk import path.
+
+Validation: Android and web production bundles export successfully to ignored local output. 93 automated tests pass, including Android/browser assignment persistence, raw-data preservation, profile recovery without demographic merging, CSV identity round-trip, six-minute JSON import and dashboard inclusion of unassigned/practice/archived history. TypeScript passes. No physical-device usability validation was performed. No new native dependencies. Changes remain local for review.
+
+### Proposed publication scope ? 1 October
+
+- New: `android/src/participantLinks.ts`, `android/src/components/RecordingParticipant.tsx`.
+- Modified app: `experienceMessages.ts`, `exportData.ts`, `reviewRecording.ts`, `store.ts`, `store.web.ts`; screens `DashboardScreen.tsx`, `DetailsScreen.tsx`, `HistoryScreen.tsx`, `HomeScreen.tsx`, `PrepareScreen.tsx`.
+- Tests: `android/tests/experience.test.cjs`, `android/tests/recording.test.cjs`.
+- Documentation: `docs/GAIT_APP_CLIENT_REQUIREMENTS.md`, this weekly page, `wiki/concepts/gait-app-collection-workflow.md`, `wiki/index.md`, `wiki/log.md`.
+
+Dependencies and generated bundles are excluded. Publication requires review and approval of this scope.
+
+
+## Follow-up: 1 October — protocol-specific recording guidance
+
+Implemented shared protocol definitions and a separate clinical capture controller. Research walking retains its first-step clock; clinical modes capture before Go and start their independent clock at the speech-start callback or worker tap. 10MWT/TUG use worker-confirmed finish, with a three-minute capture ceiling explicitly distinct from clinical completion. 2MWT/6MWT clock 120/360 seconds including rests. Generic directional warnings and behaviour praise are suppressed during clinical capture. The worker supplies standardized timed cues; automatic clinical event detection remains unavailable. Standing baseline is preserved before the TUG seated start.
+
+Clinical browser preview reuses the same controller without sensor persistence; common setup/research preview is explanatory, and no readiness is claimed. Removed obsolete 20-second setup wording from that walkthrough. The movement-check stop instruction is now emitted when the required sustained motion has been observed. New English/Malay/Chinese guidance and selected-state symbols were repaired after finding shell encoding corruption; a regression test rejects replacement runs and missing Chinese script.
+
+Protocol metadata (Go offset, source, elapsed time, end reason) survives JSON and raw CSV round-trip. Worker outcomes remain separate. Tests cover complete intro before starting, delayed/missing Go, 2/6-minute deadlines with rests, sensor loss, manual TUG/10MWT finish, capture-limit status, all clinical branches, baseline preservation and metadata round-trip. Physical speech/timing/layout validation remains pending; automated tests inject events.
+
+Additional publication scope: `android/App.tsx`; new `android/src/protocolFlow.ts`, `protocolMessages.ts`, `components/ClinicalCapture.tsx`; modified `placement.ts`, `sensors.ts`, `protocolGuides.ts`, `protocolTutorials.ts`, `translations.ts`, `screens/RecordScreen.tsx`, `screens/ResultScreen.tsx`, `screens/WalkthroughScreen.tsx`; `docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md`, together with the earlier 1 October files/tests/wiki scope. No new native packages. Keep local for review before publishing.
+
+Final verification for protocol flow: 102 tests pass, TypeScript passes, and Android/web production exports succeed. Refreshed the local preview at http://127.0.0.1:8765/ and verified HTTP 200. No connected browser was available for visual inspection. Source changes remain unpublished.
+
+## GaitTrace AI model research synthesis — 1 October 2026
+
+Reviewed the actual horizontal lower-back Android workflow, protocol outcome boundaries, frozen classifier and healthy virtual-IMU pilot against primary research on trunk asymmetry, smartphone gait events, longitudinal stroke mechanics and digital-measure validation. The research recommendation is to prioritize quality-gated straight-walk segmentation, cadence/step timing and trunk-pattern regularity with uncertainty, then comparable within-person trends anchored to worker-measured 10MWT/TUG/2MWT/6MWT outcomes. The grant's clinically parameterized healthy-to-stroke-like synthesis remains a separate primary research objective and is not yet complete. The 15-member stroke classifier is not suitable as a patient-facing diagnosis or recovery score; its specificity stress and missing independent cohort remain unchanged. Detailed citations, model stack and admission gates are in [the wiki strategy](../../wiki/concepts/gait-app-ai-model-strategy.md). This was a literature and local-evidence review only: no dataset acquisition, model fit, app behavior change or clinical validation. Files remain local for publication review.
+
+## Publication verification — 1 October 2026
+
+The approved app, protocol and research-note scope passed 102 automated tests, TypeScript, Android and web exports, and a Git whitespace check. Physical-device validation remains pending. No native packages or app configuration changed.

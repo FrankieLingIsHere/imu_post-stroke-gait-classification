@@ -43,4 +43,15 @@ Implemented locally: three-sensor permission/readiness checks, individual statio
 
 Implemented locally in this batch: optional Android foreground GPS distance cross-check, requested only after the user enables it; GPS watching begins after the first detected walking step. Only aggregate distance, fix count and median device-reported accuracy are saved/exported, not coordinates. Participant profiles can now be searched by coded label and edited without rewriting prior session snapshots. Neither GPS nor the candidate-step estimator is a clinical distance measure.
 
-Not yet implemented or validated: automatic course boundary/lap or TUG event detection, complete protocol-specific voice/event workflows, bilateral limb attribution, clinical asymmetry scoring, and independent clinical validation. The local dashboard lists history and can plot measured-speed history when protocol, course length and walking aid match; it is not a validated progress model. GPS is best treated as a rough outdoor cross-check; short, indoor or obstructed routes can produce misleading distance. These changes have not been published or physically validated.
+Not yet implemented or validated: automatic course boundary/lap or TUG event detection, automatic clinical event detection and standardized timed encouragement, bilateral limb attribution, clinical asymmetry scoring, and independent clinical validation. The local dashboard lists history and can plot measured-speed history when protocol, course length and walking aid match; it is not a validated progress model. GPS is best treated as a rough outdoor cross-check; short, indoor or obstructed routes can produce misleading distance. These changes have not been published or physically validated.
+
+## 1 October usability and linkage refinement
+
+Named setup settings and explicit Change test/radio controls replace ambiguous selection affordances. Height/walking aid are directly accessible in participant setup. Height remains optional for raw recording and measured-course outcomes; its heuristic estimate is explicitly experimental.
+
+Recording inventory includes unassigned, practice and archived-participant histories. Existing explicit IDs restore missing profiles; unknown owners require a confirmed assignment from recording details, never demographic matching. Assignment does not rewrite captured measurements. Raw CSV carries participant identity and height; JSON supports six-minute recording imports. Comparative trends still require comparable measured device outcomes.
+
+
+## Protocol-specific guidance implementation
+
+Research walking keeps behaviour-based cues. Clinical capture now branches into worker-assisted 10MWT, TUG, 2MWT and 6MWT policies. TUG explains the seated start and full chair-to-chair sequence; 10MWT explains the marked path; endurance instructions explicitly allow rests without pausing time. Generic turn warnings/praise are suppressed during clinical capture; the worker gives standard timed instructions. App setup/Go/finish audio is optional. Live capture and preview share the clinical controller. Timing provenance is exported separately from worker-confirmed results. Physical validation remains pending.

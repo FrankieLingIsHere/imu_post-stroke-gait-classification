@@ -550,3 +550,77 @@ test('Browser imported recordings are review-only and cannot start native persis
  assert.equal((await store.getSession('review')).id,'review');
  await assert.rejects(store.saveSession(session),/Only browser sensor recordings/);
 });
+
+test('Raw CSV preserves participant identity and height; legacy CSV remains explicitly unassigned',()=>{
+ const api=load('reviewRecording');
+ const session={id:'csv-person',date:'2026-09-17T00:00:00Z',duration:10,isPractice:false,windows:[],recording:recordFixture(),participantId:'p1',participantLabel:'Study, One',demographics:{ageYears:65,sex:'female',heightCm:162}};
+ const parsed=api.parseReviewRecordingCsv(exporting.exportCSV(session));
+ assert.equal(parsed.participantId,'p1');assert.equal(parsed.participantLabel,'Study, One');assert.equal(parsed.demographics.heightCm,162);
+ assert.equal(parsed.recording.streams.accelerometer.length,session.recording.streams.accelerometer.length);
+ const old={...session};delete old.participantId;delete old.participantLabel;
+ assert.equal(api.parseReviewRecordingCsv(exporting.exportCSV(old)).participantId,undefined);
+});
+
+test('Participant recovery uses explicit IDs, keeps archived profiles, and never merges similar people',()=>{
+ const {recoverParticipantProfiles,assignRecordingParticipant}=load('participantLinks');
+ const base={date:'2026-09-17',demographics:{ageYears:65,sex:'female'},windows:[]};
+ const recovered=recoverParticipantProfiles([],[{...base,id:'one',participantId:'p1',participantLabel:'Study'},{...base,id:'two',participantId:'p2',participantLabel:'Study'},{...base,id:'unknown'}]);
+ assert.equal(recovered.length,2);assert.equal(recovered[0].clinical.assistiveDevice,'other');
+ const archived={...recovered[0],archived:true,label:'Updated'};
+ assert.equal(recoverParticipantProfiles([archived],[{...base,participantId:'p1',participantLabel:'Old'}])[0],archived);
+ const linked=assignRecordingParticipant(base,recovered[0]);
+ assert.equal(linked.participantId,'p1');assert.equal(linked.demographics,base.demographics);assert.equal(linked.participantSnapshot,undefined);
+ assert.throws(()=>assignRecordingParticipant(linked,recovered[1]),/already/);
+ assert.throws(()=>assignRecordingParticipant(base,archived),/active/);
+});
+
+test('Native and browser storage recover linked profiles and persist explicit assignments without altering raw data',async()=>{
+ const values=new Map(),files=new Map();
+ const storage={async getItem(k){return values.get(k)??null},async setItem(k,v){values.set(k,v)}};
+ const disk={documentDirectory:'/documents/',async makeDirectoryAsync(){},async writeAsStringAsync(k,v){files.set(k,v)},async readAsStringAsync(k){return files.get(k)}};
+ const native=load('store',{'@react-native-async-storage/async-storage':storage,'expo-file-system':disk}),web=load('store.web');
+ for(const store of [native,web]){
+   const session={id:'linked',date:'2026-09-17T00:00:00Z',duration:10,isPractice:false,windows:[],recording:{...recordFixture(),source:'device'},participantId:'p1',participantLabel:'Known'};
+   await store.importReviewRecording(exporting.exportJSON(session));
+   assert.equal((await store.getParticipants())[0].id,'p1');
+   const unknown={...session,id:'unknown'};delete unknown.participantId;delete unknown.participantLabel;
+   await store.importReviewRecording(exporting.exportJSON(unknown));
+   const before=JSON.stringify((await store.getSession('unknown')).recording);
+   await store.linkSessionParticipant('unknown','p1');
+   const after=await store.getSession('unknown');
+   assert.equal(after.participantId,'p1');assert.equal(JSON.stringify(after.recording),before);
+   assert.equal((await store.getParticipants()).length,1);
+ }
+});
+
+test('Six-minute JSON recordings remain importable with a finite duration bound',()=>{
+ const session={id:'six-minute',date:'2026-09-17T00:00:00Z',duration:360,isPractice:false,windows:[],recording:{...recordFixture(),source:'device',elapsedSeconds:360}};
+ assert.equal(load('reviewRecording').parseReviewRecording(exporting.exportJSON(session)).recording.elapsedSeconds,360);
+});
+
+test('Clinical setup preserves the standing baseline before returning to the chair',()=>{
+ const r=rig(),recorder=new r.api.SensorRecorder({guidanceEnabled:false,voiceEnabled:true},()=>{});
+ recorder.connect();
+ const emit=(t,a)=>{
+  r.emit('Accelerometer',t,{...a,timestamp:100+t/1000});
+  r.emit('Gyroscope',t,{x:0,y:0,z:0,timestamp:100+t/1000});
+  r.emit('Magnetometer',t,{x:20,y:30,z:40,timestamp:100+t/1000});
+ };
+ for(let t=0;t<=4000;t+=10)emit(t,{x:1,y:0,z:0});
+ recorder.preserveSetupBaseline();
+ for(let t=4010;t<=8000;t+=10)emit(t,{x:0.8,y:0,z:0.6});
+ recorder.begin();emit(8010,{x:0.8,y:0,z:0.6});
+ const saved=recorder.stop('completed');
+ assert.ok(Math.abs(saved.baseline.mean.accelerometer.x-1)<1e-10);
+ assert.equal(saved.baseline.mean.accelerometer.z,0);
+ assert.equal(saved.streams.accelerometer[0].z,0.6);
+});
+test('Protocol Go offset and completion provenance survive JSON and raw CSV export/import',()=>{
+ const execution={version:'protocol-flow-v1',protocol:'tug',goOffsetMs:700,goSource:'speech-start-callback',elapsedFromGoSeconds:14,end:'worker-ended',clinicalOutcomeVerified:false};
+ const session={id:'timed',date:'2026-09-17T00:00:00Z',duration:180,isPractice:false,windows:[],recording:{...recordFixture(),source:'device'},assessmentSetup:{protocol:'tug'},protocolExecution:execution};
+ const api=load('reviewRecording');
+ for(const parsed of [api.parseReviewRecording(exporting.exportJSON(session)),api.parseReviewRecordingCsv(exporting.exportCSV(session))]){
+  assert.deepEqual(JSON.parse(JSON.stringify(parsed.protocolExecution)),execution);
+  assert.equal(parsed.assessment,undefined);
+ }
+});

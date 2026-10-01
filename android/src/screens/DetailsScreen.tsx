@@ -9,9 +9,10 @@ import SignalChart from '../components/SignalChart';
 import { getSession, SessionRecord, formatSessionDate } from '../store';
 import { recordingIssues, SENSOR_NAMES, SENSOR_UNITS, SensorName, streamStats, Sample } from '../recording';
 import { shareRecording } from '../export';
+import RecordingParticipant from '../components/RecordingParticipant';
 import PatientSummary from '../components/PatientSummary';
 const labels = { accelerometer: 'Acceleration', gyroscope: 'Rotation', magnetometer: 'Magnetic field' };
-export default function DetailsScreen({ route }: NativeStackScreenProps<RootStackParamList, 'Details'>) {
+export default function DetailsScreen({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'Details'>) {
   useLanguage();
   const [session, setSession] = useState<SessionRecord>();
   const [tab, setTab] = useState('Summary');
@@ -48,6 +49,9 @@ export default function DetailsScreen({ route }: NativeStackScreenProps<RootStac
     {!loading && !session && <BigButton label="Retry loading" onPress={() => setAttempt(attempt + 1)} />}
     {session && !r && <Text style={ui.error}>Older simulated recording · not patient sensor data</Text>}
     {session && tab === 'Summary' && <>
+    {session?.protocolExecution&&<Card><Text style={ui.label}>Protocol capture timing</Text><Body>Capture includes time before Go. The app timer is not a worker-verified clinical outcome.</Body><Text style={ui.caption}>{t('Seconds from Go: {0}').replace('{0}',session.protocolExecution.elapsedFromGoSeconds?.toFixed(1)??t('Not provided'))}</Text><Text style={ui.caption}>{t('Capture ended: {0}').replace('{0}',t(session.protocolExecution.end))}</Text></Card>}
+
+      <RecordingParticipant session={session} onLinked={setSession} onCreate={()=>navigation.navigate('Participants')}/>
       {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
     {session.demographics && <Card><Text style={ui.label}>Participant information</Text><Body>{t('Age')}: {session.demographics.ageYears ?? t('Not provided')} · {t('Sex')}: {t(session.demographics.sex === 'prefer-not-to-say' ? 'Prefer not to say' : session.demographics.sex[0].toUpperCase() + session.demographics.sex.slice(1))}</Body><Text style={ui.caption}>Self-reported research metadata; not used for diagnosis.</Text></Card>}
     {r ? <PatientSummary recording={r} /> : <Body>No gait summary is calculated from older simulated recordings.</Body>}

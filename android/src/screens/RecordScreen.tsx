@@ -1,3 +1,5 @@
+import ClinicalCapture from '../components/ClinicalCapture';
+import { protocolFlows,clinicalInterrupted,clinicalLimit,type ProtocolExecution } from '../protocolFlow';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, AppState, BackHandler, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { Text } from '../i18n';
@@ -30,6 +32,10 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     return () => { disposed = true; void deactivateKeepAwake(tag).catch(() => {}); };
   }, []);
   const { duration, isPractice, audioEnabled, guidanceEnabled, useGpsDistance, demographics, participantId, participantLabel, participantSnapshot, assessmentSetup } = route.params;
+  const protocol=assessmentSetup?.protocol??'research-walk';
+  const clinical=protocol!=='research-walk';
+  const execution=useRef<ProtocolExecution>();
+  const startLocationRef=useRef<()=>void>(()=>{});
   const [attempt, setAttempt] = useState(0);
   const passedFit = useRef<Recording['fitCheck']>();
   const retryRequested = useRef(false);
@@ -54,8 +60,8 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
   const say = (text: string, options?: Parameters<typeof speak>[1], interrupt = false): Promise<void> => { if (!audioEnabled) return Promise.resolve(); if (interrupt) stopSpeaking(); const talk = interrupt ? speak : speakQueued; return talk(text, { ...options, onError: () => {
     if (!mounted.current) return;
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-    if (phaseRef.current === 'walk') finish('interrupted');
-    else if (['prep','checking','fit','countdown','waiting'].includes(phaseRef.current)) { recorder.current?.disconnect(); phaseRef.current = 'error'; setPhase('error'); }
+    if (['walk','clinical'].includes(phaseRef.current)) finish('interrupted');
+    else if (['prep','checking','fit','countdown','waiting','clinical-ready'].includes(phaseRef.current)) { recorder.current?.disconnect(); phaseRef.current = 'error'; setPhase('error'); }
     setError('Could not play the voice. Check phone speech and volume settings, or use a helper with voice off.');
   } }); };
   function retry() {
@@ -74,15 +80,17 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     finally { saveBusy.current = false; if (mounted.current) setSaving(false); }
   }
   function finish(reason: Recording['stopReason']) {
-    if (phaseRef.current !== 'walk') return;
+    if (!['walk','clinical'].includes(phaseRef.current)) return;
     phaseRef.current = 'done'; setPhase('done'); setHint('');
     locationSubscriptionRef.current?.remove(); locationSubscriptionRef.current = null;
     const recording = recorder.current!.stop(reason);
+    if(clinical&&!execution.current)execution.current={version:'protocol-flow-v1',protocol,goOffsetMs:null,goSource:audioEnabled?'speech-start-callback':'worker-tap',elapsedFromGoSeconds:null,end:'interrupted',clinicalOutcomeVerified:false};
+    if(clinical&&execution.current&&reason!=='completed')execution.current={...execution.current,end:execution.current.end==='capture-limit'?'capture-limit':'interrupted',elapsedFromGoSeconds:execution.current.goOffsetMs===null?null:Math.max(0,recording.elapsedSeconds-execution.current.goOffsetMs/1000)};
     if (locationTrackerRef.current) recording.locationDistance = locationTrackerRef.current.finish();
     recording.setupCheck = { version: 'guided-fit-v2', anatomicalPlacementVerified: false, steadySeconds: 3, retries: attempt, language: getLanguage() };
     pending.current = { id: generateSessionId(), date: recording.startedAt, duration, isPractice, demographics,
       quality: recordingIssues(recording).length ? 'repeat' : 'good', windowCount: 0, windows: [], recording,
-      participantId, participantLabel, participantSnapshot, assessmentSetup,
+      participantId, participantLabel, participantSnapshot, assessmentSetup, protocolExecution:execution.current,
       assessment: { completed: false, completionStatus: 'not-completed', timedZoneSeconds: null, distanceWalkedM: null, lapCount: null, restCount: 0, perceivedExertion: null, symptoms: '', clinicianNotes: '', observedGaitScore: null, observedGaitScale: '', speedMps: null, distanceSource: 'unavailable' } };
     const previousWalk = async () => {
       if (!participantId || isPractice) return null;
@@ -92,7 +100,10 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       return sessions.filter(s => s.participantId === participantId && !s.isPractice && !!s.recording && s.duration === duration && (s.assessmentSetup?.protocol ?? 'research-walk') === currentProtocol && s.participantSnapshot?.clinical.assistiveDevice === aid)
         .sort((a,b) => b.date.localeCompare(a.date))[0]?.recording ?? null;
     };
-    void previousWalk().then(previous => {
+    if(clinical) {
+      discardPendingSpeech();
+      void say(execution.current?.end==='capture-limit'?clinicalLimit:execution.current?.end==='interrupted'?clinicalInterrupted:protocolFlows[protocol].finish);
+    } else void previousWalk().then(previous => {
       const message = spokenWalkFeedback(describeMovement(recording), previous ? describeMovement(previous) : null);
       say(message);
     }).catch(() => say(spokenWalkFeedback(describeMovement(recording), null)));
@@ -100,19 +111,21 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     saveTimer.current = setTimeout(() => { saveTimer.current = null; void persist(); }, 1800);
   }
   function cancel() {
-    if (phaseRef.current === 'walk') finish('user-stopped');
-    else if (['prep', 'checking', 'fit', 'countdown', 'waiting', 'error'].includes(phaseRef.current)) {
+    if (['walk','clinical'].includes(phaseRef.current)) finish('user-stopped');
+    else if (['prep', 'checking', 'fit', 'countdown', 'waiting', 'clinical-ready', 'error'].includes(phaseRef.current)) {
       phaseRef.current = 'cancelled'; recorder.current?.disconnect(); stopSpeaking(); navigation.goBack();
     }
   }
   useEffect(() => {
-    mounted.current = true; retryRequested.current = false;
+    mounted.current = true; retryRequested.current = false; execution.current=undefined;
     phaseRef.current = 'prep'; setPhase('prep'); setRemaining(0);
-    const engine = new SensorRecorder({ guidanceEnabled, voiceEnabled: audioEnabled }, () => {
+    const engine = new SensorRecorder({ guidanceEnabled:guidanceEnabled&&!clinical, voiceEnabled: audioEnabled }, () => {
+      if(clinical)return;
       hintExpires.current = performance.now() + 6000;
       setHint('A turn may have happened. Take your time.');
       say('A turn may have happened. Take your time. Continue only if comfortable.');
     }, () => {
+      if(clinical)return;
       hintExpires.current = performance.now() + 6000;
       setHint('The phone may be moving in its pouch. Check only when safely at rest.');
       say('The phone may be moving in its pouch. You can rest. Check it only when safely stopped.');
@@ -132,6 +145,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     let walkArmedAt = 0;
     let countdownIntroPending = false;
     let fitIntroPending = false;
+    let fitStopSpoken = false;
     let prepIntroPending = true;
     let disposed = false;
     locationTrackerRef.current = useGpsDistance ? new ForegroundDistanceTracker() : null;
@@ -142,11 +156,13 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       void Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1000, distanceInterval: 1 }, position => {
         locationTrackerRef.current?.add({ latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy, timestamp: position.timestamp });
       }).then(subscription => {
-        if (phaseRef.current !== 'walk' || disposed) subscription.remove();
+        if (!['walk','clinical'].includes(phaseRef.current) || disposed) subscription.remove();
         else locationSubscriptionRef.current = subscription;
       }).catch(() => { /* IMU recording continues; the saved location summary will show unavailable. */ });
     };
+    startLocationRef.current=startLocation;
     const enterCountdown = (now: number, introduction: string) => {
+      if(clinical){engine.preserveSetupBaseline();discardPendingSpeech();phaseRef.current='clinical-ready';setPhase('clinical-ready');return;}
       phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9; countdownIntroPending = true;
       discardPendingSpeech();
       void say(introduction).finally(() => {
@@ -197,6 +213,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       } else if (phaseRef.current === 'fit') {
         if (fitIntroPending) return;
         const status = fit.update(now, engine.allReceiving, engine.motionStatus);
+        if(fit.readyToSettle&&!fitStopSpoken){fitStopSpoken=true;void say('Stop comfortably now. Stand still while the movement check finishes.');}
         if (status === 'review') {
           engine.disconnect(); phaseRef.current = 'error'; setPhase('error');
           const message = 'The phone may be moving in its pouch. No test started. Rest, then check the fit when safe.';
@@ -254,16 +271,16 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     }, 100);
     const app = AppState.addEventListener('change', state => {
       if (state === 'active') return;
-      if (phaseRef.current === 'walk') finish('interrupted');
-      else if (['prep', 'checking', 'fit', 'countdown', 'waiting'].includes(phaseRef.current)) {
+      if (['walk','clinical'].includes(phaseRef.current)) finish('interrupted');
+      else if (['prep', 'checking', 'fit', 'countdown', 'waiting','clinical-ready'].includes(phaseRef.current)) {
         engine.disconnect(); phaseRef.current = 'error'; setPhase('error'); stopSpeaking();
         setError('Setup paused when the app left the screen. Return to setup when ready.');
       }
     });
     const hidden = () => {
       if (document.visibilityState === 'visible') return;
-      if (phaseRef.current === 'walk') finish('interrupted');
-      else if (['prep','checking','fit','countdown','waiting'].includes(phaseRef.current)) {
+      if (['walk','clinical'].includes(phaseRef.current)) finish('interrupted');
+      else if (['prep','checking','fit','countdown','waiting','clinical-ready'].includes(phaseRef.current)) {
         engine.disconnect(); phaseRef.current = 'error'; setPhase('error'); stopSpeaking();
         setError('Setup paused when the app left the screen. Return to setup when ready.');
       }
@@ -277,6 +294,12 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       if (phaseRef.current !== 'done') stopSpeaking();
     };
   }, [attempt]);
+  if(clinical&&['clinical-ready','clinical'].includes(phase))return <ClinicalCapture protocol={protocol} audioEnabled={audioEnabled} say={say}
+    receiving={()=>recorder.current?.allReceiving===true}
+    onBegin={()=>{recorder.current!.begin();phaseRef.current='clinical';setPhase('clinical');startLocationRef.current();}}
+    onGo={offset=>{execution.current={version:'protocol-flow-v1',protocol,goOffsetMs:offset,goSource:audioEnabled?'speech-start-callback':'worker-tap',elapsedFromGoSeconds:0,end:'interrupted',clinicalOutcomeVerified:false};}}
+    onFinish={value=>{execution.current=value;finish(value.end==='interrupted'||value.end==='capture-limit'?'interrupted':'completed');}}
+    onCancel={cancel}/>;
   return <Screen eyebrow={['prep', 'checking', 'fit', 'countdown', 'waiting'].includes(phase) ? 'STEP 2 · HANDS-FREE SETUP' : 'STEP 3 · YOUR WALK'} title={phase === 'prep' ? 'Settle in. No rush.' : phase === 'checking' ? 'Checking the phone' : phase === 'fit' ? 'Short movement check' : ['countdown','waiting'].includes(phase) ? 'Ready to begin' : phase === 'walk' ? 'Walk at your own pace' : 'Take a comfortable rest'} actions={
     phase === 'error' ? <><BigButton label="Retry this check" onPress={retry} /><BigButton label="Back to setup" variant="outline" onPress={cancel} /></> :
     phase === 'done' ? <BigButton label={error ? 'Retry save' : 'Saving recording…'} loading={saving} onPress={persist} /> :
@@ -289,7 +312,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     <Card>
       <Text accessible={false} style={s.arrow}>{phase === 'walk' ? '↑' : '•'}</Text>
       {['checking', 'fit', 'countdown', 'waiting'].includes(phase) && <ProgressIndicator size="large" color={c.primary} style={s.progressIndicator} />}
-      <Body>{phase === 'prep' ? 'Take your time to place the phone. Keep it horizontal at your lower back, screen facing out, then stand still. The phone check waits for you.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Move comfortably for a short moment, then stop and stand still until the movement check is complete. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Do not walk until you hear begin. ${remaining} seconds.` : phase === 'waiting' ? 'Begin walking now. The recording starts when your first step is detected.' : phase === 'walk' ? hint || 'Follow your clear path. Keep your eyes ahead.' : 'Recording stopped. Check your phone when safely settled.'}</Body>
+      <Body>{phase === 'prep' ? 'Take your time to place the phone. Keep it horizontal at your lower back, screen facing out, then stand still. The phone check waits for you.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Move comfortably for a short moment, then stop and stand still until the movement check is complete. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Do not walk until you hear begin. ${remaining} seconds.` : phase === 'waiting' ? 'Begin walking now. The recording starts when your first step is detected.' : phase === 'walk' ? hint || protocolFlows[protocol].active : 'Recording stopped. Check your phone when safely settled.'}</Body>
       {phase === 'checking' && <Text style={ui.caption}>Checks sensor readings, phone angle and settling. Lower-back location cannot be verified.</Text>}
       {phase === 'walk' && <Text style={ui.caption}>{guidanceEnabled ? directionReady ? 'Gentle reminders on · arrow is a path reminder' : 'Direction estimate unavailable · walk only as comfortable' : 'Direction reminders off · arrow is a path reminder'}</Text>}
     </Card>

@@ -44,7 +44,7 @@ The in-app guide describes the standard sequence: use a standard armchair, mark 
 
 ### 2MWT and 6MWT
 
-The app explains these separately. The 2MWT measures distance in two minutes and permits slowing or resting while the timer continues. The 6MWT is self-paced and measures six-minute distance; rests are allowed with the timer running. The ATS 6MWT standard uses a 30 m corridor, and changing to a shorter loop adds turns and may change distance, so record and hold course length constant. For either test, a worker starts the protocol stopwatch at “Go”, counts complete laps, measures the final partial distance, and records rests. GaitTrace waits for a detected first step before its sensor timer starts, does not count laps and does not implement the standardized timed cueing. Its live cues are not the ATS script; switch off app voice and direction reminders for a standardized 6MWT and let the worker provide only the standard timed messages. GaitTrace is a parallel sensor capture aid; do not treat its timer or voice prompts as clinical protocol administration.
+The app explains these separately. The 2MWT measures distance in two minutes and permits slowing or resting while the timer continues. The 6MWT is self-paced and measures six-minute distance; rests are allowed with the timer running. The ATS 6MWT standard uses a 30 m corridor, and changing to a shorter loop adds turns and may change distance, so record and hold course length constant. For either test, a worker starts the protocol stopwatch at “Go”, counts complete laps, measures the final partial distance, and records rests. GaitTrace now captures before Go and starts the endurance clock on the speech-start callback (or worker tap with voice off). Rests do not pause that clock. It does not count laps or implement the standardized timed encouragement: walking commentary and turn reminders are suppressed, and the worker supplies the standard messages. Optional app voice gives preparation, Go and finish cues. GaitTrace is a parallel sensor capture aid; do not treat its timer or voice prompts as clinical protocol administration.
 
 The protocol chooser opens a translated three-step patient tutorial for each option, using short instructions, scalable route/chair diagrams and read-aloud. Full instructions are retained under Worker protocol notes. It states the test purpose, course/setup, pacing/rest rules, worker actions and the exact boundary between the clinical score and the app's sensor capture. The short research walk is explicitly labelled non-standardized. Full wording is in English, Malay and Simplified Chinese. Sources are linked above and summarized in the UI; this is protocol education, not a claim of clinical validation.
 
@@ -77,3 +77,22 @@ The app must not say that a person is walking well when the signal is missing, h
 4. Add TUG chair/event workflow and 2MWT/6MWT loop workflow with worker confirmation.
 5. Add longitudinal dashboard and controlled behavior-based voice templates.
 6. Validate each protocol against therapist-administered reference measurements before presenting it as a rehabilitation outcome.
+
+
+## Implemented protocol control — 1 October 2026
+
+The shared `protocolFlow.ts` contract defines start, finish, guidance and duration policies. Phone placement, sensor readiness, the standing baseline and movement/settling checks remain shared. The standing reference is preserved before a TUG participant returns to the chair.
+
+| Mode | Start | Active guidance | Finish |
+| --- | --- | --- | --- |
+| Research walk | Existing countdown then detected first step | Sparse behaviour-based cues and optional direction reminders | Selected sensor duration |
+| 10MWT | Worker readiness, capture before Go | Explain the marked path before starting; no generic mid-walk coaching | Worker confirmation after deceleration; 180 s capture limit |
+| TUG | After checks, sit; worker confirms readiness; capture before Go | Explain chair-to-chair sequence before starting; no guessed turn/seat announcements | Worker confirmation after seated; 180 s capture limit |
+| 2MWT | Capture before Go; clock from cue | Measured-route/rest instructions; worker administers protocol; no straight-path warnings | 120 s from Go, rests included |
+| 6MWT | Capture before Go; clock from cue | Worker supplies standard timed instructions; no extra app praise or turn warnings | 360 s from Go, rests included |
+
+The worker-presence checkbox is required for live clinical modes. The same `ClinicalCapture` component is used for their browser previews, with explicit simulated readiness and no saved sensor data. Shared checks and research walking remain explanatory preview stages, not hardware simulation. Preview can trigger a labelled finish event to avoid waiting six minutes.
+
+The app does not detect 10MWT boundaries, TUG transitions or laps. The worker records the clinical stopwatch and distance separately. A capture limit or interruption does not mark the clinical assessment completed. The TTS start callback is a software timestamp, not a verified acoustic timestamp; the selected protocol stopwatch remains the outcome reference. Worker-tap time and spoken-Go time are distinguished. Extra latency and OS scheduling need device validation.
+
+JSON and raw CSV carry `protocolExecution` provenance: flow version, protocol, offset of Go from capture start, cue source, elapsed time from Go, end reason and unverified clinical status. Raw CSV only reconstructs available metadata; absent measured outcomes remain absent. Pre-Go samples are retained rather than trimmed silently.

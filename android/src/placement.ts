@@ -43,6 +43,7 @@ export function highFrequencyRms(samples: Sample[]): number | null {
   return time >= 0.5 ? Math.sqrt(energy / time) : null;
 }
 export class FitCheck {
+  get readyToSettle(){return this.movementSeen;}
   private movementSince: number | null = null;
   private movementSeen = false;
   private settledSince: number | null = null;

@@ -1,3 +1,4 @@
+import { assistedNotice } from '../protocolFlow';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Pressable, Switch, AppState, Platform, Modal, TextInput, ScrollView } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -44,6 +45,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   const [guideOpen, setGuideOpen] = useState(false);
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [ready, setReady] = useState(false);
+  const [workerReady,setWorkerReady]=useState(false);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
   const [canSkip, setCanSkip] = useState(true);
@@ -111,7 +113,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   }
   async function start() {
     if (busy) return;
-    if(Platform.OS==='web'&&!webReady){stopSample();navigation.navigate('Walkthrough');return;}
+    if(Platform.OS==='web'&&!webReady){stopSample();navigation.navigate('Walkthrough',{protocol});return;}
     stopSample(); setBusy(true); setError('');
     const id = ++request.current;
     try {
@@ -147,10 +149,10 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   return <Screen key={page} title={['Who is walking?','Choose your test','Sound and readiness'][page]} eyebrow={t('Setup {0} of 3').replace('{0}',String(page+1))} actions={<>
     <View style={ui.row}>
       {page>0&&<BigButton style={ui.fill} label="Previous" variant="outline" disabled={busy} onPress={()=>{stopSample();setError('');setPage(page-1);}}/>}
-      {page<2?<BigButton style={ui.fill} label="Continue" disabled={page===0&&!profilesReady} onPress={nextPage}/>:<BigButton style={{flex:2}} label={Platform.OS==='web'&&!webReady?'Preview hands-free flow':testing?'Start without sound test':'Start test'} disabled={checkingBrowser||(Platform.OS==='web'&&!webReady?false:!ready||!canSkip)} loading={busy} onPress={start}/>}
+      {page<2?<BigButton style={ui.fill} label="Continue" disabled={page===0&&!profilesReady} onPress={nextPage}/>:<BigButton style={{flex:2}} label={Platform.OS==='web'&&!webReady?'Preview hands-free flow':testing?'Start without sound test':'Start test'} disabled={checkingBrowser||(Platform.OS==='web'&&!webReady?false:!ready||!canSkip||(protocol!=='research-walk'&&!workerReady))} loading={busy} onPress={start}/>}
     </View>
   </>}>
-    <BigButton label="More options" variant="ghost" onPress={()=>{stopSample();setMenu('options');}} disabled={busy}/>
+    <BigButton label="Language and audio settings" variant="ghost" onPress={()=>{stopSample();setMenu('options');}} disabled={busy}/>
     {!!error&&<Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={ui.error}>{error}</Text>}
     {Platform.OS==='web'&&page===0&&<Text style={ui.caption}>Browser profiles and recordings last only for this tab. Export before closing.</Text>}
     {page===0&&<View style={{gap:8}}>
@@ -159,15 +161,18 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       {profiles.some(p=>!p.archived)&&<BigButton label="Choose a saved person" variant="ghost" onPress={()=>{setSavedSearch('');setMenu('saved');}}/>}
       <Text style={ui.caption}>{selectedId?'Using a saved participant':'New participant'}</Text>
       <AgeInput value={ageText} onChangeText={setAgeText} accessibilityLabel={t('Age in years')} placeholder={t('Age in years')} maxLength={3} keyboardType="number-pad" style={fieldStyle}/>
-      <Text style={ui.label}>Sex (self-reported)</Text>
-      <View style={[ui.row,{flexWrap:'wrap'}]}>{(['female','male','prefer-not-to-say'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:sex===value}} onPress={()=>setSex(value)} style={[ui.choice,{flexBasis:90},sex===value&&ui.selected]}><Text style={ui.caption}>{value==='prefer-not-to-say'?'Prefer not to say':value==='female'?'Female':'Male'}</Text></Pressable>)}</View>
+      <Text style={ui.label}>Select one sex option</Text>
+      <View style={[ui.row,{flexWrap:'wrap'}]}>{(['female','male','prefer-not-to-say'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:sex===value}} onPress={()=>setSex(value)} style={[ui.choice,{flexBasis:90},sex===value&&ui.selected]}><Text style={ui.caption}>{sex===value?'● ':'○ '}{t(value==='prefer-not-to-say'?'Prefer not to say':value==='female'?'Female':'Male')}</Text></Pressable>)}</View>
+      <BigButton label="Set height and walking aid" variant="outline" icon="›" onPress={()=>setMenu('participant')}/>
+      <Text style={ui.caption}>{heightText ? t('Height: {0} cm').replace('{0}',heightText) : t('Height not entered — distance estimate may be unavailable.')}</Text>
       {!profilesReady&&<BigButton label="Retry" variant="outline" onPress={()=>void loadProfiles()}/>}
-      {Platform.OS==='web'&&<BigButton label="Preview hands-free flow" variant="ghost" onPress={()=>navigation.navigate('Walkthrough')}/>}
+      {Platform.OS==='web'&&<BigButton label="Preview hands-free flow" variant="ghost" onPress={()=>navigation.navigate('Walkthrough',{protocol})}/>}
     </View>}
     {page===1&&<View style={{gap:10}}>
-      <BigButton label={protocol==='research-walk'?'Research walk':protocol.toUpperCase()} variant="outline" onPress={()=>setMenu('tests')} accessibilityHint={t('Choose your test')}/>
+      <BigButton label={t('Change test: {0}').replace('{0}',t(protocol==='research-walk'?'Research walk':protocol.toUpperCase()))} icon="›" variant="outline" onPress={()=>setMenu('tests')} accessibilityHint={t('Choose your test')}/>
 
       <Text style={ui.caption}>{guide.short}</Text>
+      {protocol!=='research-walk'&&<Text style={ui.caption}>{assistedNotice}</Text>}
       <BigButton label="Show me how" variant="outline" onPress={()=>{stopSample();setGuideOpen(true);}}/>
       {guideOpen&&<ProtocolTutorial protocol={protocol} onClose={()=>{stopSpeaking();setGuideOpen(false);}}/>}
       {(protocol==='2mwt'||protocol==='6mwt')&&<AgeInput accessibilityLabel={t('Measured course length in metres')} value={courseText} onChangeText={setCourseText} placeholder={t('Measured loop length (metres)')} keyboardType="decimal-pad" style={fieldStyle}/>}
@@ -178,9 +183,10 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
         </Pressable>
       </View>
     </View>}
-    {protocol==='research-walk'&&<View style={ui.row}>{([10,20,30] as const).map(n => <Pressable key={n} accessibilityRole="radio" accessibilityLabel={t(`Walk for ${n} seconds`)} accessibilityState={{ selected: n === duration }} style={[ui.choice, n === duration && ui.selected]} onPress={() => setDuration(n)}><Text style={ui.label}>{n} sec</Text></Pressable>)}</View>}
+    {protocol==='research-walk'&&<View style={ui.row}>{([10,20,30] as const).map(n => <Pressable key={n} accessibilityRole="radio" accessibilityLabel={t(`Walk for ${n} seconds`)} accessibilityState={{ selected: n === duration }} style={[ui.choice, n === duration && ui.selected]} onPress={() => setDuration(n)}><Text style={ui.label}>{n===duration?'● ':'○ '}{t(`${n} sec`)}</Text></Pressable>)}</View>}
     </View>}
     {page===2&&<View style={{gap:10}}>
+    {protocol!=='research-walk'&&<Pressable accessibilityRole="checkbox" accessibilityState={{checked:workerReady}} onPress={()=>setWorkerReady(!workerReady)} style={[ui.row,{minHeight:56}]}><Text>{workerReady?'☑':'☐'}</Text><Text style={[ui.caption,ui.fill]}>A worker is present to prepare the course, give test instructions and record the outcome.</Text></Pressable>}
     {audioEnabled ? <><BigButton label={testing ? 'Stop sample' : 'Play voice sample'} variant="outline" onPress={testing ? stopSample : sample} disabled={busy} /><Text style={ui.caption}>Listen briefly, or skip. Voice guidance stays on. Check your media volume first.</Text></> : <Body>Voice is off. Ask a helper to signal start and finish while the phone is secured.</Body>}
     {(Platform.OS!=='web'||webReady)&&<Pressable accessibilityRole="checkbox" accessibilityLabel={t('I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.')} accessibilityState={{ checked:ready }} onPress={() => setReady(!ready)} style={[ui.row,{ minHeight:64 }]}><Text style={{ fontSize:28,color:colours.primary }}>{ready ? '☑' : '☐'}</Text><Text style={[ui.caption,ui.fill]}>I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.</Text></Pressable>}
     {Platform.OS === 'web' && <View style={{gap:8}}>
@@ -202,16 +208,16 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
         {SENSOR_NAMES.map(name=><View key={name}><Text style={ui.label}>{name === 'accelerometer'?'Accelerometer':name === 'gyroscope'?'Gyroscope':'Magnetometer'}</Text><Text style={ui.caption}>{t(browserCheck.sensors[name].status === 'ready'?'Live readings received':browserCheck.sensors[name].status === 'unavailable'?'Not exposed by this browser':browserCheck.sensors[name].status === 'blocked'?'Permission denied or sensor error':browserCheck.sensors[name].status === 'slow'?'Readings too slow or interrupted':browserCheck.sensors[name].status === 'invalid'?'Invalid sensor timestamps':'No fresh readings')}{' · '}{browserCheck.sensors[name].hz.toFixed(1)} Hz</Text></View>)}
         <Text style={ui.caption}>{webReady?'All three sensors are responding. Start will recheck them before setup.':'All three sensors are required. Preview the steps or use the Android app.'}</Text>
       </View>}
-      {webReady && <BigButton label="Preview hands-free flow" variant="ghost" onPress={()=>{stopSample();navigation.navigate('Walkthrough');}} disabled={busy} />}
+      {webReady && <BigButton label="Preview hands-free flow" variant="ghost" onPress={()=>{stopSample();navigation.navigate('Walkthrough',{protocol});}} disabled={busy} />}
     </View>}
     </View>}
 
     <Modal visible={menu!==null} animationType="slide" onRequestClose={()=>setMenu(null)}>
-      <Screen fullScreen title={menu==='participant'?'More participant details':menu==='saved'?'Choose a saved person':menu==='tests'?'Choose your test':'More options'}
+      <Screen fullScreen title={menu==='participant'?'More participant details':menu==='saved'?'Choose a saved person':menu==='tests'?'Choose your test':'Language and audio settings'}
         actions={<BigButton label="Done" onPress={()=>setMenu(null)}/>}>
         {menu==='options'&&<>
           <LanguagePicker/>
-          <BigButton label="More participant details" variant="outline" onPress={()=>setMenu('participant')}/>
+
     <View style={{ backgroundColor: colours.surface, borderRadius: 18, paddingHorizontal: 12 }}>{toggles.map(([label,value,setter,infoLabel,explanation]) => <View key={label}>
       <View style={[ui.row,{ minHeight:48 }]}><Text style={[ui.caption,ui.fill]}>{label}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel={t(infoLabel)} accessibilityState={{ expanded: openInfo === label }} onPress={() => setOpenInfo(openInfo === label ? null : label)} style={{ minWidth:48, minHeight:48, alignItems:'center', justifyContent:'center' }}>
@@ -233,13 +239,14 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
 
         </>}
         {menu==='participant'&&<View style={{gap:12}}>
+          <Text style={ui.caption}>Enter measured height if known. It supports a rough distance estimate, not a measured distance. Leave blank rather than guess.</Text>
         <AgeInput value={heightText} onChangeText={setHeightText} accessibilityLabel={t('Height in centimetres')} placeholder={t('Height cm (for experimental estimate)')} keyboardType="decimal-pad" style={fieldStyle}/>
         <Text style={ui.label}>Usual walking aid</Text>
-        <View style={[ui.row,{flexWrap:'wrap'}]}>{([['none','None'],['single-point-cane','Single-point cane'],['quad-cane','Quad cane'],['other','Other']] as const).map(([value,label])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:aid===value}} onPress={()=>setAid(value)} style={[ui.choice,{flexBasis:120},aid===value&&ui.selected]}><Text style={ui.caption}>{label}</Text></Pressable>)}</View>
+        <View style={[ui.row,{flexWrap:'wrap'}]}>{([['none','None'],['single-point-cane','Single-point cane'],['quad-cane','Quad cane'],['other','Other']] as const).map(([value,label])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:aid===value}} onPress={()=>setAid(value)} style={[ui.choice,{flexBasis:120},aid===value&&ui.selected]}><Text style={ui.caption}>{aid===value?'● ':'○ '}{t(label)}</Text></Pressable>)}</View>
 
         </View>}
         {menu==='tests'&&<View style={{gap:12}}>
-      <View style={[ui.row,{flexWrap:'wrap'}]}>{([['research-walk','Research walk'],['10mwt','10MWT'],['2mwt','2MWT'],['6mwt','6MWT'],['tug','TUG']] as [AssessmentProtocol,string][]).map(([value,name])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:protocol===value}} style={[ui.choice,{flexBasis:100},protocol===value&&ui.selected]} onPress={()=>{setProtocol(value);setMenu(null);}}><Text style={ui.label}>{name}</Text></Pressable>)}</View>
+      <View style={[ui.row,{flexWrap:'wrap'}]}>{([['research-walk','Research walk'],['10mwt','10MWT'],['2mwt','2MWT'],['6mwt','6MWT'],['tug','TUG']] as [AssessmentProtocol,string][]).map(([value,name])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:protocol===value}} style={[ui.choice,{flexBasis:100},protocol===value&&ui.selected]} onPress={()=>{setProtocol(value);setMenu(null);}}><Text style={ui.label}>{protocol===value?'● ':'○ '}{t(name)}</Text></Pressable>)}</View>
         </View>}
         {menu==='saved'&&<>
           <AgeInput value={savedSearch} onChangeText={setSavedSearch} accessibilityLabel={t('Search saved participants')} placeholder={t('Search saved participants')} style={fieldStyle}/>

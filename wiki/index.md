@@ -14,6 +14,8 @@ Rehabilitation protocol and profile/dashboard specification: [rehab assessment p
 
 GaitTrace local participant, protocol-form, optional GPS distance cross-check and measurement status: [[gait-app-collection-workflow]] and [Week 5 app progress](../docs/classification/WEEKLY_PROGRESS_2026-09-28.md).
 
+AI model target, primary-source evidence and validation gates: [[gait-app-ai-model-strategy]].
+
 Responsive setup, automatic participant creation and brief illustrated tutorials, updated 2026-09-30, are documented in [[gait-app-collection-workflow#test-protocol-explanations]] and the [rehabilitation assessment specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md#protocol-workflow).
 
 Catalog of every page in this wiki. Read this first when answering a query — drill into specific pages from here rather than grepping the vault blind.
@@ -33,6 +35,8 @@ Catalog of every page in this wiki. Read this first when answering a query — d
 - `numbers-registry.md` — every load-bearing number restated in more than one manuscript location, with all its locations listed. Check and update this in the same edit batch as any change to a Section 4.2 or Table 6 figure — this is the tool meant to stop the "fix landed in one paragraph, not its siblings" pattern that has been this project's single most common recurring bug across the `journal-critic` review-loop rounds (see `log.md`).
 
 ## Concepts
+
+- [[gait-app-ai-model-strategy]] - quality-gated longitudinal gait measurement, synthesis objective and clinical validation roadmap for GaitTrace.
 
 - [[research-questions]] — the three RQs anchoring the review (RQ3 and RQ4 merged 2026-07-23).
 - [[eligibility-criteria]] — IC1/IC4/IC5 pathways and EC1/EC2 exclusions; which studies qualify and why.
@@ -267,3 +271,7 @@ GaitTrace branding, update compatibility and device validation: [[classification
 GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the replacement download, matching OTA verification, hands-free setup cues and native JSON/CSV review import.
 
 - 2026-09-30 setup refinement: [[gait-app-collection-workflow]] documents separate More, participant-search and test-selection menus, with bounded scrolling and preserved selections.
+
+- 2026-10-01: [[gait-app-collection-workflow]] now covers named settings, visible height/test selection, explicit recording assignments and dashboard inclusion rules.
+
+- 2026-10-01 protocol flows: [[gait-app-collection-workflow]] distinguishes research first-step timing from worker-assisted clinical capture, shared clinical previews and exported Go provenance.

@@ -1,3 +1,4 @@
+import { recoverParticipantProfiles, assignRecordingParticipant } from './participantLinks';
 import { locale } from './language';
 ﻿import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
@@ -32,8 +33,10 @@ export interface SessionRecord {
   participantId?: string; participantLabel?: string;
   participantSnapshot?: ParticipantProfile;
   assessmentSetup?: AssessmentSetup;
+  protocolExecution?: import('./protocolFlow').ProtocolExecution;
   assessment?: AssessmentForm & { speedMps: number | null; distanceSource: 'measured-course' | 'experimental-phone-estimate' | 'unavailable' };
   recording?: Recording;
+  hasDeviceRecording?: boolean;
 }
 const LEGACY_KEY = 'gaitsteps:sessions';
 const INDEX_KEY = 'gaitsteps:index:v2';
@@ -56,7 +59,7 @@ export async function saveSession(session: SessionRecord) {
   await FileSystem.writeAsStringAsync(directory() + session.id + '.json', JSON.stringify(session));
   const existing = await index();
   const { recording, windows, ...summary } = session;
-  await AsyncStorage.setItem(INDEX_KEY, JSON.stringify([...existing.filter(s => s.id !== session.id), { ...summary, windows: [] }]));
+  await AsyncStorage.setItem(INDEX_KEY, JSON.stringify([...existing.filter(s => s.id !== session.id), { ...summary, windows: [], hasDeviceRecording: recording?.source === 'device' }]));
 }
 /** Import an app JSON export or raw long-format CSV into this phone's local history. */
 export async function importReviewRecording(text: string, format: 'json' | 'csv' = 'json') {
@@ -72,10 +75,12 @@ export async function getSessions(): Promise<SessionRecord[]> {
 }
 export async function getParticipants(): Promise<ParticipantProfile[]> {
   const raw = await AsyncStorage.getItem(PARTICIPANTS_KEY);
-  if (!raw) return [];
-  const rows = JSON.parse(raw);
+  const rows = raw ? JSON.parse(raw) : [];
   if (!Array.isArray(rows)) throw new Error('Participant list could not be read.');
-  return rows.filter((p): p is ParticipantProfile => !!p && typeof p.id === 'string' && typeof p.label === 'string' && !!p.demographics && !!p.clinical);
+  const valid=rows.filter((p): p is ParticipantProfile => !!p && typeof p.id === 'string' && typeof p.label === 'string' && !!p.demographics && !!p.clinical);
+  const recovered=recoverParticipantProfiles(valid,await getSessions());
+  if(recovered.length!==valid.length)await AsyncStorage.setItem(PARTICIPANTS_KEY,JSON.stringify(recovered));
+  return recovered;
 }
 export async function saveParticipant(profile: ParticipantProfile): Promise<void> {
   const profiles = await getParticipants();
@@ -103,3 +108,11 @@ export async function getSession(id: string): Promise<SessionRecord | undefined>
 }
 export function formatSessionDate(date: string) { return new Date(date).toLocaleString(locale(), { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
 export function formatDuration(seconds: number) { return seconds + ' seconds'; }
+
+export async function linkSessionParticipant(sessionId:string,participantId:string):Promise<SessionRecord> {
+  const session=await getSession(sessionId),profile=(await getParticipants()).find(p=>p.id===participantId);
+  if(!session||!profile)throw new Error('Recording or participant not found.');
+  const linked=assignRecordingParticipant(session,profile);
+  await saveSession(linked);
+  return linked;
+}

@@ -15,12 +15,12 @@ export const protocolTutorials: Record<AssessmentProtocol, TutorialStep[]> = {
   '2mwt': [
     {title:'Walk for two minutes',text:'Follow the measured route. Walk as far as you safely can in two minutes. Use your usual aid.',picture:'loop'},
     {title:'Rest if you need to',text:'You may slow down or stop to rest. The two-minute clock keeps running.',picture:'rest'},
-    {title:'Follow the worker’s stop cue',text:'The worker times from Go, measures your distance and tells you when to stop. The phone records movement separately.',picture:'finish'},
+    {title:'Follow the worker’s stop cue',text:'The clock starts at Go and keeps running during rests. Stop at the finish cue. The worker confirms your measured distance.',picture:'finish'},
   ],
   '6mwt': [
     {title:'Walk for six minutes',text:'Follow the worker’s marked route. Walk as far as you can at your own pace for six minutes. Keep your usual aid.',picture:'loop'},
     {title:'Rest if you need to',text:'You may slow down or stand and rest. The six-minute clock keeps running.',picture:'rest'},
-    {title:'Listen to the worker',text:'Switch off app voice and direction reminders for this test. The worker gives the timed cues and measures your distance.',picture:'finish'},
+    {title:'Listen to the worker',text:'The app gives start and finish cues. During the test, the worker gives standard timed instructions and measures your distance.',picture:'finish'},
   ],
   'tug': [
     {title:'Start seated',text:'Sit with your back against the chair. On the worker’s Go, stand and walk to the mark three metres away.',picture:'chair'},

@@ -117,7 +117,7 @@ export class SensorRecorder {
       return samples.length >= 3 && samples[samples.length - 1].elapsedMs - samples[0].elapsedMs >= 2500;
     });
   }
-  begin() {
+  preserveSetupBaseline() {
     const now = performance.now();
     const baselineStreams = emptyStreams();
     const mean = {} as NonNullable<Recording['baseline']>['mean'];
@@ -131,6 +131,10 @@ export class SensorRecorder {
     if (SENSOR_NAMES.every(n => baselineStreams[n].length >= 3 && baselineStreams[n][baselineStreams[n].length - 1].elapsedMs - baselineStreams[n][0].elapsedMs >= 2500)) {
       this.baseline = { version: 'stationary-reference-v1', requestedSeconds: 3, startedAt: new Date(Date.now() - 3000).toISOString(), streams: baselineStreams, mean, rawWalkingValuesCorrected: false };
     }
+  }
+  begin() {
+    const now=performance.now();
+    if(!this.baseline)this.preserveSetupBaseline();
     this.shift = this.baseline ? new ShiftMonitor(this.baseline.mean.accelerometer) : null;
     this.streams = emptyStreams(); this.direction.begin(); this.startTime = now; this.startedAt = new Date().toISOString();
   }

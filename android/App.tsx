@@ -16,10 +16,10 @@ import PhoneFrame from './src/components/PhoneFrame';
 import WalkthroughScreen from './src/screens/WalkthroughScreen';
 import ParticipantsScreen from './src/screens/ParticipantsScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
-import type { AssessmentSetup, ParticipantDemographics, ParticipantProfile } from './src/store';
+import type { AssessmentProtocol, AssessmentSetup, ParticipantDemographics, ParticipantProfile } from './src/store';
 type Setup = { duration: number; audioEnabled: boolean; isPractice: boolean; demographics?: ParticipantDemographics; participantId?: string; participantLabel?: string; participantSnapshot?: ParticipantProfile; assessmentSetup?: AssessmentSetup; useGpsDistance?: boolean };
 export type RootStackParamList = {
-  Home: undefined; Onboarding: undefined; Prepare: Setup; Walkthrough: undefined; Participants: undefined; Dashboard: undefined;
+  Home: undefined; Onboarding: undefined; Prepare: Setup; Walkthrough: {protocol?:AssessmentProtocol} | undefined; Participants: undefined; Dashboard: undefined;
   Record: Setup & { guidanceEnabled: boolean };
   Result: { sessionId: string }; Details: { sessionId: string }; History: undefined;
 };

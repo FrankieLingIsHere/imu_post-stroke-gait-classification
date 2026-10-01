@@ -10,7 +10,7 @@ export function parseReviewRecording(text:string):SessionRecord {
   const session=payload?.session,r=session?.recording;
   if(![2,3].includes(payload?.exportSchemaVersion)||payload.source!=='device'||!r||r.source!=='device'||r.schemaVersion!==2)throw invalid();
   if(typeof session.id!=='string'||session.id.length>160||!session.id||typeof session.date!=='string'||!Number.isFinite(Date.parse(session.date))||typeof session.isPractice!=='boolean'||!Number.isFinite(session.duration)||!Array.isArray(session.windows)||session.windows.length!==0)throw invalid();
-  if(!Number.isFinite(r.elapsedSeconds)||r.elapsedSeconds<0||r.elapsedSeconds>120||!['completed','user-stopped','interrupted'].includes(r.stopReason)||!Array.isArray(r.guidanceEvents)||r.guidanceEvents.length>1000)throw invalid();
+  if(!Number.isFinite(r.elapsedSeconds)||r.elapsedSeconds<0||r.elapsedSeconds>600||!['completed','user-stopped','interrupted'].includes(r.stopReason)||!Array.isArray(r.guidanceEvents)||r.guidanceEvents.length>1000)throw invalid();
   for(const event of r.guidanceEvents)if(!event||typeof event.type!=='string'||!Number.isFinite(event.elapsedMs))throw invalid();
   for(const name of SENSOR_NAMES){
     const rows=r.streams?.[name];
@@ -70,6 +70,21 @@ export function parseReviewRecordingCsv(text: string): SessionRecord {
   const sexValue = sexIndex >= 0 && ['female','male','intersex','prefer-not-to-say'].includes(first[sexIndex]) ? first[sexIndex] as 'female'|'male'|'intersex'|'prefer-not-to-say' : 'prefer-not-to-say';
   const ageYears = ageValue !== null && Number.isInteger(ageValue) && ageValue >= 1 && ageValue <= 120 ? ageValue : null;
   const session: SessionRecord = { id, date: recording.startedAt, duration: numberFrom(first, at('planned_seconds')), isPractice: first[at('practice')] === 'true', demographics: { ageYears, sex: sexValue }, quality: 'good', windowCount: 0, windows: [], recording };
+  const identity=first[at('participant_id')];
+  if(identity){session.participantId=identity;session.participantLabel=first[at('participant_label')]||identity;}
+  const protocol=first[at('assessment_protocol')];
+  if(protocol&&['research-walk','10mwt','tug','2mwt','6mwt'].includes(protocol)){
+    session.assessmentSetup={protocol:protocol as NonNullable<SessionRecord['assessmentSetup']>['protocol'],courseLengthM:null,timedDistanceM:null,speedCondition:'comfortable',turnDirection:'self-selected'};
+    if(first[at('protocol_flow_version')]==='protocol-flow-v1'){
+      const offset=first[at('protocol_go_offset_ms')],elapsed=first[at('protocol_elapsed_seconds')],end=first[at('protocol_end')],source=first[at('protocol_go_source')];
+      if(!['duration','worker-ended','interrupted','capture-limit'].includes(end)||!['speech-start-callback','worker-tap'].includes(source))throw invalid();
+      for(const value of [offset,elapsed])if(value&&(!Number.isFinite(Number(value))||Number(value)<0))throw invalid();
+      session.protocolExecution={version:'protocol-flow-v1',protocol:session.assessmentSetup.protocol,goOffsetMs:offset?Number(offset):null,elapsedFromGoSeconds:elapsed?Number(elapsed):null,goSource:source as 'speech-start-callback'|'worker-tap',end:end as NonNullable<SessionRecord['protocolExecution']>['end'],clinicalOutcomeVerified:false};
+    }
+  }
+  const height=first[at('height_cm')];
+  if(height&&Number.isFinite(Number(height))&&Number(height)>=100&&Number(height)<=230)session.demographics!.heightCm=Number(height);
+  if(rows.some(row=>row[at('participant_id')]!==identity))throw invalid();
   return session;
 }
 function numberFrom(row: string[], index: number) { const value = Number(row[index]); if (!Number.isFinite(value)) throw new Error('Invalid CSV number.'); return value; }
