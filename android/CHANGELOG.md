@@ -2,15 +2,15 @@
 
 This file records source releases and installation requirements. `app.json` declares the application version; EAS assigns the Android build number. Actual installed release/runtime/update identifiers come from `src/releaseInfo.ts` and are included in recordings. Do not infer an APK build number from the application version or promise an APK before its build succeeds.
 
-## Unreleased - quick stationary Google API check
+## 0.3.0 preview updates - October 2026
 
 - Separate Research tools > Quick Google API check; no participant, placement, countdown, gait recording or deliberate post-stop wait.
 - Checks native availability/permission, subscription, detailed reads over recent 60-second and 600-second context windows, and cleanup. Empty successful replies pass API access while records remain unavailable. Context counts are never walking distance. Four-second request timeouts and late-subscription cleanup are included.
 - EN/MS/ZH messages and structured technical logging (`GaitGoogleApiCheck`) for connected-device inspection. Waving is not a walking accuracy test.
 - TypeScript, 126 tests and Android Metro export pass. Native runtime matches build 6: `a48c2ed43ddd2142beaa39b7f8031b8fff327407`. No native or dependency changes; compatible OTA `3ccb972` was published and loaded on the installed build-6 phone. Existing clinical and short-trial capture timing is unchanged.
 - Live Redmi Note 10 Pro check on 2 October 2026: availability, subscription, 60-second read, 600-second read and cleanup all passed in about 0.3 seconds; both reads returned zero records. This verifies API access, not walking distance or step accuracy. The result was visible on the phone without scrolling.
-- Local follow-up for short Google trials: the final delayed read also queries a wider post-finish context window in parallel. Its raw points and polling outcome are exported as diagnostics only; no context value enters trial distance, steps, speed or stopping. This cannot force Google to produce records, and physical validation is still required.
-- Local separate Google trial option: measured 5 m out and 5 m back (10 m total) with one comfortable turn, spoken three-language guidance, eight-second quiet finish and 90-second fallback. The route pattern survives JSON/CSV export and import; it remains a practice distance experiment, not a clinical 10MWT.
+- Short-trial diagnostic: the final delayed read also queries a wider post-finish context window in parallel. Its raw points and polling outcome are exported as diagnostics only; no context value enters trial distance, steps, speed or stopping. This cannot force Google to produce records, and physical validation is still required.
+- Separate Google trial option: measured 5 m out and 5 m back (10 m total) with one comfortable turn, spoken three-language guidance, eight-second quiet finish and 90-second fallback. The route pattern survives JSON/CSV export and import; it remains a practice distance experiment, not a clinical 10MWT. Published in `8e553c3`; Android preview OTA workflow passed on 2 October 2026. Physical Google-distance response is still untested.
 
 ## 0.3.0 / Android build 6 - short Google distance trial
 

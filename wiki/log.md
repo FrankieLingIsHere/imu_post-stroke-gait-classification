@@ -2693,3 +2693,7 @@ Audited proposed missing-record causes against the mobile Recording API contract
 ## [2026-10-02] sync | Separate Google trial out-and-back option
 
 After the user clarified that a longer turning walk is for the standalone Google experiment, added a measured 5 m out-and-back option with 10 m total reference, distinct voice/screen guidance, longer quiet-stop/ceiling, and route-pattern export/import. It remains a practice experiment and cannot be interpreted as a 10MWT. Updated the module guide, changelog, workflow, index and weekly record. Software tests pass; no connected-phone result or publication yet. Changes remain local for review.
+
+## [2026-10-02] sync | Approved out-and-back Google experiment publication
+
+User approved the 19-file publication scope. Pushed commit `8e553c3` to `main`; repository hygiene, results portal and Android preview OTA workflows passed. No native rebuild was required. Updated module/release/workflow/weekly records with publication status. Physical 10 m out-and-back Google response and accuracy remain untested.
