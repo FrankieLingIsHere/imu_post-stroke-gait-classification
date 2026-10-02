@@ -14,7 +14,7 @@ function load(name, mocks = {}) {
     require:id=>id in mocks?mocks[id]:id.startsWith('.')?load(id.slice(2),mocks):require(id)});
   return module.exports;
 }
-const {summarizeGoogleRecords,GoogleRecordingCapture} = load('googleRecording');
+const {summarizeGoogleRecords,GoogleRecordingCapture,validGoogleSummary} = load('googleRecording');
 const point = (kind,value,startUnixMs=1000,endUnixMs=11000)=>({kind,value,startUnixMs,endUnixMs,firstReceivedAtUnixMs:13000});
 test('No Google records means unknown distance, not a fabricated zero',()=>{
   const r=summarizeGoogleRecords(1000,11000,[],[],[]);
@@ -106,6 +106,26 @@ test('Short-trial delayed polling keeps the original walk boundary and never sub
   assert.equal(missing.distanceM,null);assert.equal(missing.polls.length,6);assert.equal(missing.status,'no-records');
 });
 
+test('Late provider intervals are visible in context diagnostics without becoming trial distance',async()=>{
+  const calls=[];
+  const bridge={async subscribe(){},async unsubscribe(){},async readData(start,end){
+    calls.push([start,end]);
+    return {receivedAtUnixMs:13000,points:end>11000?[point('distance',3,1000,12000),point('steps',5,1000,12000)]:[]};
+  }};
+  const capture=new GoogleRecordingCapture(bridge,()=>12000);
+  await capture.prepare();capture.begin(1000);
+  const result=await capture.finish(11000,true);
+  assert.equal(result.distanceM,null);assert.equal(result.steps,null);
+  assert.equal(result.status,'no-records');
+  assert.equal(result.contextPolls.length,1);
+  assert.equal(result.contextPolls[0].queryEndUnixMs,12000);
+  assert.equal(result.contextObservations.length,2);
+  assert.equal(result.observations.length,0);
+  assert.equal(result.subscriptionCleanup,'complete');
+  assert.equal(validGoogleSummary(result),true);
+  assert.ok(calls.some(([start,end])=>start===1000&&end===12000));
+});
+
 test('Trial reference and completion survive JSON and CSV import without becoming clinical progress',()=>{
   const exporting=load('exportData');const {parseReviewRecording,parseReviewRecordingCsv}=load('reviewRecording');
   const session={id:'short-trial',date:new Date(1000).toISOString(),duration:60,isPractice:true,quality:'good',windows:[],googleDistanceTrial:{version:'google-distance-trial-v1',referenceDistanceM:3,completedMarkedRoute:true,end:'quiet-stop'},recording:{source:'device',schemaVersion:2,startedAt:new Date(1000).toISOString(),elapsedSeconds:10,stopReason:'completed',guidanceEvents:[],placement:'lower-back-landscape-screen-out',coordinateFrame:'device',streams:{accelerometer:[{x:0,y:1,z:0,elapsedMs:0,receivedAtUnixMs:1000,sensorTimestampSeconds:null}],gyroscope:[],magnetometer:[]},requestedHz:{accelerometer:50,gyroscope:50,magnetometer:50}}};
@@ -115,6 +135,19 @@ test('Trial reference and completion survive JSON and CSV import without becomin
   session.isPractice=false;
   assert.throws(()=>parseReviewRecording(exporting.exportJSON(session)),/valid Gait Steps/);
   assert.throws(()=>parseReviewRecordingCsv(exporting.exportCSV(session)),/raw GaitTrace/);
+});
+
+test('10 m out-and-back route pattern survives both exports and an unlabelled 10 m route is rejected',()=>{
+ const exporting=load('exportData');const {parseReviewRecording,parseReviewRecordingCsv}=load('reviewRecording');
+ const session={id:'google-turn',date:new Date(1000).toISOString(),duration:90,isPractice:true,windows:[],googleDistanceTrial:{version:'google-distance-trial-v1',referenceDistanceM:10,routePattern:'5m-out-and-back',completedMarkedRoute:true,end:'quiet-stop'},recording:{source:'device',schemaVersion:2,startedAt:new Date(1000).toISOString(),elapsedSeconds:21,stopReason:'completed',guidanceEvents:[],streams:{accelerometer:[{x:0,y:1,z:0,elapsedMs:0,receivedAtUnixMs:1000,sensorTimestampSeconds:null}],gyroscope:[],magnetometer:[]},requestedHz:{accelerometer:50,gyroscope:50,magnetometer:50}}};
+ for(const raw of [exporting.exportJSON(session),exporting.exportCSV(session)]){
+   const imported=raw.startsWith('{')?parseReviewRecording(raw):parseReviewRecordingCsv(raw);
+   assert.equal(imported.googleDistanceTrial.referenceDistanceM,10);
+   assert.equal(imported.googleDistanceTrial.routePattern,'5m-out-and-back');
+   assert.equal(imported.isPractice,true);
+ }
+ delete session.googleDistanceTrial.routePattern;
+ assert.throws(()=>parseReviewRecording(exporting.exportJSON(session)),/valid Gait Steps/);
 });
 
 

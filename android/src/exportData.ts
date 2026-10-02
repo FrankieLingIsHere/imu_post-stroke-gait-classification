@@ -5,10 +5,10 @@ import { researchFeatures } from './researchFeatures';
 import { protocolPhoneEstimate } from './distanceEstimation';
 import { comparisonSignals } from './comparisonSignals';
 import { alternatingTiming } from './alternatingTiming';
-const GOOGLE_COLUMNS = ['google_distance_m','google_steps','google_mean_speed_mps','google_record_status','google_distance_coverage_fraction','google_window_start_unix_ms','google_window_end_unix_ms','google_poll_count','google_boundary_records_excluded','google_cleanup_status','google_provider_version','experiment_kind','trial_reference_distance_m','trial_route_completed','trial_end'];
+const GOOGLE_COLUMNS = ['google_distance_m','google_steps','google_mean_speed_mps','google_record_status','google_distance_coverage_fraction','google_window_start_unix_ms','google_window_end_unix_ms','google_poll_count','google_boundary_records_excluded','google_cleanup_status','google_provider_version','experiment_kind','trial_reference_distance_m','trial_route_completed','trial_end','trial_route_pattern'];
 function googleCells(session: SessionRecord): unknown[] {
   const g = session.recording?.googleRecording;
-  return [g?.distanceM??'',g?.steps??'',g?.meanSpeedMps??'',g?.status??'not-recorded',g?.distanceCoverageFraction??'',g?.startUnixMs??'',g?.endUnixMs??'',g?.polls.length??'',g?.boundaryRecordsExcluded??'',g?.subscriptionCleanup??'',g?.version??'',session.googleDistanceTrial?.version??'',session.googleDistanceTrial?.referenceDistanceM??'',session.googleDistanceTrial?.completedMarkedRoute??'',session.googleDistanceTrial?.end??''];
+  return [g?.distanceM??'',g?.steps??'',g?.meanSpeedMps??'',g?.status??'not-recorded',g?.distanceCoverageFraction??'',g?.startUnixMs??'',g?.endUnixMs??'',g?.polls.length??'',g?.boundaryRecordsExcluded??'',g?.subscriptionCleanup??'',g?.version??'',session.googleDistanceTrial?.version??'',session.googleDistanceTrial?.referenceDistanceM??'',session.googleDistanceTrial?.completedMarkedRoute??'',session.googleDistanceTrial?.end??'',session.googleDistanceTrial?.routePattern??''];
 }
 export function exportJSON(session: SessionRecord): string {
   const features=session.recording?researchFeatures(session.recording,session.demographics?.heightCm??null,session.participantSnapshot?.distanceCalibration):null;

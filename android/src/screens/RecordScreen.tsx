@@ -24,7 +24,7 @@ import * as Location from 'expo-location';
 import { ForegroundDistanceTracker } from '../locationDistance';
 import { GoogleRecordingCapture } from '../googleRecording';
 import { googleRecordingBridge } from '../googleRecordingBridge';
-import { GoogleTrialStopGate,googleTrialIntro,googleTrialFinish,googleTrialLimit,type GoogleDistanceTrial } from '../googleDistanceTrial';
+import { GoogleTrialStopGate,googleTrialIntro,googleTrialOutBackIntro,googleTrialFinish,googleTrialLimit,type GoogleDistanceTrial } from '../googleDistanceTrial';
 
 const ProgressIndicator: React.ComponentType<any> = ActivityIndicator ?? View;
 
@@ -167,7 +167,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     let fitStopSpoken = false;
     let prepIntroPending = true;
     let disposed = false;
-    const trialGate=new GoogleTrialStopGate();trialEnd.current=undefined;
+    const trialGate=new GoogleTrialStopGate(trial?.routePattern==='5m-out-and-back'?8:4,trial?.routePattern==='5m-out-and-back'?90:60);trialEnd.current=undefined;
     if (useGoogleDistance) {
       const bridge = googleRecordingBridge();
       googleCaptureRef.current = bridge ? new GoogleRecordingCapture(bridge) : null;
@@ -190,7 +190,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       if(clinical){engine.preserveSetupBaseline();discardPendingSpeech();phaseRef.current='clinical-ready';setPhase('clinical-ready');return;}
       phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9; countdownIntroPending = true;
       discardPendingSpeech();
-      void say(trial?googleTrialIntro:introduction).finally(() => {
+      void say(trial?(trial.routePattern==='5m-out-and-back'?googleTrialOutBackIntro:googleTrialIntro):introduction).finally(() => {
         if (disposed || phaseRef.current !== 'countdown' || !countdownIntroPending) return;
         countdownIntroPending = false; deadline = performance.now() + 9000; lastSecond = 9; setRemaining(9);
       });
@@ -348,7 +348,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     <Card>
       <Text accessible={false} style={s.arrow}>{phase === 'walk' ? '↑' : '•'}</Text>
       {['checking', 'fit', 'countdown', 'waiting'].includes(phase) && <ProgressIndicator size="large" color={c.primary} style={s.progressIndicator} />}
-      <Body>{phase === 'prep' ? 'Take your time to place the phone. Keep it horizontal at your lower back, screen facing out, then stand still. The phone check waits for you.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Move comfortably for a short moment, then stop and stand still until the movement check is complete. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Do not walk until you hear begin. ${remaining} seconds.` : phase === 'waiting' ? 'Begin walking now. The recording starts when your first step is detected.' : phase === 'walk' ? trial?'Walk to your short finish mark, then stop and stand still. This is a Google distance trial, not a clinical test.':hint || protocolFlows[protocol].active : 'Recording stopped. Check your phone when safely settled.'}</Body>
+      <Body>{phase === 'prep' ? 'Take your time to place the phone. Keep it horizontal at your lower back, screen facing out, then stand still. The phone check waits for you.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Move comfortably for a short moment, then stop and stand still until the movement check is complete. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Do not walk until you hear begin. ${remaining} seconds.` : phase === 'waiting' ? 'Begin walking now. The recording starts when your first step is detected.' : phase === 'walk' ? trial?trial.routePattern==='5m-out-and-back'?'Walk to the 5 m mark, turn comfortably and return to the start. Stop there and stand still for 8 seconds.':'Walk to your short finish mark, then stop and stand still. This is a Google distance trial, not a clinical test.':hint || protocolFlows[protocol].active : 'Recording stopped. Check your phone when safely settled.'}</Body>
       {phase === 'checking' && <Text style={ui.caption}>Checks sensor readings, phone angle and settling. Lower-back location cannot be verified.</Text>}
       {!trial&&phase === 'walk' && <Text style={ui.caption}>{guidanceEnabled ? directionReady ? 'Gentle reminders on · arrow is a path reminder' : 'Direction estimate unavailable · walk only as comfortable' : 'Direction reminders off · arrow is a path reminder'}</Text>}
     </Card>

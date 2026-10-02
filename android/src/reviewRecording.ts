@@ -21,7 +21,7 @@ export function parseReviewRecording(text:string):SessionRecord {
   if(r.fitCheck && r.fitCheck.highPass10HzRmsG!==null&&!Number.isFinite(r.fitCheck.highPass10HzRmsG))throw invalid();
   if(r.googleRecording !== undefined && !validGoogleSummary(r.googleRecording))throw invalid();
   const trial=session.googleDistanceTrial;
-  if(trial!==undefined&&(!trial||trial.version!=='google-distance-trial-v1'||![2,3,5].includes(trial.referenceDistanceM)||![undefined,null,true,false].includes(trial.completedMarkedRoute)||![undefined,'quiet-stop','time-limit','user-stopped','interrupted'].includes(trial.end)||session.isPractice!==true))throw invalid();
+  if(trial!==undefined&&(!trial||trial.version!=='google-distance-trial-v1'||![2,3,5,10].includes(trial.referenceDistanceM)||![undefined,'straight','5m-out-and-back'].includes(trial.routePattern)||(trial.referenceDistanceM===10&&trial.routePattern!=='5m-out-and-back')||(trial.referenceDistanceM!==10&&trial.routePattern==='5m-out-and-back')||![undefined,null,true,false].includes(trial.completedMarkedRoute)||![undefined,'quiet-stop','time-limit','user-stopped','interrupted'].includes(trial.end)||session.isPractice!==true))throw invalid();
   return session;
 }
 
@@ -91,9 +91,11 @@ export function parseReviewRecordingCsv(text: string): SessionRecord {
   if(first[at('experiment_kind')]==='google-distance-trial-v1'){
     const reference=Number(first[at('trial_reference_distance_m')]);
     const completed=first[at('trial_route_completed')],end=first[at('trial_end')];
-    if(!session.isPractice||![2,3,5].includes(reference)||!['','true','false'].includes(completed)||!['','quiet-stop','time-limit','user-stopped','interrupted'].includes(end))throw invalid();
-    for(const key of ['experiment_kind','trial_reference_distance_m','trial_route_completed','trial_end'])if(rows.some(row=>row[at(key)]!==first[at(key)]))throw invalid();
-    session.googleDistanceTrial={version:'google-distance-trial-v1',referenceDistanceM:reference as 2|3|5,completedMarkedRoute:completed===''?null:completed==='true',end:end?end as NonNullable<SessionRecord['googleDistanceTrial']>['end']:undefined};
+    const patternIndex=at('trial_route_pattern');
+    const pattern=patternIndex>=0?first[patternIndex]:'';
+    if(!session.isPractice||![2,3,5,10].includes(reference)||!['','straight','5m-out-and-back'].includes(pattern)||(reference===10&&pattern!=='5m-out-and-back')||(reference!==10&&pattern==='5m-out-and-back')||!['','true','false'].includes(completed)||!['','quiet-stop','time-limit','user-stopped','interrupted'].includes(end))throw invalid();
+    for(const key of ['experiment_kind','trial_reference_distance_m','trial_route_completed','trial_end',...(patternIndex>=0?['trial_route_pattern']:[])])if(rows.some(row=>row[at(key)]!==first[at(key)]))throw invalid();
+    session.googleDistanceTrial={version:'google-distance-trial-v1',referenceDistanceM:reference as 2|3|5|10,routePattern:pattern?pattern as NonNullable<SessionRecord['googleDistanceTrial']>['routePattern']:undefined,completedMarkedRoute:completed===''?null:completed==='true',end:end?end as NonNullable<SessionRecord['googleDistanceTrial']>['end']:undefined};
   }
   if(rows.some(row=>row[at('participant_id')]!==identity))throw invalid();
   return session;

@@ -532,6 +532,21 @@ test('Short Google trial requires a measured route and stays separate from clini
  assert.equal(h.button('Set up this short trial').props.disabled,true);h.close();
 });
 
+test('Separate Google experiment offers a labelled 5 m out-and-back route without entering 10MWT',()=>{
+ const h=harness('GoogleDistanceTrialScreen');
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'10 m total · 5 m out and back'}).props.onPress());
+ assert.equal(h.button('Set up this short trial').props.disabled,true);
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'I measured this route and the path is clear.'}).props.onPress());
+ act(()=>h.button('Set up this short trial').props.onPress());
+ const [name,p]=h.navigated[0];
+ assert.equal(name,'Prepare');assert.equal(p.duration,90);
+ assert.equal(p.googleDistanceTrial.referenceDistanceM,10);
+ assert.equal(p.googleDistanceTrial.routePattern,'5m-out-and-back');
+ assert.equal(p.assessmentSetup.protocol,'research-walk');
+ assert.equal(p.assessmentSetup.courseLengthM,5);
+ assert.equal(p.isPractice,true);h.close();
+});
+
 test('Short-trial stop gate needs an armed walk followed by continuous stillness',()=>{
  const {GoogleTrialStopGate}=load('googleDistanceTrial');const g=new GoogleTrialStopGate();
  assert.equal(g.update(10000,true,true,true),null);g.begin(10000);
@@ -544,6 +559,19 @@ test('Short-trial stop gate needs an armed walk followed by continuous stillness
  assert.equal(g.update(24000,true,true,true),'quiet-stop');
  const cap=new GoogleTrialStopGate();cap.begin(0);assert.equal(cap.update(60000,true,true,false),'time-limit');
  const lost=new GoogleTrialStopGate();lost.begin(0);assert.equal(lost.update(100,true,true,false),null);assert.equal(lost.update(200,false,true,true),'interrupted');
+});
+
+test('Out-and-back Google trial tolerates a brief turn pause but ends after 8 seconds at the return mark',()=>{
+ const {GoogleTrialStopGate}=load('googleDistanceTrial');const gate=new GoogleTrialStopGate(8,90);
+ gate.begin(0);
+ assert.equal(gate.update(10000,true,true,true),null);
+ assert.equal(gate.update(16000,true,true,true),null);
+ assert.equal(gate.update(17000,true,true,false),null);
+ assert.equal(gate.update(30000,true,true,true),null);
+ assert.equal(gate.update(38000,true,true,true),'quiet-stop');
+ const limit=new GoogleTrialStopGate(8,90);limit.begin(0);
+ assert.equal(limit.update(89000,true,true,false),null);
+ assert.equal(limit.update(90000,true,true,false),'time-limit');
 });
 
 test('Short-trial recording waits for a step then ends hands-free after quiet, rather than waiting 60 seconds',()=>{

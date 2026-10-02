@@ -281,3 +281,7 @@ GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the 
 - 2026-10-01: [[gait-app-collection-workflow]] now covers named settings, visible height/test selection, explicit recording assignments and dashboard inclusion rules.
 
 - 2026-10-02 protocol flows: [[gait-app-collection-workflow]] distinguishes research first-step timing from automatic clinical capture, provisional 10MWT/TUG endpoints, shared previews and exported Go provenance.
+
+- 2026-10-02 live Google API check: [[gait-app-collection-workflow]] records successful phone-side API calls with empty 60-second and 600-second reads; walking distance remains unvalidated.
+- 2026-10-02 short-trial diagnostics: [[gait-app-collection-workflow]] tracks a local wider post-finish provider read separately from measured test distance; physical validation remains open.
+- 2026-10-02 Google trial route: [[gait-app-collection-workflow]] distinguishes an experimental 5 m out-and-back, 10 m total provider check from the straight clinical 10MWT.

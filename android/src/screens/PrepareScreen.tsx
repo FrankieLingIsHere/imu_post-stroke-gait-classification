@@ -158,7 +158,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       await saveParticipant(participant).catch(()=>{throw new Error('Could not save participant. Try again.');});
       if (!active.current || id !== request.current || AppState.currentState !== 'active') return;
       setSelectedId(participant.id);setProfiles([...currentProfiles.filter(p=>p.id!==participant.id),participant]);
-      navigation.navigate('Record', { duration:trial?60:plannedSeconds, audioEnabled, isPractice:trial?true:isPractice, guidanceEnabled:trial?false:guidanceEnabled, useGpsDistance:trial?false:useGpsDistance, useGoogleDistance:trial?true:useGoogleDistance, googleDistanceTrial:trial, participantId:participant.id,participantLabel:participant.label,participantSnapshot:participant,demographics:participant.demographics,assessmentSetup:trial?route.params.assessmentSetup:setup });
+      navigation.navigate('Record', { duration:trial?(trial.routePattern==='5m-out-and-back'?90:60):plannedSeconds, audioEnabled, isPractice:trial?true:isPractice, guidanceEnabled:trial?false:guidanceEnabled, useGpsDistance:trial?false:useGpsDistance, useGoogleDistance:trial?true:useGoogleDistance, googleDistanceTrial:trial, participantId:participant.id,participantLabel:participant.label,participantSnapshot:participant,demographics:participant.demographics,assessmentSetup:trial?route.params.assessmentSetup:setup });
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : 'Could not access motion sensors. Please try again.'); }
     finally { if (active.current) setBusy(false); }
   }
@@ -211,6 +211,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     </View>}
     {page===2&&<View style={{gap:10}}>
     {trial&&<Body>{t('Short Google trial · measured route {0} m').replace('{0}',String(trial.referenceDistanceM))}</Body>}
+    {trial?.routePattern==='5m-out-and-back'&&<Body>Measure 5 m to the turn mark, then return to the start: 10 m total. This is a Google distance experiment, not a 10MWT.</Body>}
     {audioEnabled ? <><BigButton label={testing ? 'Stop sample' : 'Play voice sample'} variant="outline" onPress={testing ? stopSample : sample} disabled={busy} /><Text style={ui.caption}>Listen briefly, or skip. Voice guidance stays on. Check your media volume first.</Text></> : <Body>Voice is off. Ask a helper to signal start and finish while the phone is secured.</Body>}
     {(Platform.OS!=='web'||webReady)&&<Pressable accessibilityRole="checkbox" accessibilityLabel={t('I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.')} accessibilityState={{ checked:ready }} onPress={() => setReady(!ready)} style={[ui.row,{ minHeight:64 }]}><Text style={{ fontSize:28,color:colours.primary }}>{ready ? '☑' : '☐'}</Text><Text style={[ui.caption,ui.fill]}>I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.</Text></Pressable>}
     {Platform.OS === 'web' && <View style={{gap:8}}>

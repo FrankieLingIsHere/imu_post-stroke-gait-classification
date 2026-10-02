@@ -2677,3 +2677,19 @@ Performed read-only ADB/app diagnostics after user selected no walking trial. Ve
 ## [2026-10-02] sync | Quick stationary Google API check prepared
 
 Implemented a separate no-walk API check with subscription, two context reads and cleanup, distinct connectivity/record-availability results, technical logging and three-language text. TypeScript, 126 tests and Android export pass; runtime matches build 6. Updated release/module/workflow/index/weekly records. Publication was authorized on 2 October 2026; compatible update delivery and real-device execution remain pending; no long normal-test wait or APK change.
+
+## [2026-10-02] sync | Live phone Google API access verification
+
+After approved publication of `3ccb972` and successful Android preview OTA delivery, ran the quick check on the connected Redmi Note 10 Pro. Availability, subscription, both context reads and cleanup passed in 299 ms; each read returned zero records. Inspected the phone screen and updated the release, module, workflow, index and weekly records. API connectivity is verified; walking distance production, latency and accuracy are not. Generated screenshot and diagnostics stay outside source commits.
+
+## [2026-10-02] sync | Recording API response-path audit
+
+Checked the native distance/step request and response fields against official Google Recording API documentation after a Maps API troubleshooting suggestion. Confirmed this app uses typed on-device datasets, not Maps HTTP routes. Clarified in the module guide, workflow and weekly note that immediate subscribe/read/unsubscribe verifies connectivity only and cannot retrieve pre-subscription walking records. The earlier 3 m provider-data gap remains unresolved. Documentation changes stay local for publication review.
+
+## [2026-10-02] sync | Short-trial provider context diagnostic
+
+Audited proposed missing-record causes against the mobile Recording API contract and existing permission/setup code. Added a JavaScript-only post-finish context query to the last delayed read of the dedicated short trial. Exported context points remain separate from trial metrics and endpoint decisions. Updated release/module/workflow/index/weekly records. TypeScript and 127 tests passed; the phone was disconnected, so no physical provider result or publication claim was made. All changes remain local for review.
+
+## [2026-10-02] sync | Separate Google trial out-and-back option
+
+After the user clarified that a longer turning walk is for the standalone Google experiment, added a measured 5 m out-and-back option with 10 m total reference, distinct voice/screen guidance, longer quiet-stop/ceiling, and route-pattern export/import. It remains a practice experiment and cannot be interpreted as a 10MWT. Updated the module guide, changelog, workflow, index and weekly record. Software tests pass; no connected-phone result or publication yet. Changes remain local for review.

@@ -113,6 +113,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
     {session?.googleDistanceTrial&&<Card>
       <Text style={ui.label}>Google distance trial</Text>
       <Body>{t('Measured reference route: {0} m').replace('{0}',String(session.googleDistanceTrial.referenceDistanceM))}</Body>
+      {session.googleDistanceTrial.routePattern==='5m-out-and-back'&&<Body>Route: 5 m out, turn, then 5 m back. Total measured path: 10 m. This is not a 10MWT.</Body>}
       <Body>Did you reach the finish mark before stopping?</Body>
       <View style={ui.row}><BigButton style={ui.fill} label="Reached the finish" variant={session.googleDistanceTrial.completedMarkedRoute===true?'primary':'outline'} disabled={saving} onPress={()=>void confirmTrial(true)}/><BigButton style={ui.fill} label="Stopped before the finish" variant={session.googleDistanceTrial.completedMarkedRoute===false?'primary':'outline'} disabled={saving} onPress={()=>void confirmTrial(false)}/></View>
       {session.googleDistanceTrial.completedMarkedRoute===true&&r?.googleRecording?.status==='records-received'&&r.googleRecording.distanceM!=null&&<Body>{t('Google reported difference from the reference: {0} m').replace('{0}',(r.googleRecording.distanceM-session.googleDistanceTrial.referenceDistanceM).toFixed(2))}</Body>}

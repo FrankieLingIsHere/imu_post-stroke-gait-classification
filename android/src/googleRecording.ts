@@ -18,13 +18,18 @@ export interface GoogleRecordingSummary {
   boundaryRecordsExcluded: number; invalidRecordsExcluded: number; overlappingRecordsExcluded: number;
   observations: (GooglePoint & { firstReceivedAtUnixMs: number })[];
   polls: { requestedAtUnixMs: number; queryEndUnixMs: number; receivedAtUnixMs: number | null; recordCount: number; error: string | null }[];
+  /** Research diagnostics only: a read extending past test end, never included in trial totals. */
+  contextObservations?: (GooglePoint & { firstReceivedAtUnixMs: number })[];
+  contextPolls?: GoogleRecordingSummary['polls'];
   errors: string[]; clinicallyValidated: false; controlsTestEnd: false;
   subscriptionCleanup: 'pending' | 'complete' | 'failed';
 }
 
 export function summarizeGoogleRecords(startUnixMs: number | null, endUnixMs: number | null,
   observations: GoogleRecordingSummary['observations'], polls: GoogleRecordingSummary['polls'], errors: string[],
-  subscriptionCleanup: GoogleRecordingSummary['subscriptionCleanup'] = 'pending'): GoogleRecordingSummary {
+  subscriptionCleanup: GoogleRecordingSummary['subscriptionCleanup'] = 'pending',
+  contextObservations: NonNullable<GoogleRecordingSummary['contextObservations']> = [],
+  contextPolls: NonNullable<GoogleRecordingSummary['contextPolls']> = []): GoogleRecordingSummary {
   let boundaryRecordsExcluded = 0, invalidRecordsExcluded = 0, overlappingRecordsExcluded = 0;
   const selected: GoogleRecordingSummary['observations'] = [];
   const seen = new Set<string>();
@@ -57,7 +62,7 @@ export function summarizeGoogleRecords(startUnixMs: number | null, endUnixMs: nu
     // Partial records cannot establish whole-test speed.
     meanSpeedMps:distanceM !== null && distanceCoverageFraction>=0.95 && !excluded && !errors.length && seconds>0 ? distanceM/seconds : null,
     distanceCoverageFraction,
-    boundaryRecordsExcluded,invalidRecordsExcluded,overlappingRecordsExcluded,observations,polls,errors,
+    boundaryRecordsExcluded,invalidRecordsExcluded,overlappingRecordsExcluded,observations,polls,contextObservations,contextPolls,errors,
     clinicallyValidated:false,controlsTestEnd:false,subscriptionCleanup };
 }
 
@@ -78,13 +83,17 @@ export function validGoogleSummary(value: unknown): value is GoogleRecordingSumm
     g.clinicallyValidated === false && g.controlsTestEnd === false && ['pending','complete','failed'].includes(g.subscriptionCleanup) &&
     Array.isArray(g.errors) && g.errors.length <= 2000 && g.errors.every(e => typeof e === 'string') &&
     Array.isArray(g.observations) && g.observations.length <= 50000 && g.observations.every(p => p && ['distance','steps'].includes(p.kind) && [p.value,p.startUnixMs,p.endUnixMs,p.firstReceivedAtUnixMs].every(v => typeof v === 'number' && Number.isFinite(v))) &&
-    Array.isArray(g.polls) && g.polls.length <= 2000 && g.polls.every(p => p && [p.requestedAtUnixMs,p.queryEndUnixMs].every(v => typeof v === 'number' && Number.isFinite(v)) && nullable(p.receivedAtUnixMs) && Number.isInteger(p.recordCount) && p.recordCount >= 0 && (p.error === null || typeof p.error === 'string'));
+    Array.isArray(g.polls) && g.polls.length <= 2000 && g.polls.every(p => p && [p.requestedAtUnixMs,p.queryEndUnixMs].every(v => typeof v === 'number' && Number.isFinite(v)) && nullable(p.receivedAtUnixMs) && Number.isInteger(p.recordCount) && p.recordCount >= 0 && (p.error === null || typeof p.error === 'string')) &&
+    (g.contextObservations === undefined || (Array.isArray(g.contextObservations) && g.contextObservations.length <= 50000 && g.contextObservations.every(p => p && ['distance','steps'].includes(p.kind) && [p.value,p.startUnixMs,p.endUnixMs,p.firstReceivedAtUnixMs].every(v => typeof v === 'number' && Number.isFinite(v))))) &&
+    (g.contextPolls === undefined || (Array.isArray(g.contextPolls) && g.contextPolls.length <= 2000 && g.contextPolls.every(p => p && [p.requestedAtUnixMs,p.queryEndUnixMs].every(v => typeof v === 'number' && Number.isFinite(v)) && nullable(p.receivedAtUnixMs) && Number.isInteger(p.recordCount) && p.recordCount >= 0 && (p.error === null || typeof p.error === 'string'))));
 }
 export class GoogleRecordingCapture {
   private start: number | null = null;
   private stop: number | null = null;
   private observations: GoogleRecordingSummary['observations'] = [];
   private polls: GoogleRecordingSummary['polls'] = [];
+  private contextObservations: NonNullable<GoogleRecordingSummary['contextObservations']> = [];
+  private contextPolls: NonNullable<GoogleRecordingSummary['contextPolls']> = [];
   private errors: string[] = [];
   private busy: Promise<void> | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -123,22 +132,38 @@ export class GoogleRecordingCapture {
     })().finally(() => { this.busy = null; });
     return this.busy;
   }
+  private async pollContext(endUnixMs: number) {
+    if (!this.ready || this.start === null || this.stop === null || endUnixMs <= this.stop || this.closed) return;
+    const poll = { requestedAtUnixMs:this.now(),queryEndUnixMs:endUnixMs,receivedAtUnixMs:null as number|null,recordCount:0,error:null as string|null };
+    this.contextPolls.push(poll);
+    try {
+      const read = await timed(this.bridge.readData(this.start,endUnixMs));
+      poll.receivedAtUnixMs = read.receivedAtUnixMs; poll.recordCount = read.points.length;
+      for (const p of read.points) {
+        if (!this.contextObservations.some(old => old.kind===p.kind && old.startUnixMs===p.startUnixMs && old.endUnixMs===p.endUnixMs && old.value===p.value))
+          this.contextObservations.push({...p,firstReceivedAtUnixMs:read.receivedAtUnixMs});
+      }
+    } catch (e) { poll.error = e instanceof Error ? e.message : String(e); }
+  }
   async finish(endUnixMs: number, extendedObservation = false): Promise<GoogleRecordingSummary> {
     if (this.timer) clearInterval(this.timer); this.timer = null; this.stop = endUnixMs;
     // Fixed test window: observe delayed records without including later walking.
     if (this.busy) await this.busy;
     await this.poll(endUnixMs);
     if (this.ready && this.start !== null) {
-      for (const waitMs of extendedObservation?[2000,3000,5000,10000,10000]:[2000]) {
-        await new Promise<void>(resolve => setTimeout(resolve,waitMs));
+      const waits = extendedObservation?[2000,3000,5000,10000,10000]:[2000];
+      for (let index=0; index<waits.length; index++) {
+        await new Promise<void>(resolve => setTimeout(resolve,waits[index]));
         if(this.closed)break;
-        await this.poll(endUnixMs);
+        if(extendedObservation && index===waits.length-1)
+          await Promise.all([this.poll(endUnixMs),this.pollContext(this.now())]);
+        else await this.poll(endUnixMs);
         const summary=summarizeGoogleRecords(this.start,this.stop,this.observations,this.polls,this.errors);
         if(extendedObservation&&summary.status==='records-received')break;
       }
     }
     await this.cancel();
-    return summarizeGoogleRecords(this.start,this.stop,this.observations,this.polls,this.errors,this.cleanup);
+    return summarizeGoogleRecords(this.start,this.stop,this.observations,this.polls,this.errors,this.cleanup,this.contextObservations,this.contextPolls);
   }
   async cancel() {
     this.closed = true;
