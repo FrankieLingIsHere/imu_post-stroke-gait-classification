@@ -116,3 +116,29 @@ test('Trial reference and completion survive JSON and CSV import without becomin
   assert.throws(()=>parseReviewRecording(exporting.exportJSON(session)),/valid Gait Steps/);
   assert.throws(()=>parseReviewRecordingCsv(exporting.exportCSV(session)),/raw GaitTrace/);
 });
+
+
+test('Stationary API check succeeds with empty real-shaped responses and always unsubscribes',async()=>{
+ const {checkGoogleApi}=load('googleApiCheck');const calls=[];
+ const bridge={async availability(){return {available:true,permissionGranted:true}},async subscribe(){calls.push('subscribe')},async readData(start,end){calls.push([start,end]);return {receivedAtUnixMs:1000000,points:[]}},async unsubscribe(){calls.push('unsubscribe')}};
+ const r=await checkGoogleApi(bridge,()=>1000000);
+ assert.equal(r.apiAccess,'passed');assert.equal(r.recordsAvailable,false);assert.equal(r.cleanup,'passed');assert.equal(r.reads.length,2);
+ assert.equal(calls[0],'subscribe');assert.deepEqual(calls[1],[940000,1000000]);assert.deepEqual(calls[2],[400000,1000000]);assert.equal(calls[3],'unsubscribe');
+ assert.equal('distanceM' in r,false);assert.equal('steps' in r,false);
+});
+
+test('API check keeps context availability separate from read failures and cleans up',async()=>{
+ const {checkGoogleApi}=load('googleApiCheck');let reads=0,cleanup=0;
+ const r=await checkGoogleApi({async availability(){return {available:true,permissionGranted:true}},async subscribe(){},async readData(){if(++reads===1)throw Error('read failed');return {receivedAtUnixMs:1000000,points:[point('distance',3)]}},async unsubscribe(){cleanup++}},()=>1000000);
+ assert.equal(r.apiAccess,'failed');assert.equal(r.recordsAvailable,true);assert.equal(r.reads[0].recordCount,null);assert.equal(r.reads[1].recordCount,1);assert.equal(cleanup,1);
+});
+
+test('API check rejects unavailable access, partial subscriptions and cleanup failure',async()=>{
+ const {checkGoogleApi}=load('googleApiCheck');let subscribed=0,unsubscribed=0;
+ const bridge={async availability(){return {available:true,permissionGranted:false}},async subscribe(){subscribed++;throw Error('subscribe failed')},async readData(){return {receivedAtUnixMs:1000000,points:[]}},async unsubscribe(){unsubscribed++}};
+ const denied=await checkGoogleApi(bridge,()=>1000000);assert.equal(subscribed,0);assert.equal(denied.apiAccess,'failed');
+ bridge.availability=async()=>({available:true,permissionGranted:true});
+ const failed=await checkGoogleApi(bridge,()=>1000000);assert.equal(failed.subscription,'failed');assert.equal(unsubscribed,1);assert.equal(failed.reads.length,0);
+ bridge.subscribe=async()=>{};bridge.unsubscribe=async()=>{throw Error('cleanup failed')};
+ const leak=await checkGoogleApi(bridge,()=>1000000);assert.equal(leak.apiAccess,'failed');assert.equal(leak.cleanup,'failed');
+});

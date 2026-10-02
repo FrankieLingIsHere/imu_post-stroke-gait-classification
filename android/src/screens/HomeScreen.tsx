@@ -24,7 +24,7 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
       <BigButton style={s.tile} label={more?'Close import, research tools and app information':'Import, research tools and app information'} variant="outline" onPress={()=>setMore(!more)} />
     </View>
     {more && <View style={{gap:12}}>
-    {Platform.OS==='android'&&<Card><Text style={s.label}>Research tools</Text><BigButton label="Google distance trial" variant="outline" onPress={()=>navigation.navigate('GoogleDistanceTrial')}/><Body muted>Try a measured 2, 3 or 5 metre route without selecting a clinical test.</Body></Card>}
+    {Platform.OS==='android'&&<Card><Text style={s.label}>Research tools</Text><BigButton label="Quick Google API check" variant="outline" onPress={()=>navigation.navigate('GoogleApiCheck')}/><BigButton label="Google distance trial" variant="outline" onPress={()=>navigation.navigate('GoogleDistanceTrial')}/><Body muted>Try a measured 2, 3 or 5 metre route without selecting a clinical test.</Body></Card>}
     <ReleaseInfo />
     {Platform.OS === 'web' && <PwaInstall />}
     <Card><Text style={s.label}>Your walk can help research</Text><Body muted>{Platform.OS==='web'?'Check whether this browser can record all three sensors, or preview the steps and review an exported file.':'Record your movement and choose when to share it. Your recordings stay on this phone.'}</Body></Card>

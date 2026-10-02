@@ -2656,3 +2656,24 @@ Added local Android-only measured 2/3/5 m trial setup, first-step raw capture, a
 ## [2026-10-02] sync | Short-trial publication and APK build authorized
 
 User explicitly approved publication of the reviewed short Google distance trial batch and requested notification after APK completion. Updated release/weekly records before publication; native build identifiers and success remain pending. No generated bundles or local demonstration assets are included.
+
+
+## [2026-10-02] sync | Successful Google distance trial APK build 6
+
+
+Build/publication result (2 October 2026): commit `54fb0f4` was pushed to main and all three GitHub workflows passed. EAS preview build `d3529b4c-e5f5-443c-9a15-01e4f7286bc8` completed successfully as GaitTrace **0.3.0 / Android build 6**, using the existing application/signing identity. Native Google module compilation passed. Runtime `a48c2ed43ddd2142beaa39b7f8031b8fff327407` matches the published Android preview update group `8e92c2d5-ef7f-499d-b5ad-470471c488b2`. [Direct APK](https://expo.dev/artifacts/eas/5sYVRhaXoeMJQDYTPrjgfXq7aSLe2wTlboCAzbZFoqU.apk). Local download target: `android/dist/apk/GaitTrace-0.3.0-build6.apk` (ignored). Physical installation and Google distance accuracy/latency remain unvalidated. Build-result documentation is retained locally for review; generated APK/log/metadata are not source commits.
+
+
+## [2026-10-02] sync | First build-6 short trial audit
+
+Reviewed the supplied 3 m JSON and user-confirmed immediate manual stop. Saved ignored diagnostics and updated workflow/index/weekly evidence: native raw streams present, Google missing despite 10 successful reads and 30.457 s post-stop observation, automatic quiet-stop untested, height heuristic not accurate against the entered reference. No clinical symmetry, model validation or raw training-label claim. Provider availability/batching/query behavior remains unresolved; no app code change or push.
+
+
+## [2026-10-02] sync | Connected-phone Google prerequisites and batching clue
+
+Performed read-only ADB/app diagnostics after user selected no walking trial. Verified build 6, activity permissions and hardware step-sensor exposure; documented historical Google Fitness 60-second batching relative to the 30-second observation window as an unconfirmed latency clue. Updated workflow/index/weekly records and saved ignored diagnostics. No new distance read, movement validation, native change, installation, app-data alteration or push.
+
+
+## [2026-10-02] sync | Quick stationary Google API check prepared
+
+Implemented a separate no-walk API check with subscription, two context reads and cleanup, distinct connectivity/record-availability results, technical logging and three-language text. TypeScript, 126 tests and Android export pass; runtime matches build 6. Updated release/module/workflow/index/weekly records. Publication was authorized on 2 October 2026; compatible update delivery and real-device execution remain pending; no long normal-test wait or APK change.

@@ -6,11 +6,11 @@ Local Expo module for GaitTrace. Uses Google Play services Fitness **21.3.0**, `
 
 Expo SDK 52 autolinking discovers this package in `android/modules/`. The library manifest and app configuration declare `ACTIVITY_RECOGNITION`. A **new native Android APK** must contain the module: Expo Go and previously installed APKs cannot obtain it through JavaScript updates. App version is 0.3.0; EAS uses the existing remote build-number configuration and fingerprint runtime policy. Do not publish the new JavaScript bundle against the older native runtime.
 
-Build with the project's existing Android build workflow and signing identity. Java and the Android SDK are required for a local build. No new cloud build or paid account is initiated by this change. A successful native compile and physical-device run are still required before calling the integration device-tested.
+Build with the project's existing Android build workflow and signing identity. Java and the Android SDK are required for a local build. No new cloud build or paid account is initiated by this change. EAS build 6 (0.3.0) compiled successfully on 2 October 2026. A physical-device run is still required before calling the integration device-tested.
 
 In **Set up your walk → Language and audio settings**, enable **Google distance test · experimental**. Start Test checks full distance-capable Play services availability and requests Android physical-activity permission while the phone is accessible. No Fit app installation or Google sign-in is required. Missing native module, unavailable services or denied permission explains how to continue with the option disabled.
 
-## Dedicated short trial (local source; pending APK)
+## Dedicated short trial (0.3.0 / build 6)
 
 Use **Home > Import, research tools and app information > Research tools > Google distance trial**. This Android-only engineering experiment is separate from the clinical test selector. It does not require a 12 m course.
 
@@ -23,7 +23,7 @@ Use **Home > Import, research tools and app information > Research tools > Googl
 
 Google starts querying at the audible Begin callback (first-step fallback if no callback arrives). Raw IMU begins at first-step detection, so the two start timestamps can differ; inspect them in JSON. The Google window includes the quiet-stop tail, so any OS whole-window mean speed is **not** moving-only speed. Post-stop reads never extend the queried interval. No estimate is substituted when Google supplies nothing.
 
-Experiments remain linked to participants and visible in history, with `google-distance-trial-v1` metadata and practice tagging. They are excluded from rehabilitation speed trends and do not overwrite personal step-length calibration. Normal 10MWT/TUG/endurance capture and their provisional endpoints remain separate. Existing APKs without the Google native module still need the new APK; no APK has been built or device validation completed for this batch.
+Experiments remain linked to participants and visible in history, with `google-distance-trial-v1` metadata and practice tagging. They are excluded from rehabilitation speed trends and do not overwrite personal step-length calibration. Normal 10MWT/TUG/endurance capture and their provisional endpoints remain separate. Existing APKs without the Google native module still need the new APK; EAS build 6 succeeded; device validation remains pending.
 
 ## Capture contract
 
@@ -44,3 +44,12 @@ Experiments remain linked to participants and visible in history, with `google-d
 5. Compare available distance with the measured route using bias, absolute/relative error and repeatability. Validate timing/endpoints separately. Agree acceptance limits with the supervisor before using Google distance to end a test. Raw IMU, OS distance and reference distance must remain separate.
 
 Sources: [Google integration guide](https://developer.android.com/health-and-fitness/recording-api), [LocalRecordingClient](https://developers.google.com/android/reference/com/google/android/gms/fitness/LocalRecordingClient), [detailed read request](https://developers.google.com/android/reference/com/google/android/gms/fitness/request/LocalDataReadRequest.Builder).
+
+Current APK: [GaitTrace 0.3.0 build 6](https://expo.dev/artifacts/eas/5sYVRhaXoeMJQDYTPrjgfXq7aSLe2wTlboCAzbZFoqU.apk).
+
+
+## Quick API-access check (compatible preview update authorized)
+
+Home > Import, research tools and app information > Research tools > Quick Google API check. Tap Run API check while stationary or holding the phone gently. No gait recording, profile or placement workflow is entered. The check requests permission if needed, subscribes, reads the last 60 seconds and 10 minutes, and releases the subscription. It does not wait for new walking records. Each request has a four-second timeout. Technical request windows, response times/counts and failures are emitted under `GaitGoogleApiCheck` for ADB inspection. A successful empty response is API access success with no records, not a zero distance. Broad context records are never treated as trial distance. Waving cannot validate walking steps or distance.
+
+This JavaScript feature matches the installed build-6 native runtime; publication was authorized on 2 October 2026. It has not yet run on the physical device. The user rejected long waits merely to establish API access; longer observation is not added to normal walking UX. Short-walk data availability and accuracy remain separate validation questions.

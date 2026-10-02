@@ -17,6 +17,7 @@ import WalkthroughScreen from './src/screens/WalkthroughScreen';
 import ParticipantsScreen from './src/screens/ParticipantsScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import GoogleDistanceTrialScreen from './src/screens/GoogleDistanceTrialScreen';
+import GoogleApiCheckScreen from './src/screens/GoogleApiCheckScreen';
 import type { AssessmentProtocol, AssessmentSetup, ParticipantDemographics, ParticipantProfile } from './src/store';
 type Setup = { duration: number; audioEnabled: boolean; isPractice: boolean; demographics?: ParticipantDemographics; participantId?: string; participantLabel?: string; participantSnapshot?: ParticipantProfile; assessmentSetup?: AssessmentSetup; useGpsDistance?: boolean; useGoogleDistance?: boolean; googleDistanceTrial?:import('./src/googleDistanceTrial').GoogleDistanceTrial };
 export type RootStackParamList = {
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   Record: Setup & { guidanceEnabled: boolean };
   Result: { sessionId: string }; Details: { sessionId: string }; History: undefined;
   GoogleDistanceTrial:undefined;
+  GoogleApiCheck:undefined;
 };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function App() {
@@ -42,6 +44,7 @@ export default function App() {
       <Stack.Screen name="Participants" component={ParticipantsScreen} options={{ title: t('Participants') }} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: t('Progress dashboard') }} />
       <Stack.Screen name="GoogleDistanceTrial" component={GoogleDistanceTrialScreen} options={{title:t('Google distance trial')}}/>
+      <Stack.Screen name="GoogleApiCheck" component={GoogleApiCheckScreen} options={{title:t('Quick Google API check'),headerBackVisible:false,gestureEnabled:false}}/>
     </Stack.Navigator>
   </NavigationContainer></SafeAreaProvider></PhoneFrame>;
 }
