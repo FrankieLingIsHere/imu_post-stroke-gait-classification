@@ -2,7 +2,7 @@
   "expo": {
     "name": "GaitTrace",
     "slug": "gait-steps",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "icon": "./assets/branding/icon.png",
     "runtimeVersion": { "policy": "fingerprint" },
     "updates": {
@@ -26,6 +26,7 @@
     "android": {
       "package": "com.gaitsteps.app",
       "versionCode": 1,
+      "permissions": ["android.permission.ACTIVITY_RECOGNITION"],
       "adaptiveIcon": { "foregroundImage": "./assets/branding/icon.png", "backgroundColor": "#176B62" }
     },
     "web": {

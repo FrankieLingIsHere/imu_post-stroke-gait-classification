@@ -1,6 +1,7 @@
 import type { SessionRecord } from './store';
 import { SENSOR_NAMES } from './recording';
 import type { Recording, Sample, Streams, SensorName } from './recording';
+import { validGoogleSummary } from './googleRecording';
 
 /** Restrict local review to finite, bounded device exports produced by this app. */
 export function parseReviewRecording(text:string):SessionRecord {
@@ -18,6 +19,7 @@ export function parseReviewRecording(text:string):SessionRecord {
     for(const sample of rows)if(!sample||![sample.x,sample.y,sample.z,sample.elapsedMs,sample.receivedAtUnixMs].every(Number.isFinite)||sample.elapsedMs<0||sample.elapsedMs>r.elapsedSeconds*1000+500||(sample.sensorTimestampSeconds!==null&&!Number.isFinite(sample.sensorTimestampSeconds)))throw invalid();
   }
   if(r.fitCheck && r.fitCheck.highPass10HzRmsG!==null&&!Number.isFinite(r.fitCheck.highPass10HzRmsG))throw invalid();
+  if(r.googleRecording !== undefined && !validGoogleSummary(r.googleRecording))throw invalid();
   return session;
 }
 

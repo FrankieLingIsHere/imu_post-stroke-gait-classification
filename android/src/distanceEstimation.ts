@@ -11,6 +11,17 @@ export type DistanceEstimate = {
 
 export interface DistanceCalibration { metersPerCandidateEvent: number; referenceDistanceM: number; referenceEventCount: number; updatedAt: string; }
 
+/** Trial-wide mean speed, including rests; never substitute for 10MWT timed-zone speed. */
+export function protocolPhoneEstimate(estimate:DistanceEstimate, protocol:string, elapsedFromGoSeconds:number|null|undefined){
+  const timed=protocol==='2mwt'||protocol==='6mwt';
+  const seconds=timed?elapsedFromGoSeconds:null;
+  const meanSpeedMps=estimate.distanceM!==null&&seconds!==null&&seconds!==undefined&&Number.isFinite(seconds)&&seconds>0
+    ?estimate.distanceM/seconds:estimate.speedMps;
+  return {distanceM:estimate.distanceM,meanSpeedMps,status:estimate.status,method:estimate.method,
+    speedDefinition:timed?'estimated-distance-divided-by-full-clock-including-rests':'candidate-bout-average-not-clinical-timed-zone',
+    clinicalOutcomeVerified:false};
+}
+
 /** Exact speed when a worker supplies a measured course distance and timed interval. */
 export function measuredProtocolSpeed(distanceM: number, seconds: number): DistanceEstimate {
   if (!Number.isFinite(distanceM) || distanceM <= 0 || !Number.isFinite(seconds) || seconds <= 0) return {

@@ -1,8 +1,12 @@
-﻿# Gait Steps
+# GaitTrace
+
+Current source release: **0.3.0**. See [CHANGELOG.md](CHANGELOG.md) for maintained release notes, version/build distinctions and installation requirements. The Google distance comparison needs a new native APK; it does not work in Expo Go or previously installed APKs through an OTA update. Native compilation and actual-phone validation remain pending. See the [experiment guide](modules/gait-google-recording/README.md) for setup and validation exports.
+
+The notes below preserve earlier iterations and historical validation counts. They are not the current setup/protocol specification; use the release history and [current product specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md) for current behavior and limitations.
 
 A single-role Android prototype for guided movement recording. After cloning, run `cd android` and `npm ci` (or `npm install`), then `npm run android`, using an Expo SDK 52-compatible client or development build. The local `npm run web` build supports preview and capability-gated browser capture; see the browser contract below. Browser capture publication authorized on 2026-09-17; physical-device verification remains pending.
 
-## What changed
+## Earlier implementation notes (historical)
 
 - Shared teal/cream theme, readable text, 56 dp buttons, system font scaling and safe-area handling. Primary actions remain outside content scrolling. Guides and history use explicit pages. Small screens and enlarged text retain overflow scrolling instead of clipping content.
 - Four realistic, locally bundled guide illustrations: clear path, secure lower-back placement, comfortable walking and seated review. They are generated illustrations, not photographs of enrolled participants.

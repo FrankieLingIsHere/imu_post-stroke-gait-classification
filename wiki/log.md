@@ -2608,3 +2608,41 @@ Reviewed the current app protocol, classification evidence map and synthesis pil
 ## [2026-10-01] sync | Approved app and research-note publication
 
 Verified the protocol, participant-linkage and research-note scope with 102 app tests, TypeScript, Android and web exports, and a Git whitespace check. Updated the current weekly page and collection-workflow concept. Physical-device validation remains pending.
+
+
+## [2026-10-02] sync | Supervisor alignment and measurement-first execution
+
+Compared the user's supplied supervisor-conversation synthesis with actual profile, calibration, protocol and analysis implementation and primary protocol/platform evidence. Updated [[gait-app-ai-model-strategy]], index, product specification and current weekly progress. Recommended focused 10MWT/TUG measurement and paired validation before few-shot adaptation; distinguished hemisphere/location, timed distance, clinical reference events, phone-orientation proxies and device-dependent offline voice support. Preserved the separate synthesis grant objective. No code, training, acquisition or clinical validation; documentation remains local for user review.
+
+
+## [2026-10-02] sync | Structured clinical intake and five-second baseline
+
+Updated [[gait-app-collection-workflow]], the product specification, current weekly progress and index for the first supervisor-aligned app batch. Clinical tests now require explicit stroke-history fields, current 10MWT variant and measured outcome prerequisites are recorded, and the standing phone reference is five seconds before the movement check. Existing profiles/three-second recordings remain readable. TypeScript and 105 automated tests passed; physical validation remains pending. Local source and documentation changes await user publication review.
+
+## [2026-10-02] sync | Autonomous lower-back patient workflow correction
+
+The user clarified the independent patient requirement after reviewing distance estimation. Updated the rehabilitation specification, [[gait-app-collection-workflow]], [[gait-app-ai-model-strategy]], index and weekly progress to distinguish the current worker reference route from the target automatic patient flow. Recorded the single-phone limits for 10 m tape crossings and TUG seat contact. No app behavior or validation result changed; local files await publication review.
+
+## [2026-10-02] sync | Local hands-free clinical capture implementation
+
+Updated [[gait-app-collection-workflow]], index, product specification and weekly progress after implementing automatic clinical arming/stop and a protocol-aware experimental phone speed export. 10MWT/TUG quiet-stop remains provisional; floor marks and chair contact are not verified. No physical-device or clinical validation was performed. Changes remain local for publication review.
+
+## [2026-10-02] sync | Free distance-provider feasibility audit
+
+Reviewed existing consumer/API decisions and current Expo location/step-distance code before checking official Google Recording API, Health Connect, fused location, Wi-Fi RTT and ARCore documentation. New evidence: accountless local distance API, ARCore metric pose, Redmi Note 10 Pro support, and mandatory rear-camera/world-tracking constraints. Recorded local ARCore as a conditional feasibility candidate, not a calibrated clinical solution; current screen-out enclosed mounting is incompatible. Updated the product specification, [[gait-app-collection-workflow]], [[gait-app-ai-model-strategy]], index and weekly progress. No paid account, SDK integration, acquisition, physical validation or model run. All documentation remains local for review.
+
+## [2026-10-02] sync | Confirmed screen-out mounting and front-camera feasibility
+
+User confirmed screen/selfie camera faces the room and rear camera faces the body. Replaced the conditional ARCore recommendation in current documents with its rejection for this mounting. Inspected OpenVINS Android-port source at `f0c465695c67c0eac786f4edf83a68109a6a58a9`: it selects the rear camera. Recorded front-camera adaptation as an untested free candidate requiring device calibration, native capture and paired validation; no implemented sensor capability or clinical accuracy claim. Updated product spec, collection workflow, model strategy, index and weekly progress together. Lower-back mounting stays unchanged. All changes remain local for publication review.
+
+## [2026-10-02] sync | External-service costs and measured visual-reference option
+
+Checked IndoorAtlas published pricing and Spectacular AI Android-wrapper licensing after the renewed free-service request. Neither establishes ongoing free native Android deployment. Added a measured printed-marker camera option supported by official AprilTag/OpenCV pose-estimation documentation; researcher course preparation and camera/clinical validation remain necessary, and user acceptance of markers is unresolved. Updated product specification, collection workflow, index and weekly progress locally. No service subscription, camera integration, APK build or accuracy result.
+
+## [2026-10-02] sync | Local Google Recording API comparison integration
+
+User authorized a Google on-device API trial. Added source integration via a local Expo Android module, opt-in pre-test permission flow, independent distance/steps/timing diagnostics, explicit missing/partial/error results, cleanup and separate JSON/CSV comparison outputs. App/package version 0.3.0 needs a new APK. Autolinking and SDK symbol checks passed; native compile and physical-device accuracy/latency remain pending. Updated product specification, collection workflow, index and current weekly progress in the same local batch. No model experiment, clinical accuracy claim, paid service or push.
+
+## [2026-10-02] sync | Approved publication and organized app release records
+
+User reviewed the 42-file source/document batch and explicitly approved publication, then requested organized version files. Added `android/CHANGELOG.md`, linked it from the app README and wiki, and updated current weekly progress. Separated source/app version 0.3.0 from the pending EAS-assigned APK build number. Generated publication reviews remain ignored locally. Rechecked TypeScript and all 117 tests before staging; native APK build and phone validation remain pending. Publication execution is recorded in Git history.

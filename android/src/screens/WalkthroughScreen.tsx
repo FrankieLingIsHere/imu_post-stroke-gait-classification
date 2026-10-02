@@ -19,7 +19,7 @@ export default function WalkthroughScreen({navigation,route}:NativeStackScreenPr
  const [page,setPage]=useState(0),[complete,setComplete]=useState(false);
  const flow=protocolFlows[protocol];
  if(page===3&&protocol!=='research-walk'&&!complete)return <ClinicalCapture key={protocol} protocol={protocol} audioEnabled={false} preview
-   say={async()=>{}} receiving={()=>true} onBegin={()=>{}} onFinish={()=>setComplete(true)} onCancel={()=>setPage(2)}/>;
+   say={async()=>{}} receiving={()=>true} motion={()=>({enough:true,steady:true,context:'rest-or-quiet'} as any)} onBegin={()=>{}} onFinish={()=>setComplete(true)} onCancel={()=>setPage(2)}/>;
  const stages=[...shared,[flow.title,flow.intro],['Recording',flow.active],['Review and export',flow.finish]];
  const shown=complete?stages.length-1:page;
  return <Screen title="Supervisor walkthrough" eyebrow="PREVIEW — NO RECORDING SAVED" actions={<>

@@ -62,7 +62,7 @@ export class SensorRecorder {
     const recentSample: Sample = { x: m.x, y: m.y, z: m.z, elapsedMs: now, receivedAtUnixMs: Date.now(), sensorTimestampSeconds: Number.isFinite(m.timestamp) ? m.timestamp! : null };
     this.recent[name].push(recentSample);
     if (this.fitStarted !== null) this.fitStreams[name].push({ ...recentSample, elapsedMs: now - this.fitStarted });
-    this.recent[name] = this.recent[name].filter(s => now - s.elapsedMs <= 4000);
+    this.recent[name] = this.recent[name].filter(s => now - s.elapsedMs <= 6000);
     this.received[name] = { count: (this.received[name]?.count ?? 0) + 1, last: now };
     if (name === 'accelerometer') {
       this.accelAt = now;
@@ -113,23 +113,25 @@ export class SensorRecorder {
   get baselineReady() {
     const now = performance.now();
     return SENSOR_NAMES.every(n => {
-      const samples = this.recent[n].filter(s => now - s.elapsedMs <= 3000);
-      return samples.length >= 3 && samples[samples.length - 1].elapsedMs - samples[0].elapsedMs >= 2500;
+      const samples = this.recent[n].filter(s => now - s.elapsedMs <= 5000);
+      return samples.length >= 3 && samples[samples.length - 1].elapsedMs - samples[0].elapsedMs >= 4500 &&
+        samples.every((sample, index) => index === 0 || sample.elapsedMs - samples[index - 1].elapsedMs <= 500);
     });
   }
   preserveSetupBaseline() {
+    if (this.baseline) return;
     const now = performance.now();
     const baselineStreams = emptyStreams();
     const mean = {} as NonNullable<Recording['baseline']>['mean'];
     for (const name of SENSOR_NAMES) {
-      baselineStreams[name] = this.recent[name].filter(s => now - s.elapsedMs <= 3000).map(s => ({ ...s, elapsedMs: s.elapsedMs - (now - 3000) }));
+      baselineStreams[name] = this.recent[name].filter(s => now - s.elapsedMs <= 5000).map(s => ({ ...s, elapsedMs: s.elapsedMs - (now - 5000) }));
       const samples = baselineStreams[name];
       mean[name] = { x: 0, y: 0, z: 0 };
       for (const sample of samples) for (const axis of ['x', 'y', 'z'] as const) mean[name][axis] += sample[axis] / samples.length;
     }
     // Baselines are optional for older/programmatic recordings; never invent absent samples.
-    if (SENSOR_NAMES.every(n => baselineStreams[n].length >= 3 && baselineStreams[n][baselineStreams[n].length - 1].elapsedMs - baselineStreams[n][0].elapsedMs >= 2500)) {
-      this.baseline = { version: 'stationary-reference-v1', requestedSeconds: 3, startedAt: new Date(Date.now() - 3000).toISOString(), streams: baselineStreams, mean, rawWalkingValuesCorrected: false };
+    if (this.baselineReady) {
+      this.baseline = { version: 'stationary-reference-v1', requestedSeconds: 5, startedAt: new Date(Date.now() - 5000).toISOString(), streams: baselineStreams, mean, rawWalkingValuesCorrected: false };
     }
   }
   begin() {

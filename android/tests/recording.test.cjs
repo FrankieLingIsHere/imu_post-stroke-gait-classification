@@ -15,6 +15,16 @@ function load(name, mocks = {}, globals = {}, cache = {}) {
   return module.exports;
 }
 const pure = load('recording');
+test('Phone protocol speed includes timed rests and does not become a verified 10MWT result',()=>{
+  const {protocolPhoneEstimate}=load('distanceEstimation');
+  const estimate={distanceM:60,speedMps:0.8,status:'experimental-step-model',method:'candidate-peaks',reason:null};
+  const timed=protocolPhoneEstimate(estimate,'2mwt',120);
+  assert.equal(timed.meanSpeedMps,0.5);
+  assert.equal(timed.clinicalOutcomeVerified,false);
+  const ten=protocolPhoneEstimate(estimate,'10mwt',30);
+  assert.equal(ten.meanSpeedMps,0.8);
+  assert.match(ten.speedDefinition,/not-clinical-timed-zone/);
+});
 test('GPS cross-check rejects poor fixes and reports only aggregate location quality', () => {
   const {ForegroundDistanceTracker}=load('locationDistance');
   const tracker=new ForegroundDistanceTracker();
@@ -273,19 +283,20 @@ test('Strong motion needs persistence and has a twelve-second cue cooldown', () 
 test('A measured baseline is stored separately without subtracting it from walking values', () => {
   const r = rig(); const recorder = new r.api.SensorRecorder({ guidanceEnabled: true, voiceEnabled: true }, () => {});
   recorder.connect();
-  for(let t=0;t<=4000;t+=10) {
+  for(let t=0;t<=5500;t+=10) {
     r.emit('Accelerometer',t,{x:0,y:1,z:0,timestamp:100+t/1000});
     r.emit('Gyroscope',t,{x:0.01,y:0.02,z:0.03,timestamp:100+t/1000});
     r.emit('Magnetometer',t,{x:20,y:30,z:40,timestamp:100+t/1000});
   }
   recorder.begin();
-  r.emit('Accelerometer',4010,{x:0,y:1.2,z:0,timestamp:104.01});
+  r.emit('Accelerometer',5510,{x:0,y:1.2,z:0,timestamp:105.51});
   const result=recorder.stop('completed');
   assert.ok(result.baseline.streams.accelerometer.length>=299);
   assert.ok(Math.abs(result.baseline.mean.gyroscope.y-0.02)<1e-10);
   assert.equal(result.streams.accelerometer.length,1);
   assert.equal(result.streams.accelerometer[0].y,1.2);
   assert.equal(result.baseline.rawWalkingValuesCorrected,false);
+  assert.equal(result.baseline.requestedSeconds,5);
 });
 test('Injected shaking triggers an actual recorder cue and preserves every raw sample', () => {
   const r=rig(); let warnings=0;
@@ -420,11 +431,11 @@ test('Placement shift needs sustained change, ignores yaw about gravity, and emi
 test('Fit raw streams remain separate and sustained placement shifts reach recording review notes', () => {
   const h = rig(); const recorder = new h.api.SensorRecorder({ guidanceEnabled: false, voiceEnabled: false }, () => {});
   recorder.connect(); recorder.startFit();
-  for (let t = 0; t < 4000; t += 10) for (const name of ['Accelerometer', 'Gyroscope', 'Magnetometer']) h.emit(name, t, { x: 0, y: name === 'Accelerometer' ? 1 : 0, z: 0, timestamp: t / 1000 });
-  recorder.finishFit(); h.setTime(4000); recorder.begin();
-  for (let t = 4000; t < 10000; t += 10) for (const name of ['Accelerometer', 'Gyroscope', 'Magnetometer']) h.emit(name, t, { x: name === 'Accelerometer' ? 0.5 : 0, y: name === 'Accelerometer' ? Math.sqrt(0.75) : 0, z: 0, timestamp: t / 1000 });
+  for (let t = 0; t < 5500; t += 10) for (const name of ['Accelerometer', 'Gyroscope', 'Magnetometer']) h.emit(name, t, { x: 0, y: name === 'Accelerometer' ? 1 : 0, z: 0, timestamp: t / 1000 });
+  recorder.finishFit(); h.setTime(5500); recorder.begin();
+  for (let t = 5500; t < 11500; t += 10) for (const name of ['Accelerometer', 'Gyroscope', 'Magnetometer']) h.emit(name, t, { x: name === 'Accelerometer' ? 0.5 : 0, y: name === 'Accelerometer' ? Math.sqrt(0.75) : 0, z: 0, timestamp: t / 1000 });
   const r = recorder.stop('completed');
-  assert.equal(r.fitCheck.streams.accelerometer.length, 400);
+  assert.equal(r.fitCheck.streams.accelerometer.length, 550);
   assert.equal(r.streams.accelerometer.length, 600);
   assert.equal(r.fitCheck.tightnessVerified, false);
   assert.equal(r.guidanceEvents.filter(e => e.type === 'possible-placement-shift').length, 1);
@@ -606,10 +617,11 @@ test('Clinical setup preserves the standing baseline before returning to the cha
   r.emit('Gyroscope',t,{x:0,y:0,z:0,timestamp:100+t/1000});
   r.emit('Magnetometer',t,{x:20,y:30,z:40,timestamp:100+t/1000});
  };
- for(let t=0;t<=4000;t+=10)emit(t,{x:1,y:0,z:0});
+ for(let t=0;t<=5500;t+=10)emit(t,{x:1,y:0,z:0});
  recorder.preserveSetupBaseline();
- for(let t=4010;t<=8000;t+=10)emit(t,{x:0.8,y:0,z:0.6});
- recorder.begin();emit(8010,{x:0.8,y:0,z:0.6});
+ for(let t=5510;t<=9500;t+=10)emit(t,{x:0.8,y:0,z:0.6});
+ recorder.preserveSetupBaseline();
+ recorder.begin();emit(9510,{x:0.8,y:0,z:0.6});
  const saved=recorder.stop('completed');
  assert.ok(Math.abs(saved.baseline.mean.accelerometer.x-1)<1e-10);
  assert.equal(saved.baseline.mean.accelerometer.z,0);

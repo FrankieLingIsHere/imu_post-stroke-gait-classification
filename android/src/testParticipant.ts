@@ -1,8 +1,11 @@
-import type { ParticipantProfile, ParticipantSex, AssistiveDevice } from './store';
+import type { ParticipantProfile, ParticipantSex, AssistiveDevice, ClinicalSide } from './store';
 
 export interface TestParticipantInput {
   id?: string; newId: string; label: string; ageYears: number | null;
   sex: ParticipantSex | null; heightCm: number | null; assistiveDevice: AssistiveDevice;
+  affectedHemisphere?: ClinicalSide; affectedBodySide?: ClinicalSide;
+  chronicityStatus?: 'known' | 'unknown'; monthsSinceStroke?: number | null;
+  historySource?: 'patient-or-caregiver-report' | 'clinician-record';
 }
 export const participantKey = (label: string) => label.trim().normalize('NFKC').toLocaleLowerCase();
 
@@ -20,6 +23,11 @@ export function resolveTestParticipant(profiles: ParticipantProfile[], input: Te
     ...existing, id: existing?.id ?? input.newId, label: input.label.trim(),
     favorite: existing?.favorite ?? false, archived: false, createdAt: existing?.createdAt ?? now, updatedAt: now,
     demographics: { ...existing?.demographics, ageYears: input.ageYears, sex: input.sex, heightCm: input.heightCm },
-    clinical: { strokeType:'', lesionLocation:'', monthsSinceStroke:null, premorbidGaitNotes:'', jointOrOrthopaedicNotes:'', ...existing?.clinical, assistiveDevice:input.assistiveDevice },
+    clinical: { strokeType:'', lesionLocation:'', monthsSinceStroke:null, premorbidGaitNotes:'', jointOrOrthopaedicNotes:'', ...existing?.clinical, assistiveDevice:input.assistiveDevice,
+      ...(input.affectedHemisphere ? { affectedHemisphere: input.affectedHemisphere } : {}),
+      ...(input.affectedBodySide ? { affectedBodySide: input.affectedBodySide } : {}),
+      ...(input.chronicityStatus ? { chronicityStatus: input.chronicityStatus, monthsSinceStroke: input.chronicityStatus === 'known' ? input.monthsSinceStroke ?? null : null } : {}),
+      ...(input.historySource ? { historySource: input.historySource } : {}),
+    },
   };
 }

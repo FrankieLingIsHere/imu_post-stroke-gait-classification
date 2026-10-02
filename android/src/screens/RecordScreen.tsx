@@ -22,6 +22,8 @@ import { spokenWalkFeedback } from '../patientSummary';
 import { FitCheck } from '../placement';
 import * as Location from 'expo-location';
 import { ForegroundDistanceTracker } from '../locationDistance';
+import { GoogleRecordingCapture } from '../googleRecording';
+import { googleRecordingBridge } from '../googleRecordingBridge';
 
 const ProgressIndicator: React.ComponentType<any> = ActivityIndicator ?? View;
 
@@ -31,7 +33,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     void activateKeepAwakeAsync(tag).then(() => { if (disposed) void deactivateKeepAwake(tag).catch(() => {}); }).catch(() => {});
     return () => { disposed = true; void deactivateKeepAwake(tag).catch(() => {}); };
   }, []);
-  const { duration, isPractice, audioEnabled, guidanceEnabled, useGpsDistance, demographics, participantId, participantLabel, participantSnapshot, assessmentSetup } = route.params;
+  const { duration, isPractice, audioEnabled, guidanceEnabled, useGpsDistance, useGoogleDistance, demographics, participantId, participantLabel, participantSnapshot, assessmentSetup } = route.params;
   const protocol=assessmentSetup?.protocol??'research-walk';
   const clinical=protocol!=='research-walk';
   const execution=useRef<ProtocolExecution>();
@@ -52,6 +54,8 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
   const recorder = useRef<SensorRecorder | null>(null);
   const locationTrackerRef = useRef<ForegroundDistanceTracker | null>(null);
   const locationSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  const googleCaptureRef = useRef<GoogleRecordingCapture | null>(null);
+  const googleReadPending = useRef(false);
   const pending = useRef<SessionRecord | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveBusy = useRef(false);
@@ -64,6 +68,9 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     else if (['prep','checking','fit','countdown','waiting','clinical-ready'].includes(phaseRef.current)) { recorder.current?.disconnect(); phaseRef.current = 'error'; setPhase('error'); }
     setError('Could not play the voice. Check phone speech and volume settings, or use a helper with voice off.');
   } }); };
+  useEffect(() => {
+    if (phase === 'error' || phase === 'cancelled') void googleCaptureRef.current?.cancel();
+  }, [phase]);
   function retry() {
     if (phaseRef.current !== 'error' || retryRequested.current) return;
     retryRequested.current = true;
@@ -71,7 +78,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     setAttempt(a => a + 1);
   }
   async function persist() {
-    if (!pending.current || saveBusy.current) return;
+    if (!pending.current || saveBusy.current || googleReadPending.current) return;
     saveBusy.current = true; setSaving(true); setError('');
     try {
       await saveSession(pending.current);
@@ -84,10 +91,10 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     phaseRef.current = 'done'; setPhase('done'); setHint('');
     locationSubscriptionRef.current?.remove(); locationSubscriptionRef.current = null;
     const recording = recorder.current!.stop(reason);
-    if(clinical&&!execution.current)execution.current={version:'protocol-flow-v1',protocol,goOffsetMs:null,goSource:audioEnabled?'speech-start-callback':'worker-tap',elapsedFromGoSeconds:null,end:'interrupted',clinicalOutcomeVerified:false};
+    if(clinical&&!execution.current)execution.current={version:'protocol-flow-v1',protocol,goOffsetMs:null,goSource:audioEnabled?'speech-start-callback':'automatic-silent-cue',elapsedFromGoSeconds:null,end:'interrupted',clinicalOutcomeVerified:false};
     if(clinical&&execution.current&&reason!=='completed')execution.current={...execution.current,end:execution.current.end==='capture-limit'?'capture-limit':'interrupted',elapsedFromGoSeconds:execution.current.goOffsetMs===null?null:Math.max(0,recording.elapsedSeconds-execution.current.goOffsetMs/1000)};
     if (locationTrackerRef.current) recording.locationDistance = locationTrackerRef.current.finish();
-    recording.setupCheck = { version: 'guided-fit-v2', anatomicalPlacementVerified: false, steadySeconds: 3, retries: attempt, language: getLanguage() };
+    recording.setupCheck = { version: 'guided-fit-v2', anatomicalPlacementVerified: false, steadySeconds: 5, retries: attempt, language: getLanguage() };
     pending.current = { id: generateSessionId(), date: recording.startedAt, duration, isPractice, demographics,
       quality: recordingIssues(recording).length ? 'repeat' : 'good', windowCount: 0, windows: [], recording,
       participantId, participantLabel, participantSnapshot, assessmentSetup, protocolExecution:execution.current,
@@ -108,7 +115,13 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       say(message);
     }).catch(() => say(spokenWalkFeedback(describeMovement(recording), null)));
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    saveTimer.current = setTimeout(() => { saveTimer.current = null; void persist(); }, 1800);
+    const scheduleSave = () => { if (mounted.current) saveTimer.current = setTimeout(() => { saveTimer.current = null; void persist(); }, 1800); };
+    if (googleCaptureRef.current) {
+      googleReadPending.current = true; setSaving(true);
+      const finishedAt = Date.now();
+      void googleCaptureRef.current.finish(finishedAt).then(summary => { recording.googleRecording = summary; })
+        .finally(() => { googleReadPending.current = false; scheduleSave(); });
+    } else scheduleSave();
   }
   function cancel() {
     if (['walk','clinical'].includes(phaseRef.current)) finish('user-stopped');
@@ -136,7 +149,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     catch { phaseRef.current = 'error'; setPhase('error'); setError('Sensors could not start. Return to setup and try again.'); }
     let deadline = performance.now();
     let lastSecond = 0;
-    let gate = new SettlingGate();
+    let gate = new SettlingGate(5000);
     const fit = new FitCheck();
     let fitComplete = !!passedFit.current;
     let checkStarted = 0;
@@ -148,6 +161,11 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     let fitStopSpoken = false;
     let prepIntroPending = true;
     let disposed = false;
+    if (useGoogleDistance) {
+      const bridge = googleRecordingBridge();
+      googleCaptureRef.current = bridge ? new GoogleRecordingCapture(bridge) : null;
+      if (googleCaptureRef.current) void googleCaptureRef.current.prepare();
+    }
     locationTrackerRef.current = useGpsDistance ? new ForegroundDistanceTracker() : null;
     let locationStartRequested = false;
     const startLocation = () => {
@@ -197,6 +215,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           setSetupMessage(message);
           if (gate.update(now, engine.allReceiving, motion) && engine.baselineReady) {
             if (!fitComplete) {
+              engine.preserveSetupBaseline();
               phaseRef.current = 'fit'; setPhase('fit'); deadline = Number.POSITIVE_INFINITY; lastSetupCue = now;
               fitIntroPending = true; discardPendingSpeech();
               void say('Baseline check complete. Move comfortably for a short moment. When you hear stop, stop and stand still until I say the movement check is complete. You can rest; do not touch the phone.').finally(() => {
@@ -220,7 +239,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           setError(message); say(message);
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
         } else if (status === 'settled' && engine.baselineReady) {
-          engine.finishFit(); passedFit.current = engine.savedFitCheck; fitComplete = true; gate = new SettlingGate();
+          engine.finishFit(); passedFit.current = engine.savedFitCheck; fitComplete = true; gate = new SettlingGate(5000);
           enterCountdown(now, 'Movement check complete. Stop and stand still. The recording will start shortly.');
         }
       } else if (phaseRef.current === 'countdown') {
@@ -229,7 +248,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           return;
         }
         if (!engine.allReceiving || !engine.motionStatus.steady || !engine.motionStatus.upright || !engine.baselineReady) {
-          gate = new SettlingGate(); phaseRef.current = 'checking'; setPhase('checking'); checkStarted = now; lastSetupCue = now;
+          gate = new SettlingGate(5000); phaseRef.current = 'checking'; setPhase('checking'); checkStarted = now; lastSetupCue = now;
           say('Waiting for the phone to settle again. Stay comfortable.');
         } else if (seconds === 0) {
           phaseRef.current = 'waiting'; setPhase('waiting'); walkArmedAt = now; setRemaining(duration);
@@ -243,7 +262,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
         // Keep subscriptions alive but do not start the saved recording clock
         // until motion begins. This removes the confusing idle lead-in.
         if (engine.allReceiving && engine.motionStatus.enough && !engine.motionStatus.steady && engine.motionStatus.context === 'movement' && engine.candidateStepsAfter(walkArmedAt) >= 1) {
-          engine.begin(); phaseRef.current = 'walk'; setPhase('walk'); deadline = now + duration * 1000; setRemaining(duration); startLocation();
+          engine.begin(); googleCaptureRef.current?.begin(Date.now()); phaseRef.current = 'walk'; setPhase('walk'); deadline = now + duration * 1000; setRemaining(duration); startLocation();
           // The preceding “Begin walking now” cue is the start announcement.
           // Do not replace it immediately when the first step is detected.
         } else if (now - walkArmedAt >= 15000) {
@@ -289,6 +308,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     const back = BackHandler.addEventListener('hardwareBackPress', () => { cancel(); return true; });
     return () => {
       disposed = true; locationSubscriptionRef.current?.remove(); locationSubscriptionRef.current = null; locationTrackerRef.current = null;
+      if (googleCaptureRef.current) void googleCaptureRef.current.cancel(); googleCaptureRef.current = null;
       mounted.current = false; if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } if (Platform.OS === 'web') document.removeEventListener('visibilitychange', hidden); clearInterval(timer); app.remove(); back.remove(); engine.disconnect();
       // Let the hands-free completion cue finish across the transition to results.
       if (phaseRef.current !== 'done') stopSpeaking();
@@ -296,8 +316,9 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
   }, [attempt]);
   if(clinical&&['clinical-ready','clinical'].includes(phase))return <ClinicalCapture protocol={protocol} audioEnabled={audioEnabled} say={say}
     receiving={()=>recorder.current?.allReceiving===true}
+    motion={()=>recorder.current!.motionStatus}
     onBegin={()=>{recorder.current!.begin();phaseRef.current='clinical';setPhase('clinical');startLocationRef.current();}}
-    onGo={offset=>{execution.current={version:'protocol-flow-v1',protocol,goOffsetMs:offset,goSource:audioEnabled?'speech-start-callback':'worker-tap',elapsedFromGoSeconds:0,end:'interrupted',clinicalOutcomeVerified:false};}}
+    onGo={offset=>{googleCaptureRef.current?.begin(Date.now());execution.current={version:'protocol-flow-v1',protocol,goOffsetMs:offset,goSource:audioEnabled?'speech-start-callback':'automatic-silent-cue',elapsedFromGoSeconds:0,end:'interrupted',clinicalOutcomeVerified:false};}}
     onFinish={value=>{execution.current=value;finish(value.end==='interrupted'||value.end==='capture-limit'?'interrupted':'completed');}}
     onCancel={cancel}/>;
   return <Screen eyebrow={['prep', 'checking', 'fit', 'countdown', 'waiting'].includes(phase) ? 'STEP 2 · HANDS-FREE SETUP' : 'STEP 3 · YOUR WALK'} title={phase === 'prep' ? 'Settle in. No rush.' : phase === 'checking' ? 'Checking the phone' : phase === 'fit' ? 'Short movement check' : ['countdown','waiting'].includes(phase) ? 'Ready to begin' : phase === 'walk' ? 'Walk at your own pace' : 'Take a comfortable rest'} actions={
@@ -318,6 +339,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     </Card>
     <Body muted>{phase === 'walk' ? 'Rest whenever you need. Pauses are accepted and saved. Resume only if comfortable; the timer keeps running.' : 'No screen taps needed to continue. Controls require confirmation to prevent accidental touches. Contact and belt tightness cannot be verified.'}</Body>
     {phase === 'error' && <Body>Your settings are kept. Put the phone back when you are ready, then retry the check.</Body>}
+    {phase === 'done' && googleReadPending.current && <Body>Walking has finished. Checking for delayed Google records before saving. You can rest.</Body>}
     {!!error && <Text accessibilityRole="alert" style={ui.error}>{error}</Text>}
   </Screen>;
 }

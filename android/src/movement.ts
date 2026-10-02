@@ -53,11 +53,12 @@ export function motionWindow(accel: Sample[], gyro: Sample[], landscape = false)
 /** Conditions must hold continuously; this gate does not identify anatomical placement. */
 export class SettlingGate {
   private since: number | null = null;
+  constructor(private requiredMs = 3000) {}
   update(now: number, streamsReady: boolean, motion: MotionWindow) {
     const suitable = streamsReady && motion.enough && motion.upright && motion.steady;
     if (!suitable) this.since = null;
     else if (this.since === null) this.since = now;
-    return this.since !== null && now - this.since >= 3000;
+    return this.since !== null && now - this.since >= this.requiredMs;
   }
 }
 export class StrongMotionTracker {

@@ -28,8 +28,10 @@ export interface Recording {
   fitCheck?: { version: 'guided-fit-v2'; status: 'movement-then-settled'; proximity: 'unavailable'; tightnessVerified: false; stepsCounted: false; highPass10HzRmsG: number | null; streams: Streams };
   /** Optional Android outdoor cross-check. Raw coordinates are deliberately never persisted. */
   locationDistance?: import('./locationDistance').LocationDistanceSummary;
+  /** Experimental local Google fitness records, independent of IMU and clinical outcomes. */
+  googleRecording?: import('./googleRecording').GoogleRecordingSummary;
   baseline?: {
-    version: 'stationary-reference-v1'; requestedSeconds: 3;
+    version: 'stationary-reference-v1'; requestedSeconds: 3 | 5;
     startedAt: string; streams: Streams;
     mean: Record<SensorName, { x: number; y: number; z: number }>;
     rawWalkingValuesCorrected: false;

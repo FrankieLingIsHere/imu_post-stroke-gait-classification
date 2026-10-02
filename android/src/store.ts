@@ -9,15 +9,18 @@ import type { DistanceCalibration } from './distanceEstimation';
 export type ParticipantSex = 'female' | 'male' | 'intersex' | 'prefer-not-to-say';
 export interface ParticipantDemographics { ageYears: number | null; sex: ParticipantSex; heightCm?: number | null; }
 export type AssistiveDevice = 'none' | 'single-point-cane' | 'quad-cane' | 'other';
+export type ClinicalSide = 'left' | 'right' | 'bilateral' | 'unknown';
 export interface ParticipantProfile {
   id: string; label: string; favorite: boolean; archived: boolean; createdAt: string; updatedAt: string;
   demographics: ParticipantDemographics & { weightKg?: number | null };
   distanceCalibration?: DistanceCalibration;
-  clinical: { strokeType: string; lesionLocation: string; monthsSinceStroke: number | null; premorbidGaitNotes: string; jointOrOrthopaedicNotes: string; assistiveDevice: AssistiveDevice };
+  clinical: { strokeType: string; lesionLocation: string; monthsSinceStroke: number | null; chronicityStatus?: 'known' | 'unknown'; affectedHemisphere?: ClinicalSide; affectedBodySide?: ClinicalSide; historySource?: 'patient-or-caregiver-report' | 'clinician-record'; premorbidGaitNotes: string; jointOrOrthopaedicNotes: string; assistiveDevice: AssistiveDevice };
 }
 export type AssessmentProtocol = 'research-walk' | '10mwt' | '2mwt' | '6mwt' | 'tug';
 export interface AssessmentSetup {
   protocol: AssessmentProtocol; courseLengthM: number | null; timedDistanceM: number | null;
+  protocolVariant?: '10mwt-12m-central10m-v1';
+  trialNumber?: number | null;
   speedCondition: 'comfortable' | 'fast-safe'; turnDirection: 'left' | 'right' | 'self-selected';
 }
 export interface AssessmentForm {

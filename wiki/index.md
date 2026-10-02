@@ -12,9 +12,15 @@ Client-facing app scope and measurement limits: [gait app client requirements](.
 
 Rehabilitation protocol and profile/dashboard specification: [rehab assessment product spec](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md).
 
-GaitTrace local participant, protocol-form, optional GPS distance cross-check and measurement status: [[gait-app-collection-workflow]] and [Week 5 app progress](../docs/classification/WEEKLY_PROGRESS_2026-09-28.md).
+GaitTrace local participant, structured clinical intake, five-second phone baseline, hands-free clinical capture, experimental phone distance/speed and optional measured reference: [[gait-app-collection-workflow]] and [Week 5 app progress](../docs/classification/WEEKLY_PROGRESS_2026-09-28.md).
 
-AI model target, primary-source evidence and validation gates: [[gait-app-ai-model-strategy]].
+Free distance-provider audit: [[gait-app-collection-workflow#Free distance provider feasibility (2 October 2026)|Screen-out camera options and external-service cost checks]]. OpenVINS or measured visual references need feasibility validation; current phone distance remains experimental.
+
+Google on-device comparison experiment: [[gait-app-collection-workflow#Free distance provider feasibility (2 October 2026)|Local API integration and validation status]]. Opt-in distance/step records and timing diagnostics are exported separately; version 0.3.0 needs a new APK, with native compile and phone trials pending.
+
+App release/version records: [GaitTrace changelog](../android/CHANGELOG.md). Application version, remotely assigned APK build number and installed update provenance are documented separately; generated publication reviews remain local.
+
+AI model target, autonomous phone measurement plan, primary-source evidence and validation gates: [[gait-app-ai-model-strategy]]. The 2 October supervisor comparison prioritizes 10MWT/TUG measurement validation, structured clinical intake and device-tested voice commands before few-shot adaptation; recommendations are not implemented changes.
 
 Responsive setup, automatic participant creation and brief illustrated tutorials, updated 2026-09-30, are documented in [[gait-app-collection-workflow#test-protocol-explanations]] and the [rehabilitation assessment specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md#protocol-workflow).
 
@@ -274,4 +280,4 @@ GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the 
 
 - 2026-10-01: [[gait-app-collection-workflow]] now covers named settings, visible height/test selection, explicit recording assignments and dashboard inclusion rules.
 
-- 2026-10-01 protocol flows: [[gait-app-collection-workflow]] distinguishes research first-step timing from worker-assisted clinical capture, shared clinical previews and exported Go provenance.
+- 2026-10-02 protocol flows: [[gait-app-collection-workflow]] distinguishes research first-step timing from automatic clinical capture, provisional 10MWT/TUG endpoints, shared previews and exported Go provenance.

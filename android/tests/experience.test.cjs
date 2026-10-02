@@ -1,4 +1,4 @@
-﻿const test = require('node:test');
+const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -197,6 +197,30 @@ test('Participant resolution never merges by demographics and preserves existing
  const updated=resolve([existing],{...input,id:'new',ageYears:68});assert.equal(updated.clinical.lesionLocation,'recorded site');assert.equal(updated.demographics.weightKg,70);assert.equal(updated.favorite,true);assert.equal(existing.demographics.ageYears,67);
  assert.throws(()=>resolve([{...existing,archived:true}],{...input,id:'new'}),/unavailable/);
 });
+
+test('Clinical intake requires explicit history and never invents chronicity for an older profile',()=>{
+ const {resolveTestParticipant:resolve}=load('testParticipant');
+ const {clinicalIntakeIssue}=load('clinicalIntake');
+ const input={newId:'p1',label:'P01',ageYears:67,sex:'female',heightCm:null,assistiveDevice:'none'};
+ const old=resolve([],input);
+ assert.match(clinicalIntakeIssue(old.clinical),/Complete the stroke history/);
+ const unknown=resolve([old],{...input,id:'p1',affectedHemisphere:'unknown',affectedBodySide:'unknown',chronicityStatus:'unknown',historySource:'patient-or-caregiver-report'});
+ assert.equal(clinicalIntakeIssue(unknown.clinical),null);
+ assert.equal(unknown.clinical.monthsSinceStroke,null);
+ const invalid=resolve([unknown],{...input,id:'p1',chronicityStatus:'known',monthsSinceStroke:null});
+ assert.match(clinicalIntakeIssue(invalid.clinical),/whole months/);
+ const known=resolve([invalid],{...input,id:'p1',chronicityStatus:'known',monthsSinceStroke:18});
+ assert.equal(clinicalIntakeIssue(known.clinical),null);
+ assert.equal(known.clinical.monthsSinceStroke,18);
+});
+
+test('New clinical intake and outcome prompts are translated in both additional languages',()=>{
+ const {translate}=load('language');
+ for(const prompt of ['Affected brain hemisphere','Affected body side','Time since stroke','Whole months since stroke','History source','Complete the stroke history before a clinical test. Unknown is an available answer.','Enter measured distance or completed laps before marking this test complete.']){
+  assert.notEqual(translate(prompt,'ms'),prompt);
+  assert.notEqual(translate(prompt,'zh'),prompt);
+ }
+});
 test('Tutorial renders every diagram and stops speech when moving between steps or notes',async()=>{
  let spoken=[],stops=0,closed=0;
  const Component=load('components/ProtocolTutorial',{
@@ -351,6 +375,35 @@ test('Test selection closes its menu and preserves the chosen protocol on return
  h.close();
 });
 
+test('Clinical test setup requires explicit history and saves it with the selected participant',async()=>{
+ const h=harness('PrepareScreen');await h.finishSetup();
+ act(()=>h.button('Previous').props.onPress());
+ act(()=>h.button('Change test: Research walk').props.onPress());
+ const radioWith=text=>h.renderer.root.findAllByType('pressable').filter(n=>n.props.accessibilityRole==='radio'&&n.findAllByType('text').some(t=>Array.isArray(t.props.children)?t.props.children.includes(text):t.props.children===text));
+ act(()=>radioWith('10MWT')[0].props.onPress());
+ act(()=>h.button('Continue').props.onPress());
+ assert.equal(h.renderer.root.findByType('screen').props.title,'Choose your test');
+ assert.match(JSON.stringify(h.renderer.toJSON()),/Complete the stroke history/);
+ act(()=>h.button('Review stroke history').props.onPress());
+ act(()=>radioWith('left')[0].props.onPress());
+ act(()=>radioWith('right')[1].props.onPress());
+ act(()=>radioWith('known')[0].props.onPress());
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'Whole months since stroke'}).props.onChangeText('18'));
+ act(()=>radioWith('Patient or caregiver')[0].props.onPress());
+ act(()=>h.button('Done').props.onPress());
+ act(()=>h.button('Continue').props.onPress());
+ assert.equal(h.renderer.root.findByType('screen').props.title,'Sound and readiness');
+ const checks=h.renderer.root.findAllByType('pressable').filter(n=>n.props.accessibilityRole==='checkbox');
+ act(()=>checks[0].props.onPress());
+ await act(async()=>h.button('Start test').props.onPress());
+ const saved=h.navigated.at(-1)[1];
+ assert.equal(saved.assessmentSetup.protocolVariant,'10mwt-12m-central10m-v1');
+ assert.equal(saved.participantSnapshot.clinical.affectedHemisphere,'left');
+ assert.equal(saved.participantSnapshot.clinical.affectedBodySide,'right');
+ assert.equal(saved.participantSnapshot.clinical.monthsSinceStroke,18);
+ h.close();
+});
+
 test('Dashboard includes unassigned, archived and practice recordings while separating measured trends',async()=>{
  const profiles=[{id:'p1',label:'Archived person',archived:true,favorite:false,demographics:{ageYears:65},clinical:{assistiveDevice:'none'}}];
  const rows=[{id:'unknown',date:'2026-10-01',windows:[],hasDeviceRecording:true},{id:'practice',participantId:'p1',date:'2026-09-30',windows:[],isPractice:true,hasDeviceRecording:true},{id:'old-index',participantId:'p1',date:'2026-09-29',windows:[]}];
@@ -376,7 +429,7 @@ test('Dashboard includes unassigned, archived and practice recordings while sepa
 
 
 function clinicalHarness(protocol,audioEnabled=true){
- let now=0,tick,resolveIntro,alive=true,begun=0,goOptions;
+ let now=0,tick,resolveIntro,alive=true,begun=0,goOptions,context='rest-or-quiet';
  const spoken=[],finished=[];
  const Component=load('components/ClinicalCapture',{
   'react-native':{View:'view'},
@@ -390,19 +443,20 @@ function clinicalHarness(protocol,audioEnabled=true){
   goOptions=options;return Promise.resolve();
  };
  let renderer;
- act(()=>{renderer=create(React.createElement(Component,{protocol,audioEnabled,say,receiving:()=>alive,onBegin:()=>begun++,onFinish:e=>finished.push(e),onCancel(){}}));});
+ act(()=>{renderer=create(React.createElement(Component,{protocol,audioEnabled,say,receiving:()=>alive,motion:()=>({enough:true,steady:context==='rest-or-quiet',context}),onBegin:()=>begun++,onFinish:e=>finished.push(e),onCancel(){}}));});
  const button=label=>renderer.root.findAllByType('button').find(n=>n.props.label===label);
  return {renderer,button,spoken,finished,get begun(){return begun},get goOptions(){return goOptions},
  ready:async()=>{await act(async()=>resolveIntro())},
  advance:ms=>act(()=>{now+=ms;tick?.()}),loseSensors:()=>{alive=false},
+ move:()=>{context='movement'},settle:()=>{context='rest-or-quiet'},
  close:()=>act(()=>renderer.unmount())};
 }
-test('Clinical start waits for the complete instruction and clocks from audible Go, not motion',async()=>{
+test('Clinical start arms automatically after stillness and clocks from audible Go',async()=>{
  const h=clinicalHarness('2mwt');
- assert.equal(h.button('Worker: ready to start'),undefined);
- await h.ready();act(()=>h.button('Worker: ready to start').props.onPress());
+ assert.equal(h.begun,0);
+ await h.ready();h.advance(0);h.advance(3000);
  assert.equal(h.begun,1);h.advance(700);
- assert.match(JSON.stringify(h.renderer.toJSON()),/Waiting for the spoken Go/);
+ assert.match(JSON.stringify(h.renderer.toJSON()),/Wait for Go/);
  act(()=>h.goOptions.onStart());
  h.advance(119900);assert.equal(h.finished.length,0);
  h.advance(100);assert.equal(h.finished.length,1);
@@ -410,33 +464,30 @@ test('Clinical start waits for the complete instruction and clocks from audible 
  assert.equal(h.finished[0].goOffsetMs,700);assert.equal(h.finished[0].end,'duration');
  assert.deepEqual(h.spoken.slice(1),['Go.']);h.close();
 });
-test('Six-minute protocol continues through stationary time with no generic encouragement or turn warnings',async()=>{
+test('Six-minute protocol continues through stationary time and ends automatically',async()=>{
  const h=clinicalHarness('6mwt',false);await h.ready();
- act(()=>h.button('Worker: ready to start').props.onPress());
+ h.advance(0);h.advance(3000);
  h.advance(359900);assert.equal(h.finished.length,0);
  h.advance(100);assert.equal(h.finished[0].elapsedFromGoSeconds,360);
- assert.equal(h.finished[0].goSource,'worker-tap');assert.equal(h.spoken.length,1);h.close();
+ assert.equal(h.finished[0].goSource,'automatic-silent-cue');assert.equal(h.spoken.length,1);h.close();
 });
-test('TUG and 10MWT finish by worker confirmation; the capture limit is not completion',async()=>{
+test('TUG and 10MWT auto-save after sustained movement and stop; the capture limit is not completion',async()=>{
  for(const protocol of ['tug','10mwt']){
   const h=clinicalHarness(protocol,false);await h.ready();
-  act(()=>h.button('Worker: ready to start').props.onPress());
-  h.advance(14000);act(()=>h.button('Worker: finish capture').props.onPress());
-  assert.equal(h.finished.length,0);
-  act(()=>h.button('Confirm stop and save').props.onPress());
-  assert.equal(h.finished[0].end,'worker-ended');assert.equal(h.finished[0].clinicalOutcomeVerified,false);h.close();
+  h.advance(0);h.advance(3000);h.move();h.advance(100);h.advance(4000);h.settle();h.advance(100);h.advance(8000);
+  assert.equal(h.finished[0].end,'auto-stop-estimate');assert.equal(h.finished[0].clinicalOutcomeVerified,false);h.close();
   const capped=clinicalHarness(protocol,false);await capped.ready();
-  act(()=>capped.button('Worker: ready to start').props.onPress());
+  capped.advance(0);capped.advance(3000);
   capped.advance(180000);assert.equal(capped.finished[0].end,'capture-limit');capped.close();
  }
 });
 test('Missing Go callbacks and lost sensors interrupt clinical capture instead of inventing time',async()=>{
  const h=clinicalHarness('tug');await h.ready();
- act(()=>h.button('Worker: ready to start').props.onPress());
+ h.advance(0);h.advance(3000);
  h.advance(10000);assert.equal(h.finished[0].goOffsetMs,null);assert.equal(h.finished[0].elapsedFromGoSeconds,null);
  assert.equal(h.finished[0].end,'interrupted');h.close();
  const loss=clinicalHarness('2mwt',false);await loss.ready();
- act(()=>loss.button('Worker: ready to start').props.onPress());
+ loss.advance(0);loss.advance(3000);
  loss.loseSensors();loss.advance(100);assert.equal(loss.finished[0].end,'interrupted');loss.close();
 });
 test('Every clinical protocol branches after fit checks and disables generic direction guidance',()=>{

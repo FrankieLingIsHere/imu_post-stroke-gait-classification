@@ -8,12 +8,14 @@ import BigButton from '../components/BigButton';
 import { colours } from '../theme';
 import { checkSensors } from '../sensors';
 import * as Location from 'expo-location';
+import { checkGoogleRecordingPermission } from '../googleRecordingBridge';
 import { checkBrowserSensors, BrowserCheck } from '../browserSensors';
 import { SENSOR_NAMES } from '../recording';
 import { ensureVoice, speak, stopSpeaking } from '../audio';
 import { Text, LanguagePicker, useLanguage, t } from '../i18n';
-import { getParticipants, saveParticipant, type ParticipantSex, type AssistiveDevice } from '../store';
+import { getParticipants, saveParticipant, type ParticipantSex, type AssistiveDevice, type ClinicalSide } from '../store';
 import { resolveTestParticipant, participantKey } from '../testParticipant';
+import { clinicalIntakeIssue } from '../clinicalIntake';
 import { protocolGuides } from '../protocolGuides';
 import ProtocolTutorial from '../components/ProtocolTutorial';
 import type { AssessmentProtocol, AssessmentSetup, ParticipantProfile } from '../store';
@@ -28,7 +30,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   const [participantLabel, setParticipantLabel] = useState(route.params.participantLabel ?? '');
   const [selectedId, setSelectedId] = useState<string | undefined>(route.params.participantId);
   const [aid, setAid] = useState<AssistiveDevice>(route.params.participantSnapshot?.clinical.assistiveDevice ?? 'none');
-  const [menu, setMenu] = useState<'options' | 'participant' | 'saved' | 'tests' | null>(null);
+  const [menu, setMenu] = useState<'options' | 'participant' | 'saved' | 'tests' | 'clinical' | null>(null);
   const [savedSearch, setSavedSearch] = useState('');
   const newId = useRef(`participant-${Date.now()}-${Math.random().toString(16).slice(2,10)}`);
   const [duration, setDuration] = useState(route.params.duration);
@@ -39,13 +41,18 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   const [heightText, setHeightText] = useState(route.params.demographics?.heightCm?.toString() ?? '');
   const [protocol, setProtocol] = useState<AssessmentProtocol>(route.params.assessmentSetup?.protocol ?? 'research-walk');
   const [courseText, setCourseText] = useState(route.params.assessmentSetup?.courseLengthM?.toString() ?? '');
+  const [hemisphere,setHemisphere]=useState<ClinicalSide|undefined>(route.params.participantSnapshot?.clinical.affectedHemisphere);
+  const [affectedSide,setAffectedSide]=useState<ClinicalSide|undefined>(route.params.participantSnapshot?.clinical.affectedBodySide);
+  const [chronicityStatus,setChronicityStatus]=useState<'known'|'unknown'|undefined>(route.params.participantSnapshot?.clinical.chronicityStatus ?? (route.params.participantSnapshot?.clinical.monthsSinceStroke != null ? 'known' : undefined));
+  const [monthsText,setMonthsText]=useState(route.params.participantSnapshot?.clinical.monthsSinceStroke?.toString() ?? '');
+  const [historySource,setHistorySource]=useState<'patient-or-caregiver-report'|'clinician-record'|undefined>(route.params.participantSnapshot?.clinical.historySource);
   const [guidanceEnabled, setGuidance] = useState(true);
   const [useGpsDistance, setUseGpsDistance] = useState(route.params.useGpsDistance ?? false);
+  const [useGoogleDistance, setUseGoogleDistance] = useState(route.params.useGoogleDistance ?? false);
   const [openInfo, setOpenInfo] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [ready, setReady] = useState(false);
-  const [workerReady,setWorkerReady]=useState(false);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
   const [canSkip, setCanSkip] = useState(true);
@@ -66,6 +73,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   }
   function useDefaults() {
     stopSample(); setDuration(20); setAudio(true); setGuidance(true); setPractice(false);
+    setUseGoogleDistance(false);
     setOpenInfo(null); setError(''); setDefaultsApplied(true);
   }
   useEffect(() => {
@@ -80,16 +88,28 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   useEffect(()=>{void loadProfiles();},[]);
   function selectPerson(p: ParticipantProfile) {
     setMenu(null);setSelectedId(p.id);setParticipantLabel(p.label);setAgeText(p.demographics.ageYears?.toString()??'');
-    setSex(p.demographics.sex);setHeightText(p.demographics.heightCm?.toString()??'');setAid(p.clinical.assistiveDevice);setError('');
+    setSex(p.demographics.sex);setHeightText(p.demographics.heightCm?.toString()??'');setAid(p.clinical.assistiveDevice);
+    setHemisphere(p.clinical.affectedHemisphere);setAffectedSide(p.clinical.affectedBodySide);
+    setChronicityStatus(p.clinical.chronicityStatus ?? (p.clinical.monthsSinceStroke != null ? 'known' : undefined));
+    setMonthsText(p.clinical.monthsSinceStroke?.toString()??'');setHistorySource(p.clinical.historySource);setError('');
   }
-  function participantInput() { return {id:selectedId,newId:newId.current,label:participantLabel,ageYears:ageText.trim()?Number(ageText):null,sex,heightCm:heightText.trim()?Number(heightText):null,assistiveDevice:aid}; }
+  function participantInput() { return {id:selectedId,newId:newId.current,label:participantLabel,ageYears:ageText.trim()?Number(ageText):null,sex,heightCm:heightText.trim()?Number(heightText):null,assistiveDevice:aid,
+    affectedHemisphere:hemisphere,affectedBodySide:affectedSide,chronicityStatus,monthsSinceStroke:monthsText.trim()?Number(monthsText):null,historySource}; }
+  function checkedParticipant(rows:ParticipantProfile[]) {
+    const person=resolveTestParticipant(rows,participantInput());
+    if(protocol!=='research-walk') {
+      const issue=clinicalIntakeIssue(person.clinical);
+      if(issue) throw new Error(issue);
+    }
+    return person;
+  }
   function validateCourse() {
     const value=courseText.trim()?Number(courseText):null;
     if(['2mwt','6mwt'].includes(protocol)&&(!value||!Number.isFinite(value)||value<3||value>100)) throw new Error('Enter a measured course length from 3 to 100 metres.');
     return value;
   }
   function nextPage() {
-    try { if(page===0)resolveTestParticipant(profiles,participantInput());else validateCourse();stopSample();setError('');setPage(page+1); }
+    try { if(page===0)resolveTestParticipant(profiles,participantInput());else {validateCourse();checkedParticipant(profiles);}stopSample();setError('');setPage(page+1); }
     catch(e){setError(e instanceof Error?e.message:'Could not load participants. Try again.');}
   }
   async function checkBrowser() {
@@ -118,8 +138,9 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     const id = ++request.current;
     try {
       const currentProfiles=await getParticipants().catch(()=>{throw new Error('Could not load participants. Try again.');});
-      const participant=resolveTestParticipant(currentProfiles,participantInput());
+      const participant=checkedParticipant(currentProfiles);
       await checkSensors();
+      if (useGoogleDistance) await checkGoogleRecordingPermission();
       if (useGpsDistance) {
         if (Platform.OS !== 'android') throw new Error(t('Optional GPS distance is available in the Android app only.'));
         const permission = await Location.requestForegroundPermissionsAsync();
@@ -130,12 +151,13 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       if (audioEnabled) await ensureVoice();
       const courseLengthM=validateCourse();
       const plannedSeconds=protocol==='2mwt'?120:protocol==='6mwt'?360:protocol==='10mwt'?180:protocol==='tug'?180:duration;
-      const setup:AssessmentSetup={protocol,courseLengthM:protocol==='10mwt'?12:protocol==='tug'?3:courseLengthM,timedDistanceM:protocol==='10mwt'?10:null,speedCondition:'comfortable',turnDirection:'self-selected'};
+      const setup:AssessmentSetup={protocol,courseLengthM:protocol==='10mwt'?12:protocol==='tug'?3:courseLengthM,timedDistanceM:protocol==='10mwt'?10:null,
+        protocolVariant:protocol==='10mwt'?'10mwt-12m-central10m-v1':undefined,trialNumber:null,speedCondition:'comfortable',turnDirection:'self-selected'};
       if (!active.current || id !== request.current || AppState.currentState !== 'active') return;
       await saveParticipant(participant).catch(()=>{throw new Error('Could not save participant. Try again.');});
       if (!active.current || id !== request.current || AppState.currentState !== 'active') return;
       setSelectedId(participant.id);setProfiles([...currentProfiles.filter(p=>p.id!==participant.id),participant]);
-      navigation.navigate('Record', { duration:plannedSeconds, audioEnabled, isPractice, guidanceEnabled, useGpsDistance, participantId:participant.id,participantLabel:participant.label,participantSnapshot:participant,demographics:participant.demographics,assessmentSetup:setup });
+      navigation.navigate('Record', { duration:plannedSeconds, audioEnabled, isPractice, guidanceEnabled, useGpsDistance, useGoogleDistance, participantId:participant.id,participantLabel:participant.label,participantSnapshot:participant,demographics:participant.demographics,assessmentSetup:setup });
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : 'Could not access motion sensors. Please try again.'); }
     finally { if (active.current) setBusy(false); }
   }
@@ -149,7 +171,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   return <Screen key={page} title={['Who is walking?','Choose your test','Sound and readiness'][page]} eyebrow={t('Setup {0} of 3').replace('{0}',String(page+1))} actions={<>
     <View style={ui.row}>
       {page>0&&<BigButton style={ui.fill} label="Previous" variant="outline" disabled={busy} onPress={()=>{stopSample();setError('');setPage(page-1);}}/>}
-      {page<2?<BigButton style={ui.fill} label="Continue" disabled={page===0&&!profilesReady} onPress={nextPage}/>:<BigButton style={{flex:2}} label={Platform.OS==='web'&&!webReady?'Preview hands-free flow':testing?'Start without sound test':'Start test'} disabled={checkingBrowser||(Platform.OS==='web'&&!webReady?false:!ready||!canSkip||(protocol!=='research-walk'&&!workerReady))} loading={busy} onPress={start}/>}
+      {page<2?<BigButton style={ui.fill} label="Continue" disabled={page===0&&!profilesReady} onPress={nextPage}/>:<BigButton style={{flex:2}} label={Platform.OS==='web'&&!webReady?'Preview hands-free flow':testing?'Start without sound test':'Start test'} disabled={checkingBrowser||(Platform.OS==='web'&&!webReady?false:!ready||!canSkip)} loading={busy} onPress={start}/>}
     </View>
   </>}>
     <BigButton label="Language and audio settings" variant="ghost" onPress={()=>{stopSample();setMenu('options');}} disabled={busy}/>
@@ -157,7 +179,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     {Platform.OS==='web'&&page===0&&<Text style={ui.caption}>Browser profiles and recordings last only for this tab. Export before closing.</Text>}
     {page===0&&<View style={{gap:8}}>
       <Text style={ui.caption}>Choose a saved person, or enter a new study ID. A new profile is saved when you start the test.</Text>
-      <AgeInput value={participantLabel} autoCorrect={false} autoCapitalize="none" maxLength={80} accessibilityLabel={t('Study ID or participant label')} placeholder={t('Study ID or participant label')} style={fieldStyle} onChangeText={(v:string)=>{setParticipantLabel(v);if(selectedId){newId.current=`participant-${Date.now()}-${Math.random().toString(16).slice(2,10)}`;setSelectedId(undefined);setAgeText('');setSex(null);setHeightText('');setAid('none');}}}/>
+      <AgeInput value={participantLabel} autoCorrect={false} autoCapitalize="none" maxLength={80} accessibilityLabel={t('Study ID or participant label')} placeholder={t('Study ID or participant label')} style={fieldStyle} onChangeText={(v:string)=>{setParticipantLabel(v);if(selectedId){newId.current=`participant-${Date.now()}-${Math.random().toString(16).slice(2,10)}`;setSelectedId(undefined);setAgeText('');setSex(null);setHeightText('');setAid('none');setHemisphere(undefined);setAffectedSide(undefined);setChronicityStatus(undefined);setMonthsText('');setHistorySource(undefined);}}}/>
       {profiles.some(p=>!p.archived)&&<BigButton label="Choose a saved person" variant="ghost" onPress={()=>{setSavedSearch('');setMenu('saved');}}/>}
       <Text style={ui.caption}>{selectedId?'Using a saved participant':'New participant'}</Text>
       <AgeInput value={ageText} onChangeText={setAgeText} accessibilityLabel={t('Age in years')} placeholder={t('Age in years')} maxLength={3} keyboardType="number-pad" style={fieldStyle}/>
@@ -171,6 +193,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     {page===1&&<View style={{gap:10}}>
       <BigButton label={t('Change test: {0}').replace('{0}',t(protocol==='research-walk'?'Research walk':protocol.toUpperCase()))} icon="›" variant="outline" onPress={()=>setMenu('tests')} accessibilityHint={t('Choose your test')}/>
 
+      {protocol!=='research-walk'&&<BigButton label="Review stroke history" variant="outline" onPress={()=>setMenu('clinical')}/>}
       <Text style={ui.caption}>{guide.short}</Text>
       {protocol!=='research-walk'&&<Text style={ui.caption}>{assistedNotice}</Text>}
       <BigButton label="Show me how" variant="outline" onPress={()=>{stopSample();setGuideOpen(true);}}/>
@@ -186,7 +209,6 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     {protocol==='research-walk'&&<View style={ui.row}>{([10,20,30] as const).map(n => <Pressable key={n} accessibilityRole="radio" accessibilityLabel={t(`Walk for ${n} seconds`)} accessibilityState={{ selected: n === duration }} style={[ui.choice, n === duration && ui.selected]} onPress={() => setDuration(n)}><Text style={ui.label}>{n===duration?'● ':'○ '}{t(`${n} sec`)}</Text></Pressable>)}</View>}
     </View>}
     {page===2&&<View style={{gap:10}}>
-    {protocol!=='research-walk'&&<Pressable accessibilityRole="checkbox" accessibilityState={{checked:workerReady}} onPress={()=>setWorkerReady(!workerReady)} style={[ui.row,{minHeight:56}]}><Text>{workerReady?'☑':'☐'}</Text><Text style={[ui.caption,ui.fill]}>A worker is present to prepare the course, give test instructions and record the outcome.</Text></Pressable>}
     {audioEnabled ? <><BigButton label={testing ? 'Stop sample' : 'Play voice sample'} variant="outline" onPress={testing ? stopSample : sample} disabled={busy} /><Text style={ui.caption}>Listen briefly, or skip. Voice guidance stays on. Check your media volume first.</Text></> : <Body>Voice is off. Ask a helper to signal start and finish while the phone is secured.</Body>}
     {(Platform.OS!=='web'||webReady)&&<Pressable accessibilityRole="checkbox" accessibilityLabel={t('I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.')} accessibilityState={{ checked:ready }} onPress={() => setReady(!ready)} style={[ui.row,{ minHeight:64 }]}><Text style={{ fontSize:28,color:colours.primary }}>{ready ? '☑' : '☐'}</Text><Text style={[ui.caption,ui.fill]}>I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.</Text></Pressable>}
     {Platform.OS === 'web' && <View style={{gap:8}}>
@@ -213,7 +235,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     </View>}
 
     <Modal visible={menu!==null} animationType="slide" onRequestClose={()=>setMenu(null)}>
-      <Screen fullScreen title={menu==='participant'?'More participant details':menu==='saved'?'Choose a saved person':menu==='tests'?'Choose your test':'Language and audio settings'}
+      <Screen fullScreen title={menu==='participant'?'More participant details':menu==='clinical'?'Stroke history':menu==='saved'?'Choose a saved person':menu==='tests'?'Choose your test':'Language and audio settings'}
         actions={<BigButton label="Done" onPress={()=>setMenu(null)}/>}>
         {menu==='options'&&<>
           <LanguagePicker/>
@@ -231,6 +253,12 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     <BigButton label="Use default settings" variant="outline" onPress={useDefaults} disabled={busy} accessibilityHint={t('Sets 20 seconds, voice and direction reminders on, and practice off.')} />
     {defaultsApplied && duration === 20 && audioEnabled && guidanceEnabled && !isPractice && <Text accessibilityLiveRegion="polite" style={ui.caption}>Defaults selected: 20 seconds, voice and direction reminders on, practice off. You can still change these settings.</Text>}
     {Platform.OS === 'android' && <View style={{ backgroundColor: colours.surface, borderRadius: 16, padding: 12 }}>
+      <Pressable accessibilityRole="checkbox" accessibilityLabel={t('Google distance test · experimental')} accessibilityState={{ checked: useGoogleDistance }} onPress={() => setUseGoogleDistance(v => !v)} style={[ui.row,{minHeight:56}]}>
+        <Text style={{fontSize:26,color:colours.primary}}>{useGoogleDistance?'☑':'☐'}</Text><Text style={[ui.label,ui.fill]}>Google distance test · experimental</Text>
+      </Pressable>
+      <Text style={ui.caption}>Compare Google’s on-device distance and steps with this recording. Activity permission is requested before setup. No Google account is needed. Readings may be delayed or missing; they do not stop the test or replace clinical measurements.</Text>
+    </View>}
+    {Platform.OS === 'android' && <View style={{ backgroundColor: colours.surface, borderRadius: 16, padding: 12 }}>
       <Pressable accessibilityRole="checkbox" accessibilityLabel={t('Optional outdoor GPS distance cross-check')} accessibilityState={{ checked: useGpsDistance }} onPress={() => setUseGpsDistance(v => !v)} style={[ui.row,{minHeight:56}]}>
         <Text style={{fontSize:26,color:colours.primary}}>{useGpsDistance?'☑':'☐'}</Text><Text style={[ui.label,ui.fill]}>{t('Optional outdoor GPS distance cross-check')}</Text>
       </Pressable>
@@ -245,8 +273,23 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
         <View style={[ui.row,{flexWrap:'wrap'}]}>{([['none','None'],['single-point-cane','Single-point cane'],['quad-cane','Quad cane'],['other','Other']] as const).map(([value,label])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:aid===value}} onPress={()=>setAid(value)} style={[ui.choice,{flexBasis:120},aid===value&&ui.selected]}><Text style={ui.caption}>{aid===value?'● ':'○ '}{t(label)}</Text></Pressable>)}</View>
 
         </View>}
+        {menu==='clinical'&&<View style={{gap:14}}>
+          <Text style={ui.caption}>Use the participant's clinical record when available. Choose Unknown if the answer is not known; do not guess.</Text>
+          <Text style={ui.label}>Affected brain hemisphere</Text>
+          <View style={[ui.row,{flexWrap:'wrap'}]}>{(['left','right','bilateral','unknown'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:hemisphere===value}} onPress={()=>setHemisphere(value)} style={[ui.choice,{flexBasis:110},hemisphere===value&&ui.selected]}><Text>{t(value)}</Text></Pressable>)}</View>
+          <Text style={ui.label}>Affected body side</Text>
+          <View style={[ui.row,{flexWrap:'wrap'}]}>{(['left','right','bilateral','unknown'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:affectedSide===value}} onPress={()=>setAffectedSide(value)} style={[ui.choice,{flexBasis:110},affectedSide===value&&ui.selected]}><Text>{t(value)}</Text></Pressable>)}</View>
+          <Text style={ui.label}>Time since stroke</Text>
+          <View style={[ui.row,{flexWrap:'wrap'}]}>{(['known','unknown'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:chronicityStatus===value}} onPress={()=>setChronicityStatus(value)} style={[ui.choice,{flexBasis:110},chronicityStatus===value&&ui.selected]}><Text>{t(value)}</Text></Pressable>)}</View>
+          {chronicityStatus==='known'&&<AgeInput value={monthsText} onChangeText={setMonthsText} accessibilityLabel={t('Whole months since stroke')} placeholder={t('Whole months since stroke')} keyboardType="number-pad" style={fieldStyle}/>}
+          <Text style={ui.label}>History source</Text>
+          <View style={[ui.row,{flexWrap:'wrap'}]}>{([['patient-or-caregiver-report','Patient or caregiver'],['clinician-record','Clinical record']] as const).map(([value,label])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:historySource===value}} onPress={()=>setHistorySource(value)} style={[ui.choice,{flexBasis:130},historySource===value&&ui.selected]}><Text>{t(label)}</Text></Pressable>)}</View>
+        </View>}
         {menu==='tests'&&<View style={{gap:12}}>
-      <View style={[ui.row,{flexWrap:'wrap'}]}>{([['research-walk','Research walk'],['10mwt','10MWT'],['2mwt','2MWT'],['6mwt','6MWT'],['tug','TUG']] as [AssessmentProtocol,string][]).map(([value,name])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:protocol===value}} style={[ui.choice,{flexBasis:100},protocol===value&&ui.selected]} onPress={()=>{setProtocol(value);setMenu(null);}}><Text style={ui.label}>{protocol===value?'● ':'○ '}{t(name)}</Text></Pressable>)}</View>
+      <Text style={ui.label}>Main clinical tests</Text>
+      <View style={[ui.row,{flexWrap:'wrap'}]}>{([['10mwt','10MWT'],['tug','TUG'],['2mwt','2MWT']] as [AssessmentProtocol,string][]).map(([value,name])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:protocol===value}} style={[ui.choice,{flexBasis:100},protocol===value&&ui.selected]} onPress={()=>{setProtocol(value);setMenu(null);}}><Text style={ui.label}>{protocol===value?'● ':'○ '}{t(name)}</Text></Pressable>)}</View>
+      <Text style={ui.label}>Other tests</Text>
+      <View style={[ui.row,{flexWrap:'wrap'}]}>{([['research-walk','Research walk'],['6mwt','6MWT']] as [AssessmentProtocol,string][]).map(([value,name])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:protocol===value}} style={[ui.choice,{flexBasis:100},protocol===value&&ui.selected]} onPress={()=>{setProtocol(value);setMenu(null);}}><Text style={ui.label}>{protocol===value?'● ':'○ '}{t(name)}</Text></Pressable>)}</View>
         </View>}
         {menu==='saved'&&<>
           <AgeInput value={savedSearch} onChangeText={setSavedSearch} accessibilityLabel={t('Search saved participants')} placeholder={t('Search saved participants')} style={fieldStyle}/>

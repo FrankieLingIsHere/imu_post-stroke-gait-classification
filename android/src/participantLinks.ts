@@ -19,6 +19,8 @@ export function recoverParticipantProfiles(profiles: ParticipantProfile[], sessi
       clinical:{
         strokeType:snapshot?.clinical?.strokeType??'',lesionLocation:snapshot?.clinical?.lesionLocation??'',
         monthsSinceStroke:snapshot?.clinical?.monthsSinceStroke??null,premorbidGaitNotes:snapshot?.clinical?.premorbidGaitNotes??'',
+        chronicityStatus:snapshot?.clinical?.chronicityStatus,affectedHemisphere:snapshot?.clinical?.affectedHemisphere,
+        affectedBodySide:snapshot?.clinical?.affectedBodySide,historySource:snapshot?.clinical?.historySource,
         jointOrOrthopaedicNotes:snapshot?.clinical?.jointOrOrthopaedicNotes??'',
         assistiveDevice:snapshot?.clinical?.assistiveDevice??'other',
       },
