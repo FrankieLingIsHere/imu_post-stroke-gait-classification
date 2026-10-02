@@ -16,12 +16,14 @@ import PhoneFrame from './src/components/PhoneFrame';
 import WalkthroughScreen from './src/screens/WalkthroughScreen';
 import ParticipantsScreen from './src/screens/ParticipantsScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
+import GoogleDistanceTrialScreen from './src/screens/GoogleDistanceTrialScreen';
 import type { AssessmentProtocol, AssessmentSetup, ParticipantDemographics, ParticipantProfile } from './src/store';
-type Setup = { duration: number; audioEnabled: boolean; isPractice: boolean; demographics?: ParticipantDemographics; participantId?: string; participantLabel?: string; participantSnapshot?: ParticipantProfile; assessmentSetup?: AssessmentSetup; useGpsDistance?: boolean; useGoogleDistance?: boolean };
+type Setup = { duration: number; audioEnabled: boolean; isPractice: boolean; demographics?: ParticipantDemographics; participantId?: string; participantLabel?: string; participantSnapshot?: ParticipantProfile; assessmentSetup?: AssessmentSetup; useGpsDistance?: boolean; useGoogleDistance?: boolean; googleDistanceTrial?:import('./src/googleDistanceTrial').GoogleDistanceTrial };
 export type RootStackParamList = {
   Home: undefined; Onboarding: undefined; Prepare: Setup; Walkthrough: {protocol?:AssessmentProtocol} | undefined; Participants: undefined; Dashboard: undefined;
   Record: Setup & { guidanceEnabled: boolean };
   Result: { sessionId: string }; Details: { sessionId: string }; History: undefined;
+  GoogleDistanceTrial:undefined;
 };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function App() {
@@ -39,6 +41,7 @@ export default function App() {
       <Stack.Screen name="Walkthrough" component={WalkthroughScreen} options={{ title: t('Supervisor walkthrough') }} />
       <Stack.Screen name="Participants" component={ParticipantsScreen} options={{ title: t('Participants') }} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: t('Progress dashboard') }} />
+      <Stack.Screen name="GoogleDistanceTrial" component={GoogleDistanceTrialScreen} options={{title:t('Google distance trial')}}/>
     </Stack.Navigator>
   </NavigationContainer></SafeAreaProvider></PhoneFrame>;
 }

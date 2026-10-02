@@ -520,3 +520,55 @@ test('New translations contain real Chinese text and no encoding replacement run
   }
  }
 });
+
+
+test('Short Google trial requires a measured route and stays separate from clinical test choices',()=>{
+ const h=harness('GoogleDistanceTrialScreen');
+ assert.equal(h.button('Set up this short trial').props.disabled,true);
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'I measured this route and the path is clear.'}).props.onPress());
+ act(()=>h.button('Set up this short trial').props.onPress());
+ const [name,p]=h.navigated[0];assert.equal(name,'Prepare');assert.equal(p.googleDistanceTrial.referenceDistanceM,3);assert.equal(p.assessmentSetup.protocol,'research-walk');assert.equal(p.isPractice,true);assert.equal(p.useGoogleDistance,true);assert.equal(p.useGpsDistance,false);
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'Route length: 2 m'}).props.onPress());
+ assert.equal(h.button('Set up this short trial').props.disabled,true);h.close();
+});
+
+test('Short-trial stop gate needs an armed walk followed by continuous stillness',()=>{
+ const {GoogleTrialStopGate}=load('googleDistanceTrial');const g=new GoogleTrialStopGate();
+ assert.equal(g.update(10000,true,true,true),null);g.begin(10000);
+ assert.equal(g.update(11000,true,true,true),null);
+ assert.equal(g.update(14900,true,true,true),null);
+ assert.equal(g.update(15000,true,true,false),null);
+ assert.equal(g.update(16000,true,true,true),null);
+ assert.equal(g.update(19000,true,false,true),null);
+ assert.equal(g.update(20000,true,true,true),null);
+ assert.equal(g.update(24000,true,true,true),'quiet-stop');
+ const cap=new GoogleTrialStopGate();cap.begin(0);assert.equal(cap.update(60000,true,true,false),'time-limit');
+ const lost=new GoogleTrialStopGate();lost.begin(0);assert.equal(lost.update(100,true,true,false),null);assert.equal(lost.update(200,false,true,true),'interrupted');
+});
+
+test('Short-trial recording waits for a step then ends hands-free after quiet, rather than waiting 60 seconds',()=>{
+ const h=harness('RecordScreen','android',null,{duration:60,googleDistanceTrial:{version:'google-distance-trial-v1',referenceDistanceM:3},assessmentSetup:{protocol:'research-walk'}});
+ h.engine.stop=r=>({stopReason:r,startedAt:'2026-10-02T00:00:00Z',elapsedSeconds:6,streams:{accelerometer:[],gyroscope:[],magnetometer:[]},guidanceEvents:[]});
+ h.advance(24000);h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(1500);
+ h.engine.motionStatus={enough:true,steady:true,upright:true,context:'rest-or-quiet'};h.advance(13000);
+ assert.equal(h.engine.begun,false);
+ h.engine.motionStatus={enough:true,steady:false,upright:true,context:'movement'};h.advance(200);
+ assert.equal(h.engine.begun,true);h.advance(2000);
+ h.engine.motionStatus={enough:true,steady:true,upright:true,context:'rest-or-quiet'};h.advance(4100);
+ assert.equal(h.renderer.root.findByType('screen').props.title,'Take a comfortable rest');
+ assert.ok(h.spoke.includes(load('googleDistanceTrial').googleTrialFinish));h.close();
+});
+
+
+test('Trial preparation skips clinical test selection and hides unrelated defaults and GPS',async()=>{
+ const h=harness('PrepareScreen','android',null,{duration:60,useGoogleDistance:true,googleDistanceTrial:{version:'google-distance-trial-v1',referenceDistanceM:3},assessmentSetup:{protocol:'research-walk',courseLengthM:3}});
+ await act(async()=>{});
+ act(()=>{h.renderer.root.findByProps({accessibilityLabel:'Study ID or participant label'}).props.onChangeText('TRIAL-001');h.renderer.root.findByProps({accessibilityLabel:'Age in years'}).props.onChangeText('67');});
+ act(()=>h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityRole==='radio').props.onPress());act(()=>h.button('Continue').props.onPress());
+ assert.equal(h.renderer.root.findByType('screen').props.title,'Sound and readiness');
+ act(()=>h.button('Language and audio settings').props.onPress());
+ assert.equal(h.button('Use default settings'),undefined);
+ assert.equal(h.renderer.root.findAllByProps({accessibilityLabel:'Optional outdoor GPS distance cross-check'}).length,0);
+ const google=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityLabel?.startsWith('Google distance test'));
+ assert.equal(google.props.disabled,true);assert.equal(google.props.accessibilityState.checked,true);h.close();
+});

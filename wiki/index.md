@@ -16,7 +16,7 @@ GaitTrace local participant, structured clinical intake, five-second phone basel
 
 Free distance-provider audit: [[gait-app-collection-workflow#Free distance provider feasibility (2 October 2026)|Screen-out camera options and external-service cost checks]]. OpenVINS or measured visual references need feasibility validation; current phone distance remains experimental.
 
-Google on-device comparison experiment: [[gait-app-collection-workflow#Free distance provider feasibility (2 October 2026)|Local API integration and validation status]]. Opt-in distance/step records and timing diagnostics are exported separately; version 0.3.0 needs a new APK, with native compile and phone trials pending.
+Google on-device comparison experiment: [[gait-app-collection-workflow#Free distance provider feasibility (2 October 2026)|Local API integration and validation status]]. Opt-in distance/step records and timing diagnostics are exported separately; version 0.3.0 needs a new APK, with native compile and phone trials pending. Short standalone 2/3/5 m engineering trials are now implemented locally; see [[gait-app-collection-workflow#Dedicated short Google distance experiment - 2 October 2026|trial flow and export]]. Clinical test boundaries remain separate.
 
 App release/version records: [GaitTrace changelog](../android/CHANGELOG.md). Application version, remotely assigned APK build number and installed update provenance are documented separately; generated publication reviews remain local.
 

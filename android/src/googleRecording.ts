@@ -123,14 +123,19 @@ export class GoogleRecordingCapture {
     })().finally(() => { this.busy = null; });
     return this.busy;
   }
-  async finish(endUnixMs: number): Promise<GoogleRecordingSummary> {
+  async finish(endUnixMs: number, extendedObservation = false): Promise<GoogleRecordingSummary> {
     if (this.timer) clearInterval(this.timer); this.timer = null; this.stop = endUnixMs;
-    // Fixed test window: allow one delayed read, never include later walking.
+    // Fixed test window: observe delayed records without including later walking.
     if (this.busy) await this.busy;
     await this.poll(endUnixMs);
     if (this.ready && this.start !== null) {
-      await new Promise<void>(resolve => setTimeout(resolve,2000));
-      await this.poll(endUnixMs);
+      for (const waitMs of extendedObservation?[2000,3000,5000,10000,10000]:[2000]) {
+        await new Promise<void>(resolve => setTimeout(resolve,waitMs));
+        if(this.closed)break;
+        await this.poll(endUnixMs);
+        const summary=summarizeGoogleRecords(this.start,this.stop,this.observations,this.polls,this.errors);
+        if(extendedObservation&&summary.status==='records-received')break;
+      }
     }
     await this.cancel();
     return summarizeGoogleRecords(this.start,this.stop,this.observations,this.polls,this.errors,this.cleanup);

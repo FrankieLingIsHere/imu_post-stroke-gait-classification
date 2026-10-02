@@ -10,7 +10,7 @@ function load(name, mocks = {}) {
   const module = {exports:{}};
   const code = ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText;
   vm.runInNewContext(code,{module,exports:module.exports,Date,Math,console,
-    setTimeout:(fn,ms)=>setTimeout(fn,ms===2000?0:ms),clearTimeout,setInterval,clearInterval,
+    setTimeout:(fn,ms)=>setTimeout(fn,[2000,3000,5000,10000].includes(ms)?0:ms),clearTimeout,setInterval,clearInterval,
     require:id=>id in mocks?mocks[id]:id.startsWith('.')?load(id.slice(2),mocks):require(id)});
   return module.exports;
 }
@@ -93,4 +93,26 @@ test('JSON review preserves the optional Google summary and rejects malformed nu
   assert.throws(()=>parseReviewRecording(JSON.stringify(payload)),/valid Gait Steps/);
   delete session.recording.googleRecording;
   assert.ok(parseReviewRecording(JSON.stringify(payload)),'Older exports remain supported');
+});
+
+
+test('Short-trial delayed polling keeps the original walk boundary and never substitutes missing data',async()=>{
+  const calls=[];let reads=0;
+  const capture=new GoogleRecordingCapture({async subscribe(){},async unsubscribe(){},async readData(start,end){calls.push([start,end]);reads++;return {receivedAtUnixMs:16000,points:reads>=3?[point('distance',3),point('steps',6)]:[]}}},()=>12000);
+  await capture.prepare();capture.begin(1000);const r=await capture.finish(11000,true);
+  assert.equal(reads,3);assert.equal(r.distanceM,3);assert.ok(calls.every(([start,end])=>start===1000&&end===11000));
+  const empty=new GoogleRecordingCapture({async subscribe(){},async unsubscribe(){},async readData(){return {receivedAtUnixMs:16000,points:[]}}},()=>12000);
+  await empty.prepare();empty.begin(1000);const missing=await empty.finish(11000,true);
+  assert.equal(missing.distanceM,null);assert.equal(missing.polls.length,6);assert.equal(missing.status,'no-records');
+});
+
+test('Trial reference and completion survive JSON and CSV import without becoming clinical progress',()=>{
+  const exporting=load('exportData');const {parseReviewRecording,parseReviewRecordingCsv}=load('reviewRecording');
+  const session={id:'short-trial',date:new Date(1000).toISOString(),duration:60,isPractice:true,quality:'good',windows:[],googleDistanceTrial:{version:'google-distance-trial-v1',referenceDistanceM:3,completedMarkedRoute:true,end:'quiet-stop'},recording:{source:'device',schemaVersion:2,startedAt:new Date(1000).toISOString(),elapsedSeconds:10,stopReason:'completed',guidanceEvents:[],placement:'lower-back-landscape-screen-out',coordinateFrame:'device',streams:{accelerometer:[{x:0,y:1,z:0,elapsedMs:0,receivedAtUnixMs:1000,sensorTimestampSeconds:null}],gyroscope:[],magnetometer:[]},requestedHz:{accelerometer:50,gyroscope:50,magnetometer:50}}};
+  for(const raw of [exporting.exportJSON(session),exporting.exportCSV(session)]){
+    const imported=raw.startsWith('{')?parseReviewRecording(raw):parseReviewRecordingCsv(raw);assert.equal(imported.googleDistanceTrial.referenceDistanceM,3);assert.equal(imported.googleDistanceTrial.completedMarkedRoute,true);assert.equal(imported.googleDistanceTrial.end,'quiet-stop');assert.equal(imported.isPractice,true);
+  }
+  session.isPractice=false;
+  assert.throws(()=>parseReviewRecording(exporting.exportJSON(session)),/valid Gait Steps/);
+  assert.throws(()=>parseReviewRecordingCsv(exporting.exportCSV(session)),/raw GaitTrace/);
 });

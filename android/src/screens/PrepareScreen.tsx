@@ -24,6 +24,7 @@ import type { AssessmentProtocol, AssessmentSetup, ParticipantProfile } from '..
 const AgeInput: React.ComponentType<any> = TextInput ?? View;
 export default function PrepareScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'Prepare'>) {
   const language = useLanguage();
+  const trial=route.params.googleDistanceTrial;
   const [page, setPage] = useState(0);
   const [profiles, setProfiles] = useState<ParticipantProfile[]>([]);
   const [profilesReady, setProfilesReady] = useState(false);
@@ -109,7 +110,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     return value;
   }
   function nextPage() {
-    try { if(page===0)resolveTestParticipant(profiles,participantInput());else {validateCourse();checkedParticipant(profiles);}stopSample();setError('');setPage(page+1); }
+    try { if(page===0)resolveTestParticipant(profiles,participantInput());else {validateCourse();checkedParticipant(profiles);}stopSample();setError('');setPage(trial&&page===0?2:page+1); }
     catch(e){setError(e instanceof Error?e.message:'Could not load participants. Try again.');}
   }
   async function checkBrowser() {
@@ -140,7 +141,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       const currentProfiles=await getParticipants().catch(()=>{throw new Error('Could not load participants. Try again.');});
       const participant=checkedParticipant(currentProfiles);
       await checkSensors();
-      if (useGoogleDistance) await checkGoogleRecordingPermission();
+      if (useGoogleDistance||trial) await checkGoogleRecordingPermission();
       if (useGpsDistance) {
         if (Platform.OS !== 'android') throw new Error(t('Optional GPS distance is available in the Android app only.'));
         const permission = await Location.requestForegroundPermissionsAsync();
@@ -157,7 +158,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       await saveParticipant(participant).catch(()=>{throw new Error('Could not save participant. Try again.');});
       if (!active.current || id !== request.current || AppState.currentState !== 'active') return;
       setSelectedId(participant.id);setProfiles([...currentProfiles.filter(p=>p.id!==participant.id),participant]);
-      navigation.navigate('Record', { duration:plannedSeconds, audioEnabled, isPractice, guidanceEnabled, useGpsDistance, useGoogleDistance, participantId:participant.id,participantLabel:participant.label,participantSnapshot:participant,demographics:participant.demographics,assessmentSetup:setup });
+      navigation.navigate('Record', { duration:trial?60:plannedSeconds, audioEnabled, isPractice:trial?true:isPractice, guidanceEnabled:trial?false:guidanceEnabled, useGpsDistance:trial?false:useGpsDistance, useGoogleDistance:trial?true:useGoogleDistance, googleDistanceTrial:trial, participantId:participant.id,participantLabel:participant.label,participantSnapshot:participant,demographics:participant.demographics,assessmentSetup:trial?route.params.assessmentSetup:setup });
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : 'Could not access motion sensors. Please try again.'); }
     finally { if (active.current) setBusy(false); }
   }
@@ -168,9 +169,9 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   ];
   const matchingProfiles=profiles.filter(p=>!p.archived&&participantKey(p.label).includes(participantKey(savedSearch))).sort((a,b)=>Number(b.favorite)-Number(a.favorite)||a.label.localeCompare(b.label));
   const fieldStyle={minHeight:52,borderWidth:1,borderColor:colours.border,borderRadius:12,paddingHorizontal:14,fontSize:18,color:colours.textPrimary,backgroundColor:colours.surface};
-  return <Screen key={page} title={['Who is walking?','Choose your test','Sound and readiness'][page]} eyebrow={t('Setup {0} of 3').replace('{0}',String(page+1))} actions={<>
+  return <Screen key={page} title={['Who is walking?','Choose your test','Sound and readiness'][page]} eyebrow={trial?t('Google trial setup {0} of 2').replace('{0}',String(page===0?1:2)):t('Setup {0} of 3').replace('{0}',String(page+1))} actions={<>
     <View style={ui.row}>
-      {page>0&&<BigButton style={ui.fill} label="Previous" variant="outline" disabled={busy} onPress={()=>{stopSample();setError('');setPage(page-1);}}/>}
+      {page>0&&<BigButton style={ui.fill} label="Previous" variant="outline" disabled={busy} onPress={()=>{stopSample();setError('');setPage(trial?0:page-1);}}/>}
       {page<2?<BigButton style={ui.fill} label="Continue" disabled={page===0&&!profilesReady} onPress={nextPage}/>:<BigButton style={{flex:2}} label={Platform.OS==='web'&&!webReady?'Preview hands-free flow':testing?'Start without sound test':'Start test'} disabled={checkingBrowser||(Platform.OS==='web'&&!webReady?false:!ready||!canSkip)} loading={busy} onPress={start}/>}
     </View>
   </>}>
@@ -209,6 +210,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     {protocol==='research-walk'&&<View style={ui.row}>{([10,20,30] as const).map(n => <Pressable key={n} accessibilityRole="radio" accessibilityLabel={t(`Walk for ${n} seconds`)} accessibilityState={{ selected: n === duration }} style={[ui.choice, n === duration && ui.selected]} onPress={() => setDuration(n)}><Text style={ui.label}>{n===duration?'● ':'○ '}{t(`${n} sec`)}</Text></Pressable>)}</View>}
     </View>}
     {page===2&&<View style={{gap:10}}>
+    {trial&&<Body>{t('Short Google trial · measured route {0} m').replace('{0}',String(trial.referenceDistanceM))}</Body>}
     {audioEnabled ? <><BigButton label={testing ? 'Stop sample' : 'Play voice sample'} variant="outline" onPress={testing ? stopSample : sample} disabled={busy} /><Text style={ui.caption}>Listen briefly, or skip. Voice guidance stays on. Check your media volume first.</Text></> : <Body>Voice is off. Ask a helper to signal start and finish while the phone is secured.</Body>}
     {(Platform.OS!=='web'||webReady)&&<Pressable accessibilityRole="checkbox" accessibilityLabel={t('I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.')} accessibilityState={{ checked:ready }} onPress={() => setReady(!ready)} style={[ui.row,{ minHeight:64 }]}><Text style={{ fontSize:28,color:colours.primary }}>{ready ? '☑' : '☐'}</Text><Text style={[ui.caption,ui.fill]}>I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data.</Text></Pressable>}
     {Platform.OS === 'web' && <View style={{gap:8}}>
@@ -240,7 +242,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
         {menu==='options'&&<>
           <LanguagePicker/>
 
-    <View style={{ backgroundColor: colours.surface, borderRadius: 18, paddingHorizontal: 12 }}>{toggles.map(([label,value,setter,infoLabel,explanation]) => <View key={label}>
+    <View style={{ backgroundColor: colours.surface, borderRadius: 18, paddingHorizontal: 12 }}>{toggles.filter(([label])=>!trial||label==='Voice guidance').map(([label,value,setter,infoLabel,explanation]) => <View key={label}>
       <View style={[ui.row,{ minHeight:48 }]}><Text style={[ui.caption,ui.fill]}>{label}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel={t(infoLabel)} accessibilityState={{ expanded: openInfo === label }} onPress={() => setOpenInfo(openInfo === label ? null : label)} style={{ minWidth:48, minHeight:48, alignItems:'center', justifyContent:'center' }}>
           <Text style={{ fontSize:22, fontWeight:'700', color:colours.primary }}>ⓘ</Text>
@@ -250,15 +252,15 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       {openInfo === label && <Text accessibilityLiveRegion="polite" style={[ui.caption,{ paddingBottom:12 }]}>{explanation}</Text>}
     </View>)}</View>
 
-    <BigButton label="Use default settings" variant="outline" onPress={useDefaults} disabled={busy} accessibilityHint={t('Sets 20 seconds, voice and direction reminders on, and practice off.')} />
-    {defaultsApplied && duration === 20 && audioEnabled && guidanceEnabled && !isPractice && <Text accessibilityLiveRegion="polite" style={ui.caption}>Defaults selected: 20 seconds, voice and direction reminders on, practice off. You can still change these settings.</Text>}
+    {!trial&&<BigButton label="Use default settings" variant="outline" onPress={useDefaults} disabled={busy} accessibilityHint={t('Sets 20 seconds, voice and direction reminders on, and practice off.')} />}
+    {!trial&&defaultsApplied && duration === 20 && audioEnabled && guidanceEnabled && !isPractice && <Text accessibilityLiveRegion="polite" style={ui.caption}>Defaults selected: 20 seconds, voice and direction reminders on, practice off. You can still change these settings.</Text>}
     {Platform.OS === 'android' && <View style={{ backgroundColor: colours.surface, borderRadius: 16, padding: 12 }}>
-      <Pressable accessibilityRole="checkbox" accessibilityLabel={t('Google distance test · experimental')} accessibilityState={{ checked: useGoogleDistance }} onPress={() => setUseGoogleDistance(v => !v)} style={[ui.row,{minHeight:56}]}>
-        <Text style={{fontSize:26,color:colours.primary}}>{useGoogleDistance?'☑':'☐'}</Text><Text style={[ui.label,ui.fill]}>Google distance test · experimental</Text>
+      <Pressable disabled={!!trial} accessibilityRole="checkbox" accessibilityLabel={t('Google distance test · experimental')} accessibilityState={{ checked: !!trial||useGoogleDistance,disabled:!!trial }} onPress={() => setUseGoogleDistance(v => !v)} style={[ui.row,{minHeight:56}]}>
+        <Text style={{fontSize:26,color:colours.primary}}>{trial||useGoogleDistance?'☑':'☐'}</Text><Text style={[ui.label,ui.fill]}>Google distance test · experimental</Text>
       </Pressable>
       <Text style={ui.caption}>Compare Google’s on-device distance and steps with this recording. Activity permission is requested before setup. No Google account is needed. Readings may be delayed or missing; they do not stop the test or replace clinical measurements.</Text>
     </View>}
-    {Platform.OS === 'android' && <View style={{ backgroundColor: colours.surface, borderRadius: 16, padding: 12 }}>
+    {!trial&&Platform.OS === 'android' && <View style={{ backgroundColor: colours.surface, borderRadius: 16, padding: 12 }}>
       <Pressable accessibilityRole="checkbox" accessibilityLabel={t('Optional outdoor GPS distance cross-check')} accessibilityState={{ checked: useGpsDistance }} onPress={() => setUseGpsDistance(v => !v)} style={[ui.row,{minHeight:56}]}>
         <Text style={{fontSize:26,color:colours.primary}}>{useGpsDistance?'☑':'☐'}</Text><Text style={[ui.label,ui.fill]}>{t('Optional outdoor GPS distance cross-check')}</Text>
       </Pressable>

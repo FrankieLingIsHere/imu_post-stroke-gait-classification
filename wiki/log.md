@@ -2646,3 +2646,13 @@ User authorized a Google on-device API trial. Added source integration via a loc
 ## [2026-10-02] sync | Approved publication and organized app release records
 
 User reviewed the 42-file source/document batch and explicitly approved publication, then requested organized version files. Added `android/CHANGELOG.md`, linked it from the app README and wiki, and updated current weekly progress. Separated source/app version 0.3.0 from the pending EAS-assigned APK build number. Generated publication reviews remain ignored locally. Rechecked TypeScript and all 117 tests before staging; native APK build and phone validation remain pending. Publication execution is recorded in Git history.
+
+
+## [2026-10-02] sync | Separate short Google distance experiment
+
+Added local Android-only measured 2/3/5 m trial setup, first-step raw capture, automatic four-second quiet-stop, bounded fixed-window delayed Google reads, explicit reached-finish confirmation and direct JSON export. Trial metadata survives JSON/raw CSV import and remains excluded from rehabilitation trends and personal calibration. Updated app release history, native-module instructions, product spec, collection workflow, index and current weekly progress in the same batch. TypeScript, 123 automated tests and Android/web Metro exports passed; native build/APK delivery and actual-device accuracy remain pending. No model experiment, dataset acquisition or push.
+
+
+## [2026-10-02] sync | Short-trial publication and APK build authorized
+
+User explicitly approved publication of the reviewed short Google distance trial batch and requested notification after APK completion. Updated release/weekly records before publication; native build identifiers and success remain pending. No generated bundles or local demonstration assets are included.

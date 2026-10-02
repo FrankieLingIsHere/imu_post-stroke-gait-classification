@@ -2,6 +2,14 @@
 
 This file records source releases and installation requirements. `app.json` declares the application version; EAS assigns the Android build number. Actual installed release/runtime/update identifiers come from `src/releaseInfo.ts` and are included in recordings. Do not infer an APK build number from the application version or promise an APK before its build succeeds.
 
+## Unreleased - short Google distance trial
+
+- Separate Android research-tool entry for tape-measured 2, 3 or 5 m routes, default 3 m; no clinical test selection or 12 m course required.
+- Existing participant, permission and phone-fit checks are retained. After the spoken Begin cue, raw recording starts at the first detected step and finishes after four consecutive seconds of stillness. A 60-second limit is a safety fallback, not a distance endpoint.
+- Google queries start at the audible Begin callback (first-step fallback) and retain a fixed end boundary. Delayed reads observe for up to 30 seconds plus request time after walking; missing records remain unavailable.
+- Result confirmation distinguishes reaching the measured finish from an early stop. Dedicated JSON export and labelled CSV metadata preserve reference length, completion and stop reason. Practice tagging excludes these experiments from rehabilitation trends; no participant distance calibration is overwritten.
+- English, Malay and Chinese trial instructions. TypeScript, all 123 tests and Android/web Metro exports passed. Native compilation, APK delivery and actual-holder trials remain pending. The native Google integration still requires a new 0.3.0 APK; publication and an APK build were authorized on 2 October 2026; build results will be recorded after completion.
+
 ## 0.3.0 — 2 October 2026
 
 **APK status: not built yet.** The Android build number is pending EAS assignment. This is the same `com.gaitsteps.app` application, not a separate test app. The new native Google module requires a new APK; JavaScript updates cannot add it to build 5 or Expo Go. Retain the existing signing identity when building an update to preserve the installed application and its local data. Fingerprint runtime policy separates incompatible native versions.

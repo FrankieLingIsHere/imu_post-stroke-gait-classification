@@ -20,6 +20,8 @@ export function parseReviewRecording(text:string):SessionRecord {
   }
   if(r.fitCheck && r.fitCheck.highPass10HzRmsG!==null&&!Number.isFinite(r.fitCheck.highPass10HzRmsG))throw invalid();
   if(r.googleRecording !== undefined && !validGoogleSummary(r.googleRecording))throw invalid();
+  const trial=session.googleDistanceTrial;
+  if(trial!==undefined&&(!trial||trial.version!=='google-distance-trial-v1'||![2,3,5].includes(trial.referenceDistanceM)||![undefined,null,true,false].includes(trial.completedMarkedRoute)||![undefined,'quiet-stop','time-limit','user-stopped','interrupted'].includes(trial.end)||session.isPractice!==true))throw invalid();
   return session;
 }
 
@@ -86,6 +88,13 @@ export function parseReviewRecordingCsv(text: string): SessionRecord {
   }
   const height=first[at('height_cm')];
   if(height&&Number.isFinite(Number(height))&&Number(height)>=100&&Number(height)<=230)session.demographics!.heightCm=Number(height);
+  if(first[at('experiment_kind')]==='google-distance-trial-v1'){
+    const reference=Number(first[at('trial_reference_distance_m')]);
+    const completed=first[at('trial_route_completed')],end=first[at('trial_end')];
+    if(!session.isPractice||![2,3,5].includes(reference)||!['','true','false'].includes(completed)||!['','quiet-stop','time-limit','user-stopped','interrupted'].includes(end))throw invalid();
+    for(const key of ['experiment_kind','trial_reference_distance_m','trial_route_completed','trial_end'])if(rows.some(row=>row[at(key)]!==first[at(key)]))throw invalid();
+    session.googleDistanceTrial={version:'google-distance-trial-v1',referenceDistanceM:reference as 2|3|5,completedMarkedRoute:completed===''?null:completed==='true',end:end?end as NonNullable<SessionRecord['googleDistanceTrial']>['end']:undefined};
+  }
   if(rows.some(row=>row[at('participant_id')]!==identity))throw invalid();
   return session;
 }

@@ -11,6 +11,7 @@ import PatientSummary from '../components/PatientSummary';
 import { colours } from '../theme';
 import { researchFeatures } from '../researchFeatures';
 import { protocolPhoneEstimate } from '../distanceEstimation';
+import { shareRecording } from '../export';
 
 const Field: React.ComponentType<any> = TextInput ?? View;
 const inputStyle = { minHeight: 48, borderWidth: 1, borderColor: colours.border, borderRadius: 12, paddingHorizontal: 12, fontSize: 17, color: colours.textPrimary, backgroundColor: colours.surface };
@@ -22,6 +23,19 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [showReference,setShowReference]=useState(false);
+  async function confirmTrial(completedMarkedRoute:boolean){
+    if(!session?.googleDistanceTrial||saving)return;
+    setSaving(true);setError('');
+    try{const updated={...session,googleDistanceTrial:{...session.googleDistanceTrial,completedMarkedRoute}};await saveSession(updated);setSession(updated);}
+    catch{setError('Could not save the assessment. Your recording remains on this phone; try saving again.');}
+    finally{setSaving(false);}
+  }
+  async function exportTrial(){
+    if(!session||saving)return;setSaving(true);setError('');
+    try{await shareRecording(session,'json');}
+    catch{setError('Could not export this trial. Try again.');}
+    finally{setSaving(false);}
+  }
   const [form, setForm] = useState<AssessmentForm>({ completed: false, completionStatus: 'not-completed', timedZoneSeconds: null, distanceWalkedM: null, lapCount: null, restCount: 0, perceivedExertion: null, symptoms: '', clinicianNotes: '', observedGaitScore: null, observedGaitScale: '' });
   useEffect(() => { Promise.all([getSession(route.params.sessionId), getSessions()]).then(([current, sessions]) => {
     setSession(current);
@@ -86,8 +100,8 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
   </>}>
     {session?.protocolExecution&&<Card><Text style={ui.label}>Protocol capture timing</Text><Body>Capture includes time before Go. The app timer is not a worker-verified clinical outcome.</Body><Text style={ui.caption}>{t('Seconds from Go: {0}').replace('{0}',session.protocolExecution.elapsedFromGoSeconds?.toFixed(1)??t('Not provided'))}</Text><Text style={ui.caption}>{t('Capture ended: {0}').replace('{0}',t(session.protocolExecution.end))}</Text></Card>}
     {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
-    {r ? <PatientSummary recording={r} previousRecording={previousRecording} /> : <Body>Loading recording details…</Body>}
-    {phoneEstimate && <Card><Text style={ui.label}>Single-phone distance estimate · experimental</Text><Body>{phoneOutcome?.distanceM !== null ? `${phoneOutcome?.distanceM?.toFixed(1)} m · ${phoneOutcome?.meanSpeedMps?.toFixed(2) ?? '—'} m/s` : 'No estimate available from this recording.'}</Body>{session?.participantSnapshot?.distanceCalibration&&<Text style={ui.caption}>Using this participant’s reference walk: {session.participantSnapshot.distanceCalibration.referenceDistanceM.toFixed(1)} m across {session.participantSnapshot.distanceCalibration.referenceEventCount} candidate events.</Text>}<Text style={ui.caption}>{protocol==='2mwt'||protocol==='6mwt'?'Average speed includes the full timed interval and any rests.':protocol==='10mwt'?'This is whole-walk estimated speed, not speed in the central 10 m timed zone.':protocol==='tug'?'This is not a verified TUG time or walking distance.':''}</Text><Text style={ui.caption}>{phoneEstimate.reason ?? 'Heuristic based on height and candidate step peaks. Not a measured distance or validated clinical speed.'}</Text></Card>}
+    {!session?.googleDistanceTrial && (r ? <PatientSummary recording={r} previousRecording={previousRecording} /> : <Body>Loading recording details…</Body>)}
+    {phoneEstimate && !session?.googleDistanceTrial && <Card><Text style={ui.label}>Single-phone distance estimate · experimental</Text><Body>{phoneOutcome?.distanceM !== null ? `${phoneOutcome?.distanceM?.toFixed(1)} m · ${phoneOutcome?.meanSpeedMps?.toFixed(2) ?? '—'} m/s` : 'No estimate available from this recording.'}</Body>{session?.participantSnapshot?.distanceCalibration&&<Text style={ui.caption}>Using this participant’s reference walk: {session.participantSnapshot.distanceCalibration.referenceDistanceM.toFixed(1)} m across {session.participantSnapshot.distanceCalibration.referenceEventCount} candidate events.</Text>}<Text style={ui.caption}>{protocol==='2mwt'||protocol==='6mwt'?'Average speed includes the full timed interval and any rests.':protocol==='10mwt'?'This is whole-walk estimated speed, not speed in the central 10 m timed zone.':protocol==='tug'?'This is not a verified TUG time or walking distance.':''}</Text><Text style={ui.caption}>{phoneEstimate.reason ?? 'Heuristic based on height and candidate step peaks. Not a measured distance or validated clinical speed.'}</Text></Card>}
     {r?.locationDistance && <Card><Text style={ui.label}>{t('Outdoor GPS distance cross-check')}</Text><Body>{r.locationDistance.distanceM === null ? t('No usable location fixes were received.') : `${r.locationDistance.distanceM.toFixed(1)} m`}{r.locationDistance.medianAccuracyM !== null ? ` · ${t('median reported accuracy')} ${r.locationDistance.medianAccuracyM.toFixed(1)} m` : ''}</Body><Text style={ui.caption}>{t(r.locationDistance.status === 'usable-cross-check' ? 'Location signal supports a rough outdoor cross-check only.' : 'Location signal quality was too weak for a useful distance cross-check.')}{' '}{t(r.locationDistance.note)}</Text></Card>}
     {r?.googleRecording && <Card>
       <Text style={ui.label}>Google distance test · experimental</Text>
@@ -96,8 +110,18 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
       <Text style={ui.caption}>{t('Google record status: {0}').replace('{0}',t(r.googleRecording.status))}</Text>
       <Text style={ui.caption}>These are Google fitness records, not a calibrated clinical distance. Missing records do not mean zero walking. JSON export includes record intervals and arrival times for checking delays.</Text>
     </Card>}
-    {session && <BigButton label={showReference?'Hide measured reference form':'Add measured reference (optional)'} variant="outline" onPress={()=>setShowReference(v=>!v)}/>}
-    {session && showReference && <Card>
+    {session?.googleDistanceTrial&&<Card>
+      <Text style={ui.label}>Google distance trial</Text>
+      <Body>{t('Measured reference route: {0} m').replace('{0}',String(session.googleDistanceTrial.referenceDistanceM))}</Body>
+      <Body>Did you reach the finish mark before stopping?</Body>
+      <View style={ui.row}><BigButton style={ui.fill} label="Reached the finish" variant={session.googleDistanceTrial.completedMarkedRoute===true?'primary':'outline'} disabled={saving} onPress={()=>void confirmTrial(true)}/><BigButton style={ui.fill} label="Stopped before the finish" variant={session.googleDistanceTrial.completedMarkedRoute===false?'primary':'outline'} disabled={saving} onPress={()=>void confirmTrial(false)}/></View>
+      {session.googleDistanceTrial.completedMarkedRoute===true&&r?.googleRecording?.status==='records-received'&&r.googleRecording.distanceM!=null&&<Body>{t('Google reported difference from the reference: {0} m').replace('{0}',(r.googleRecording.distanceM-session.googleDistanceTrial.referenceDistanceM).toFixed(2))}</Body>}
+      {r?.googleRecording?.status!=='records-received'&&<Text style={ui.caption}>A full-route difference is unavailable because Google records are missing, incomplete or contain errors.</Text>}
+      <Text style={ui.caption}>The reference is your measured route, not Google’s estimate. Confirm completion before exporting. This trial is excluded from rehabilitation progress trends.</Text>
+      <BigButton label="Export trial JSON" disabled={saving||session.googleDistanceTrial.completedMarkedRoute==null} loading={saving} onPress={()=>void exportTrial()}/>
+    </Card>}
+    {session && !session.googleDistanceTrial && <BigButton label={showReference?'Hide measured reference form':'Add measured reference (optional)'} variant="outline" onPress={()=>setShowReference(v=>!v)}/>}
+    {session && !session.googleDistanceTrial && showReference && <Card>
       <Text style={ui.label}>Assessment record · {protocol.toUpperCase()}</Text>
       <Body>Enter observed test results from the marked course and stopwatch. These fields are stored locally with this participant and are separate from the phone sensor estimates.</Body>
       {session.participantId&&['research-walk','2mwt','6mwt'].includes(protocol)&&<Text style={ui.caption}>A suitable measured walk can calibrate this participant’s future device-only distance estimate. Calibration uses the sensor’s candidate step events; it is still experimental and needs checking against measured routes.</Text>}

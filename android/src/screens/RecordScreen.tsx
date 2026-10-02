@@ -24,6 +24,7 @@ import * as Location from 'expo-location';
 import { ForegroundDistanceTracker } from '../locationDistance';
 import { GoogleRecordingCapture } from '../googleRecording';
 import { googleRecordingBridge } from '../googleRecordingBridge';
+import { GoogleTrialStopGate,googleTrialIntro,googleTrialFinish,googleTrialLimit,type GoogleDistanceTrial } from '../googleDistanceTrial';
 
 const ProgressIndicator: React.ComponentType<any> = ActivityIndicator ?? View;
 
@@ -35,6 +36,8 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
   }, []);
   const { duration, isPractice, audioEnabled, guidanceEnabled, useGpsDistance, useGoogleDistance, demographics, participantId, participantLabel, participantSnapshot, assessmentSetup } = route.params;
   const protocol=assessmentSetup?.protocol??'research-walk';
+  const trial=route.params.googleDistanceTrial;
+  const trialEnd=useRef<GoogleDistanceTrial['end']>();
   const clinical=protocol!=='research-walk';
   const execution=useRef<ProtocolExecution>();
   const startLocationRef=useRef<()=>void>(()=>{});
@@ -98,6 +101,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     pending.current = { id: generateSessionId(), date: recording.startedAt, duration, isPractice, demographics,
       quality: recordingIssues(recording).length ? 'repeat' : 'good', windowCount: 0, windows: [], recording,
       participantId, participantLabel, participantSnapshot, assessmentSetup, protocolExecution:execution.current,
+      googleDistanceTrial:trial?{...trial,end:trialEnd.current??(reason==='user-stopped'?'user-stopped':'interrupted'),completedMarkedRoute:null}:undefined,
       assessment: { completed: false, completionStatus: 'not-completed', timedZoneSeconds: null, distanceWalkedM: null, lapCount: null, restCount: 0, perceivedExertion: null, symptoms: '', clinicianNotes: '', observedGaitScore: null, observedGaitScale: '', speedMps: null, distanceSource: 'unavailable' } };
     const previousWalk = async () => {
       if (!participantId || isPractice) return null;
@@ -107,7 +111,9 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       return sessions.filter(s => s.participantId === participantId && !s.isPractice && !!s.recording && s.duration === duration && (s.assessmentSetup?.protocol ?? 'research-walk') === currentProtocol && s.participantSnapshot?.clinical.assistiveDevice === aid)
         .sort((a,b) => b.date.localeCompare(a.date))[0]?.recording ?? null;
     };
-    if(clinical) {
+    if(trial){
+      discardPendingSpeech();void say(trialEnd.current==='time-limit'?googleTrialLimit:googleTrialFinish);
+    } else if(clinical) {
       discardPendingSpeech();
       void say(execution.current?.end==='capture-limit'?clinicalLimit:execution.current?.end==='interrupted'?clinicalInterrupted:protocolFlows[protocol].finish);
     } else void previousWalk().then(previous => {
@@ -119,7 +125,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     if (googleCaptureRef.current) {
       googleReadPending.current = true; setSaving(true);
       const finishedAt = Date.now();
-      void googleCaptureRef.current.finish(finishedAt).then(summary => { recording.googleRecording = summary; })
+      void googleCaptureRef.current.finish(finishedAt,!!trial).then(summary => { recording.googleRecording = summary; })
         .finally(() => { googleReadPending.current = false; scheduleSave(); });
     } else scheduleSave();
   }
@@ -161,6 +167,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     let fitStopSpoken = false;
     let prepIntroPending = true;
     let disposed = false;
+    const trialGate=new GoogleTrialStopGate();trialEnd.current=undefined;
     if (useGoogleDistance) {
       const bridge = googleRecordingBridge();
       googleCaptureRef.current = bridge ? new GoogleRecordingCapture(bridge) : null;
@@ -183,7 +190,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
       if(clinical){engine.preserveSetupBaseline();discardPendingSpeech();phaseRef.current='clinical-ready';setPhase('clinical-ready');return;}
       phaseRef.current = 'countdown'; setPhase('countdown'); deadline = now + 9000; lastSecond = 9; countdownIntroPending = true;
       discardPendingSpeech();
-      void say(introduction).finally(() => {
+      void say(trial?googleTrialIntro:introduction).finally(() => {
         if (disposed || phaseRef.current !== 'countdown' || !countdownIntroPending) return;
         countdownIntroPending = false; deadline = performance.now() + 9000; lastSecond = 9; setRemaining(9);
       });
@@ -252,7 +259,9 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           say('Waiting for the phone to settle again. Stay comfortable.');
         } else if (seconds === 0) {
           phaseRef.current = 'waiting'; setPhase('waiting'); walkArmedAt = now; setRemaining(duration);
-          say('Begin walking now. The recording starts when you take your first step.');
+          // Query Google from the audible cue; raw IMU still waits for a fresh step.
+          if(trial&&!audioEnabled)googleCaptureRef.current?.begin(Date.now());
+          say('Begin walking now. The recording starts when you take your first step.',trial?{onStart:()=>googleCaptureRef.current?.begin(Date.now())}:undefined);
         } else if (seconds <= 5 && seconds !== lastSecond) {
           // The displayed value and this cue use the same ceil() boundary. Keep
           // each cue to one short number so TTS cannot run into the next tick.
@@ -262,7 +271,7 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
         // Keep subscriptions alive but do not start the saved recording clock
         // until motion begins. This removes the confusing idle lead-in.
         if (engine.allReceiving && engine.motionStatus.enough && !engine.motionStatus.steady && engine.motionStatus.context === 'movement' && engine.candidateStepsAfter(walkArmedAt) >= 1) {
-          engine.begin(); googleCaptureRef.current?.begin(Date.now()); phaseRef.current = 'walk'; setPhase('walk'); deadline = now + duration * 1000; setRemaining(duration); startLocation();
+          engine.begin(); googleCaptureRef.current?.begin(Date.now());if(trial)trialGate.begin(now); phaseRef.current = 'walk'; setPhase('walk'); deadline = now + duration * 1000; setRemaining(duration); startLocation();
           // The preceding “Begin walking now” cue is the start announcement.
           // Do not replace it immediately when the first step is detected.
         } else if (now - walkArmedAt >= 15000) {
@@ -271,6 +280,12 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
           say('No walking movement was detected. No recording was saved. Rest, then try again when ready.');
         }
       } else {
+        if(trial){
+          const m=engine.motionStatus;
+          const end=trialGate.update(now,engine.allReceiving,m.enough,m.steady);
+          if(end){trialEnd.current=end;finish(end==='quiet-stop'?'completed':'interrupted');}
+          return;
+        }
         if (Platform.OS === 'web' && !engine.allReceiving) { finish('interrupted'); return; }
         setDirectionReady(engine.guidanceReady);
         if (guidanceEnabled && !directionExplained && seconds <= duration - 3) {
@@ -327,17 +342,17 @@ export default function RecordScreen({ navigation, route }: NativeStackScreenPro
     <BigButton label={confirmStop ? (phase === 'walk' ? 'Confirm stop and save' : 'Confirm back to setup') : (phase === 'walk' ? 'Stop and save' : 'Back to setup')} accessibilityHint="Tap, then confirm within five seconds. This prevents accidental pouch touches." variant={phase === 'walk' ? 'danger' : 'outline'} onPress={() => { if (performance.now() <= stopArmedUntil.current) { stopArmedUntil.current = 0; setConfirmStop(false); cancel(); } else { stopArmedUntil.current = performance.now() + 5000; setConfirmStop(true); } }} />
   }>
     {['prep', 'walk'].includes(phase) && <View style={s.timer}>
-      {phase === 'prep' ? <Text style={ui.label}>Take your time to place the phone</Text> : phase === 'checking' ? <Text style={ui.label}>Checking live sensors</Text> : <><Text style={s.number}>{remaining}</Text><Text style={ui.label}>seconds remaining</Text></>}
+      {phase === 'prep' ? <Text style={ui.label}>Take your time to place the phone</Text> : phase === 'checking' ? <Text style={ui.label}>Checking live sensors</Text> : <><Text style={s.number}>{remaining}</Text><Text style={ui.label}>{trial?'Safety time limit · seconds remaining':'seconds remaining'}</Text></>}
       <View style={s.track}><View style={[s.progress, { width: phase === 'prep' ? '0%' : `${(1 - remaining / duration) * 100}%` }]} /></View>
     </View>}
     <Card>
       <Text accessible={false} style={s.arrow}>{phase === 'walk' ? '↑' : '•'}</Text>
       {['checking', 'fit', 'countdown', 'waiting'].includes(phase) && <ProgressIndicator size="large" color={c.primary} style={s.progressIndicator} />}
-      <Body>{phase === 'prep' ? 'Take your time to place the phone. Keep it horizontal at your lower back, screen facing out, then stand still. The phone check waits for you.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Move comfortably for a short moment, then stop and stand still until the movement check is complete. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Do not walk until you hear begin. ${remaining} seconds.` : phase === 'waiting' ? 'Begin walking now. The recording starts when your first step is detected.' : phase === 'walk' ? hint || protocolFlows[protocol].active : 'Recording stopped. Check your phone when safely settled.'}</Body>
+      <Body>{phase === 'prep' ? 'Take your time to place the phone. Keep it horizontal at your lower back, screen facing out, then stand still. The phone check waits for you.' : phase === 'checking' ? setupMessage : phase === 'fit' ? 'Move comfortably for a short moment, then stop and stand still until the movement check is complete. Rest if needed. We are checking phone motion, not counting your steps.' : phase === 'countdown' ? `Stay comfortably still. Do not walk until you hear begin. ${remaining} seconds.` : phase === 'waiting' ? 'Begin walking now. The recording starts when your first step is detected.' : phase === 'walk' ? trial?'Walk to your short finish mark, then stop and stand still. This is a Google distance trial, not a clinical test.':hint || protocolFlows[protocol].active : 'Recording stopped. Check your phone when safely settled.'}</Body>
       {phase === 'checking' && <Text style={ui.caption}>Checks sensor readings, phone angle and settling. Lower-back location cannot be verified.</Text>}
-      {phase === 'walk' && <Text style={ui.caption}>{guidanceEnabled ? directionReady ? 'Gentle reminders on · arrow is a path reminder' : 'Direction estimate unavailable · walk only as comfortable' : 'Direction reminders off · arrow is a path reminder'}</Text>}
+      {!trial&&phase === 'walk' && <Text style={ui.caption}>{guidanceEnabled ? directionReady ? 'Gentle reminders on · arrow is a path reminder' : 'Direction estimate unavailable · walk only as comfortable' : 'Direction reminders off · arrow is a path reminder'}</Text>}
     </Card>
-    <Body muted>{phase === 'walk' ? 'Rest whenever you need. Pauses are accepted and saved. Resume only if comfortable; the timer keeps running.' : 'No screen taps needed to continue. Controls require confirmation to prevent accidental touches. Contact and belt tightness cannot be verified.'}</Body>
+    <Body muted>{trial&&phase==='walk'?'Four seconds of stillness ends this trial. If you stop early, tell us on the result page.':phase === 'walk' ? 'Rest whenever you need. Pauses are accepted and saved. Resume only if comfortable; the timer keeps running.' : 'No screen taps needed to continue. Controls require confirmation to prevent accidental touches. Contact and belt tightness cannot be verified.'}</Body>
     {phase === 'error' && <Body>Your settings are kept. Put the phone back when you are ready, then retry the check.</Body>}
     {phase === 'done' && googleReadPending.current && <Body>Walking has finished. Checking for delayed Google records before saving. You can rest.</Body>}
     {!!error && <Text accessibilityRole="alert" style={ui.error}>{error}</Text>}

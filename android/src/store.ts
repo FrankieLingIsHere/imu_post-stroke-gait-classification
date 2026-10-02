@@ -30,6 +30,7 @@ export interface AssessmentForm {
   observedGaitScore: number | null; observedGaitScale: string;
 }
 export interface SessionRecord {
+  googleDistanceTrial?:import('./googleDistanceTrial').GoogleDistanceTrial;
   id: string; date: string; duration: number; isPractice: boolean;
   quality: RecordingQuality; windowCount: number; windows: IMUWindow;
   demographics?: ParticipantDemographics;
