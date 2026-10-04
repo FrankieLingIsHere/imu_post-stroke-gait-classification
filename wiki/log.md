@@ -2717,3 +2717,7 @@ Replaced misleading measured-reference entry with Gait assessment form and added
 ## [2026-10-04] sync | Complete observer form and browser flow harness
 
 Digitized supplied 31-item/62-point Appendix A with source hash, branch/qualifier detail, explicit missingness, metadata, JSON/CSV and dashboard linkage. Added development-only sensor-free Flow Lab and Playwright checks. TypeScript, 138 unit/flow tests, six browser tests and Android bundle pass; visually inspected screenshot; runtime remains build-6 compatible. Updated current workflow/index/product/weekly records; clinical validation and publication remain pending.
+
+## [2026-10-04] sync | Approved observer-form publication and OTA confirmation
+
+User approved push for phone testing. Published 4d268d3; all three workflows passed. Expo confirms Android update 01a10777-32e3-787a-b168-cbfae2e54e84 on the installed build-6 runtime. Recorded publication in workflow/index/weekly notes; physical receipt and native review still pending. Generated artifacts remain local.

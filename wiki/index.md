@@ -292,4 +292,4 @@ Profile entry parity (4 October): [[gait-app-collection-workflow#Profile entry p
 
 Assessment form location: [[gait-app-collection-workflow#Assessment form discoverability - 4 October 2026|results and saved recording summaries]]. The full 31-item observer form is now implemented locally; see the completion/testing section below.
 
-Complete observer form and sensor-free checks: [[gait-app-collection-workflow#Complete observer G.A.I.T. and sensor-free flow testing - 4 October 2026|31-item form, provenance, exports and test evidence]]; [local Flow Lab instructions](../android/FLOW_TESTING.md). No clinical validation or publication yet.
+Complete observer form and sensor-free checks: [[gait-app-collection-workflow#Complete observer G.A.I.T. and sensor-free flow testing - 4 October 2026|31-item form, provenance, exports and test evidence]]; [local Flow Lab instructions](../android/FLOW_TESTING.md). Published in 4d268d3 with successful Android preview OTA (update 01a10777); physical and clinical validation remain pending.
