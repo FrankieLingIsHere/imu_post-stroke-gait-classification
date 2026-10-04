@@ -53,6 +53,11 @@ export default function DetailsScreen({ route, navigation }: NativeStackScreenPr
 
       <RecordingParticipant session={session} onLinked={setSession} onCreate={()=>navigation.navigate('Participants')}/>
       {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
+    {!session.googleDistanceTrial&&<Card>
+      <Text style={ui.label}>Gait assessment form</Text>
+      <Body>{session.assessment?'Assessment saved with this recording.':'No assessment has been saved for this recording yet.'}</Body>
+      <BigButton label={session.assessment?'Review gait assessment form':'Open gait assessment form'} variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:session.id,openAssessment:true})}/>
+    </Card>}
     {session.demographics && <Card><Text style={ui.label}>Participant information</Text><Body>{t('Age')}: {session.demographics.ageYears ?? t('Not provided')} · {t('Sex')}: {t(session.demographics.sex === 'prefer-not-to-say' ? 'Prefer not to say' : session.demographics.sex[0].toUpperCase() + session.demographics.sex.slice(1))}</Body><Text style={ui.caption}>Self-reported research metadata; not used for diagnosis.</Text></Card>}
     {session.googleDistanceTrial ? <Card><Text style={ui.label}>Google distance trial</Text><Body>{t('Measured reference route: {0} m').replace('{0}',String(session.googleDistanceTrial.referenceDistanceM))}</Body>{session.googleDistanceTrial.routePattern==='5m-out-and-back'&&<Body>5 m out + 5 m back, with one turn.</Body>}<Body>This is a distance experiment, not a rehabilitation assessment.</Body><BigButton label="Open trial result" variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:session.id})}/></Card> : r ? <PatientSummary recording={r} /> : <Body>No gait summary is calculated from older simulated recordings.</Body>}
     </>}

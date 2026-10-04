@@ -25,6 +25,8 @@ Use [[evidence-gated-model-improvement]], [[mobilise-d-tvs]] and the
 [evidence map](../../docs/CLASSIFICATION_EVIDENCE_MAP.md). Historical logs and
 reports are not instructions to rerun completed work.
 
+Current app milestone recommendation (4 October): present a supervised collector with paired reference video/events and clinical notes before autonomous distance or few-shot learning. This supports the synthesis objective; no new dataset access, preprocessing, synthesis or clinical evaluation was established. See [[gait-app-ai-model-strategy]].
+
 ## Current implementation
 
 Current executable stroke feature prototype: [stroke-phase-hr-v0.1.0](../../models/prototypes/stroke-phase-hr-v0.1.0/README.md).

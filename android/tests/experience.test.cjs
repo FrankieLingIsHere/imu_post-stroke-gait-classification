@@ -600,3 +600,65 @@ test('Trial preparation skips clinical test selection and hides unrelated defaul
  const google=h.renderer.root.findAllByType('pressable').find(n=>n.props.accessibilityLabel?.startsWith('Google distance test'));
  assert.equal(google.props.disabled,true);assert.equal(google.props.accessibilityState.checked,true);h.close();
 });
+
+
+test('Test-created profiles retain full clinical context without changing earlier snapshots',()=>{
+ const {resolveTestParticipant:resolve}=load('testParticipant');
+ const input={newId:'p1',label:'P01',ageYears:67,sex:'female',heightCm:160,weightKg:61,assistiveDevice:'quad-cane',strokeType:' ischemic ',lesionLocation:' subcortical ',premorbidGaitNotes:' prior limp ',jointOrOrthopaedicNotes:' knee surgery '};
+ const first=resolve([],input);
+ assert.equal(first.demographics.weightKg,61);assert.equal(first.clinical.strokeType,'ischemic');assert.equal(first.clinical.lesionLocation,'subcortical');assert.equal(first.clinical.premorbidGaitNotes,'prior limp');assert.equal(first.clinical.jointOrOrthopaedicNotes,'knee surgery');
+ const updated=resolve([first],{...input,id:'p1',strokeType:'hemorrhagic',weightKg:62});
+ assert.equal(first.clinical.strokeType,'ischemic');assert.equal(first.demographics.weightKg,61);assert.equal(updated.clinical.strokeType,'hemorrhagic');
+ for(const weightKg of [NaN,19,301])assert.throws(()=>resolve([],{...input,weightKg}),/weight/);
+ assert.equal(resolve([first],{newId:'p1',id:'p1',label:'P01',ageYears:67,sex:'female',heightCm:160,assistiveDevice:'none'}).clinical.premorbidGaitNotes,'prior limp');
+});
+
+test('Profile completion prompts are translated and clinical guides link the supplied database',()=>{
+ const {messages}=load('translations'),{protocolGuides}=load('protocolGuides');
+ for(const key of ['Clinical history is required for clinical tests. For research participants, record what is known.','Open clinical protocol source','Could not open the protocol source.','Stroke type (optional)','Lesion location (optional)','Weight kg','Pre-existing gait pattern/asymmetry','Joint conditions or orthopaedic history'])assert.ok(messages[key],key);
+ for(const protocol of ['10mwt','tug','2mwt','6mwt'])assert.match(protocolGuides[protocol].sourceUrl,/^https:\/\/www\.sralab\.org\/rehabilitation-measures\//);
+ assert.equal(protocolGuides['research-walk'].sourceUrl,undefined);
+});
+
+
+test('Setup clinical and physical details reach the saved profile and recording snapshot',async()=>{
+ const h=harness('PrepareScreen');await act(async()=>{});
+ act(()=>h.button('Review stroke history').props.onPress());
+ for(const [label,value] of [['Stroke type (optional)','ischemic'],['Lesion location (optional)','subcortical'],['Pre-existing gait pattern/asymmetry','prior limp'],['Joint conditions or orthopaedic history','knee surgery']])act(()=>h.renderer.root.findByProps({accessibilityLabel:label}).props.onChangeText(value));
+ act(()=>h.button('Done').props.onPress());act(()=>h.button('Set height and walking aid').props.onPress());
+ act(()=>h.renderer.root.findByProps({accessibilityLabel:'Weight kg'}).props.onChangeText('61'));
+ act(()=>h.button('Done').props.onPress());await h.finishSetup();
+ act(()=>h.renderer.root.findAllByType('pressable').find(p=>p.props.accessibilityRole==='checkbox').props.onPress());
+ await act(async()=>h.button('Start test').props.onPress());
+ const profile=h.navigated[0][1].participantSnapshot;
+ assert.equal(profile.demographics.weightKg,61);assert.equal(profile.clinical.strokeType,'ischemic');assert.equal(profile.clinical.lesionLocation,'subcortical');assert.equal(profile.clinical.premorbidGaitNotes,'prior limp');assert.equal(profile.clinical.jointOrOrthopaedicNotes,'knee surgery');
+ assert.equal(h.savedProfiles.get(profile.id).clinical.premorbidGaitNotes,'prior limp');h.close();
+});
+
+
+test('Observer G.A.I.T. has 31 source-bounded items and no total for missing observations',()=>{
+ const {gaitRubric,GAIT_FORM_VERSION}=load('gaitRubric');const {newGaitAssessment,gaitAssessmentSummary,validGaitAssessment}=load('gaitAssessment');
+ assert.equal(gaitRubric.length,31);assert.equal(gaitRubric.reduce((n,i)=>n+i.max,0),62);
+ const g=newGaitAssessment();assert.equal(g.version,GAIT_FORM_VERSION);assert.equal(gaitAssessmentSummary(g).total,null);
+ for(const i of gaitRubric)g.ratings[i.id]={optionId:i.options.find(o=>o.score===i.max).id,notes:'',qualifiers:load('gaitAssessment').gaitQualifiers(i.id).filter(v=>!['left','extension'].includes(v))};
+ assert.equal(gaitAssessmentSummary(g).total,null);g.assessor='RATER';g.limb='left';g.observationSource='video';
+ assert.equal(gaitAssessmentSummary(g).total,62);assert.equal(validGaitAssessment(g),true);
+ g.ratings['11'].optionId=null;assert.equal(gaitAssessmentSummary(g).rated,30);assert.equal(gaitAssessmentSummary(g).total,null);
+ g.ratings['11'].optionId='31-0';assert.equal(validGaitAssessment(g),false);
+});
+test('Observer G.A.I.T. retains equal-score branch choices and multilingual interface coverage',()=>{
+ const {gaitRubric}=load('gaitRubric'),{gaitMessages}=load('gaitMessages');
+ const knee=gaitRubric.find(i=>i.id===13);assert.equal(new Set(knee.options.map(o=>o.branch)).size,4);assert.equal(knee.options.length,16);
+ for(const i of gaitRubric){assert.ok(gaitMessages[`G.A.I.T. item ${i.id}`]);assert.equal(new Set(i.options.map(o=>o.id)).size,i.options.length);}
+ for(const [key,values] of Object.entries(gaitMessages)){assert.match(values[1],/[\u3400-\u9fff]/,key);for(const v of values)assert.doesNotMatch(v,/\?{2,}/);}
+ const {messages}=load('translations');for(const [k,v] of Object.entries(messages)){assert.doesNotMatch(k,/\?{3,}/);for(const s of v)assert.doesNotMatch(s,/\?{3,}/,k);}
+});
+
+
+test('Sensor-free lab is disabled in release and native contexts, and never contains measured streams',()=>{
+ const env={env:{EXPO_PUBLIC_FLOW_LAB:'1'}};
+ assert.equal(load('flowLab',{}, {__DEV__:false,document:{},process:env}).flowLabEnabled,false);
+ assert.equal(load('flowLab',{}, {__DEV__:true,process:env}).flowLabEnabled,false);
+ const lab=load('flowLab',{}, {__DEV__:true,document:{},process:env});assert.equal(lab.flowLabEnabled,true);
+ const f=lab.flowLabFixtures();assert.equal(f.session.recording,undefined);assert.equal(f.session.isPractice,true);assert.equal(f.session.windows.length,0);
+});

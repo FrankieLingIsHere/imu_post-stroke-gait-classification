@@ -1,5 +1,8 @@
 # GaitTrace
 
+Sensor-free shared-UI preview and automated flow checks: [FLOW_TESTING.md](FLOW_TESTING.md). Observer G.A.I.T. form: results > Gait assessment form > Open item-by-item G.A.I.T. form.
+
+
 Current source release: **0.3.0**. See [CHANGELOG.md](CHANGELOG.md) for maintained release notes, version/build distinctions and installation requirements. The Google distance comparison needs a new native APK; it does not work in Expo Go or previously installed APKs through an OTA update. Native compilation and actual-phone validation remain pending. See the [experiment guide](modules/gait-google-recording/README.md) for setup and validation exports.
 
 The notes below preserve earlier iterations and historical validation counts. They are not the current setup/protocol specification; use the release history and [current product specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md) for current behavior and limitations.

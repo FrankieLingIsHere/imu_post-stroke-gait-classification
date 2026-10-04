@@ -11,6 +11,8 @@ import PatientSummary from '../components/PatientSummary';
 import { colours } from '../theme';
 import { researchFeatures } from '../researchFeatures';
 import { protocolPhoneEstimate } from '../distanceEstimation';
+import GaitAssessmentForm from '../components/GaitAssessmentForm';
+import { validGaitAssessment } from '../gaitAssessment';
 import { shareRecording } from '../export';
 
 const Field: React.ComponentType<any> = TextInput ?? View;
@@ -22,7 +24,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
   const [previousRecording, setPreviousRecording] = useState<SessionRecord['recording'] | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [showReference,setShowReference]=useState(false);
+  const [showReference,setShowReference]=useState(route.params.openAssessment ?? false);
   async function confirmTrial(completedMarkedRoute:boolean){
     if(!session?.googleDistanceTrial||saving)return;
     setSaving(true);setError('');
@@ -62,6 +64,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
   };
   async function saveAssessment() {
     if (!session) return;
+    if(form.gaitAssessment&&!validGaitAssessment(form.gaitAssessment)){setError('Invalid G.A.I.T. item ratings. Review the form before saving.');return;}
     if (form.timedZoneSeconds !== null && (!Number.isFinite(form.timedZoneSeconds) || form.timedZoneSeconds <= 0)) { setError('Enter a valid stopwatch time greater than zero.'); return; }
     if (form.distanceWalkedM !== null && (!Number.isFinite(form.distanceWalkedM) || form.distanceWalkedM < 0)) { setError('Enter a valid measured distance.'); return; }
     if (form.lapCount !== null && (!Number.isInteger(form.lapCount) || form.lapCount < 0)) { setError('Lap count must be a whole number.'); return; }
@@ -98,6 +101,11 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
     <BigButton label="View summary & signals" onPress={() => navigation.navigate('Details', route.params)} />
     <BigButton label="Back to home" variant="outline" onPress={() => navigation.popToTop()} />
   </>}>
+    {session && !session.googleDistanceTrial && <Card>
+      <Text style={ui.label}>Gait assessment form</Text>
+      <Body>Record observed test results, symptoms and clinician notes for this recording. This is not an automatic G.A.I.T. score.</Body>
+      <BigButton label={showReference?'Hide gait assessment form':session.assessment?'Review gait assessment form':'Open gait assessment form'} variant="outline" onPress={()=>setShowReference(v=>!v)}/>
+    </Card>}
     {session?.protocolExecution&&<Card><Text style={ui.label}>Protocol capture timing</Text><Body>Capture includes time before Go. The app timer is not a worker-verified clinical outcome.</Body><Text style={ui.caption}>{t('Seconds from Go: {0}').replace('{0}',session.protocolExecution.elapsedFromGoSeconds?.toFixed(1)??t('Not provided'))}</Text><Text style={ui.caption}>{t('Capture ended: {0}').replace('{0}',t(session.protocolExecution.end))}</Text></Card>}
     {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
     {!session?.googleDistanceTrial && (r ? <PatientSummary recording={r} previousRecording={previousRecording} /> : <Body>Loading recording details…</Body>)}
@@ -121,7 +129,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
       <Text style={ui.caption}>The reference is your measured route, not Google’s estimate. Confirm completion before exporting. This trial is excluded from rehabilitation progress trends.</Text>
       <BigButton label="Export trial JSON" disabled={saving||session.googleDistanceTrial.completedMarkedRoute==null} loading={saving} onPress={()=>void exportTrial()}/>
     </Card>}
-    {session && !session.googleDistanceTrial && <BigButton label={showReference?'Hide measured reference form':'Add measured reference (optional)'} variant="outline" onPress={()=>setShowReference(v=>!v)}/>}
+
     {session && !session.googleDistanceTrial && showReference && <Card>
       <Text style={ui.label}>Assessment record · {protocol.toUpperCase()}</Text>
       <Body>Enter observed test results from the marked course and stopwatch. These fields are stored locally with this participant and are separate from the phone sensor estimates.</Body>
@@ -134,6 +142,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
       {(protocol==='2mwt'||protocol==='6mwt')&&<Field accessibilityLabel={t('Completed course laps')} value={numberText(form.lapCount)} onChangeText={(v:string)=>setNumber('lapCount',v)} placeholder={t('Full laps of {0} m loop').replace('{0}',String(session.assessmentSetup?.courseLengthM ?? '?'))} keyboardType="number-pad" style={inputStyle}/>}
       {(protocol==='2mwt'||protocol==='6mwt')&&<Field accessibilityLabel={t('Rest count')} value={String(form.restCount)} onChangeText={(v:string)=>setForm(p=>({...p,restCount:Math.max(0,Math.floor(Number(v)||0))}))} placeholder={t('Number of rests')} keyboardType="number-pad" style={inputStyle}/>}
       <Field accessibilityLabel={t('Perceived exertion score')} value={numberText(form.perceivedExertion)} onChangeText={(v:string)=>setNumber('perceivedExertion',v)} placeholder={t('Perceived exertion score (optional)')} keyboardType="decimal-pad" style={inputStyle}/>
+      <GaitAssessmentForm value={form.gaitAssessment} onChange={gaitAssessment=>setForm(p=>({...p,gaitAssessment}))}/>
       <Field accessibilityLabel={t('Observed gait scale')} value={form.observedGaitScale} onChangeText={(v:string)=>setForm(p=>({...p,observedGaitScale:v}))} placeholder={t('Observed gait scale/name (optional)')} style={inputStyle}/>
       <Field accessibilityLabel={t('Observed gait score')} value={numberText(form.observedGaitScore)} onChangeText={(v:string)=>setNumber('observedGaitScore',v)} placeholder={t('Observed gait score (optional)')} keyboardType="decimal-pad" style={inputStyle}/>
       <Field accessibilityLabel={t('Symptoms')} value={form.symptoms} onChangeText={(v:string)=>setForm(p=>({...p,symptoms:v}))} placeholder={t('Symptoms or reason for stopping (optional)')} multiline style={[inputStyle,{minHeight:72}]}/>

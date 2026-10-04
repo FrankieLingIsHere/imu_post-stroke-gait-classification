@@ -20,7 +20,7 @@ Google on-device comparison experiment: [[gait-app-collection-workflow#Free dist
 
 App release/version records: [GaitTrace changelog](../android/CHANGELOG.md). Application version, remotely assigned APK build number and installed update provenance are documented separately; generated publication reviews remain local.
 
-AI model target, autonomous phone measurement plan, primary-source evidence and validation gates: [[gait-app-ai-model-strategy]]. The 2 October supervisor comparison prioritizes 10MWT/TUG measurement validation, structured clinical intake and device-tested voice commands before few-shot adaptation; recommendations are not implemented changes.
+AI model strategy and current milestone: [[gait-app-ai-model-strategy]]. The 4 October supervisor review prioritizes a supervised collector with paired reference video/clinical notes, then validated features and synthesis. Autonomous distance and few-shot adaptation do not block collector readiness; video synchronization and clinical validation remain unestablished.
 
 Responsive setup, automatic participant creation and brief illustrated tutorials, updated 2026-09-30, are documented in [[gait-app-collection-workflow#test-protocol-explanations]] and the [rehabilitation assessment specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md#protocol-workflow).
 
@@ -285,3 +285,11 @@ GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the 
 - 2026-10-02 live Google API check: [[gait-app-collection-workflow]] records successful phone-side API calls with empty 60-second and 600-second reads; walking distance remains unvalidated.
 - 2026-10-02 short-trial diagnostics: [[gait-app-collection-workflow]] tracks a local wider post-finish provider read separately from measured test distance; physical validation remains open.
 - 2026-10-02 Google trial route: [[gait-app-collection-workflow]] distinguishes an experimental 5 m out-and-back, 10 m total provider check from the straight clinical 10MWT.
+
+Camera feasibility update (4 October): [[gait-app-ai-model-strategy#Camera feasibility decision update - 4 October 2026|rear-camera holder versus custom front-camera tracking]]. Lower-back location retained; rear ARCore trial preferred if lens exposure is accepted. No camera integration or validation yet.
+
+Profile entry parity (4 October): [[gait-app-collection-workflow#Profile entry parity and protocol sources - 4 October 2026|test setup clinical details, snapshot/export verification and source links]]. Local implementation passes automated checks; publication and physical-device review pending.
+
+Assessment form location: [[gait-app-collection-workflow#Assessment form discoverability - 4 October 2026|results and saved recording summaries]]. The full 31-item observer form is now implemented locally; see the completion/testing section below.
+
+Complete observer form and sensor-free checks: [[gait-app-collection-workflow#Complete observer G.A.I.T. and sensor-free flow testing - 4 October 2026|31-item form, provenance, exports and test evidence]]; [local Flow Lab instructions](../android/FLOW_TESTING.md). No clinical validation or publication yet.

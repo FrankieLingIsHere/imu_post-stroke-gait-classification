@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import {Text as NativeText} from 'react-native';
+import {flowLabEnabled} from './src/flowLab';
 import { useLanguage, restoreLanguage, t } from './src/i18n';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -23,7 +25,7 @@ type Setup = { duration: number; audioEnabled: boolean; isPractice: boolean; dem
 export type RootStackParamList = {
   Home: undefined; Onboarding: undefined; Prepare: Setup; Walkthrough: {protocol?:AssessmentProtocol} | undefined; Participants: undefined; Dashboard: undefined;
   Record: Setup & { guidanceEnabled: boolean };
-  Result: { sessionId: string }; Details: { sessionId: string }; History: undefined;
+  Result: { sessionId: string; openAssessment?: boolean }; Details: { sessionId: string }; History: undefined;
   GoogleDistanceTrial:undefined;
   GoogleApiCheck:undefined;
 };
@@ -31,7 +33,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function App() {
   useLanguage();
   useEffect(() => { void restoreLanguage(); }, []);
-  return <PhoneFrame><SafeAreaProvider><StatusBar style="dark" /><NavigationContainer>
+  return <PhoneFrame><SafeAreaProvider>{flowLabEnabled&&<NativeText style={{backgroundColor:'#fff0c2',padding:8,textAlign:'center'}}>FLOW LAB — DEMO ONLY — NO SENSORS</NativeText>}<StatusBar style="dark" /><NavigationContainer>
     <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colours.background }, headerTintColor: colours.primary, headerShadowVisible: false, headerTitleStyle: { fontWeight: '700', fontSize: 20 }, contentStyle: { backgroundColor: colours.background } }}>
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: t('Gait Steps') }} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ title: t('Your guide') }} />

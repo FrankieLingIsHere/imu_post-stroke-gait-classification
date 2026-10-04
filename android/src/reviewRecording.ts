@@ -1,3 +1,4 @@
+import {validGaitAssessment} from './gaitAssessment';
 import type { SessionRecord } from './store';
 import { SENSOR_NAMES } from './recording';
 import type { Recording, Sample, Streams, SensorName } from './recording';
@@ -20,6 +21,7 @@ export function parseReviewRecording(text:string):SessionRecord {
   }
   if(r.fitCheck && r.fitCheck.highPass10HzRmsG!==null&&!Number.isFinite(r.fitCheck.highPass10HzRmsG))throw invalid();
   if(r.googleRecording !== undefined && !validGoogleSummary(r.googleRecording))throw invalid();
+  if(session.assessment?.gaitAssessment!==undefined&&!validGaitAssessment(session.assessment.gaitAssessment))throw invalid();
   const trial=session.googleDistanceTrial;
   if(trial!==undefined&&(!trial||trial.version!=='google-distance-trial-v1'||![2,3,5,10].includes(trial.referenceDistanceM)||![undefined,'straight','5m-out-and-back'].includes(trial.routePattern)||(trial.referenceDistanceM===10&&trial.routePattern!=='5m-out-and-back')||(trial.referenceDistanceM!==10&&trial.routePattern==='5m-out-and-back')||![undefined,null,true,false].includes(trial.completedMarkedRoute)||![undefined,'quiet-stop','time-limit','user-stopped','interrupted'].includes(trial.end)||session.isPractice!==true))throw invalid();
   return session;

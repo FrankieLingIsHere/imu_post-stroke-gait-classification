@@ -5,6 +5,8 @@ export interface TestParticipantInput {
   sex: ParticipantSex | null; heightCm: number | null; assistiveDevice: AssistiveDevice;
   affectedHemisphere?: ClinicalSide; affectedBodySide?: ClinicalSide;
   chronicityStatus?: 'known' | 'unknown'; monthsSinceStroke?: number | null;
+  weightKg?: number | null; strokeType?: string; lesionLocation?: string;
+  premorbidGaitNotes?: string; jointOrOrthopaedicNotes?: string;
   historySource?: 'patient-or-caregiver-report' | 'clinician-record';
 }
 export const participantKey = (label: string) => label.trim().normalize('NFKC').toLocaleLowerCase();
@@ -19,11 +21,16 @@ export function resolveTestParticipant(profiles: ParticipantProfile[], input: Te
   const existing = input.id ? profiles.find(p => p.id === input.id) : profiles.find(p => p.id === input.newId);
   if (input.id && (!existing || existing.archived)) throw new Error('This participant is unavailable. Choose another participant.');
   if (input.heightCm !== null && (!Number.isFinite(input.heightCm) || input.heightCm < 100 || input.heightCm > 230)) throw new Error('Enter height from 100 to 230 cm.');
+  if (input.weightKg != null && (!Number.isFinite(input.weightKg) || input.weightKg < 20 || input.weightKg > 300)) throw new Error('Enter weight from 20 to 300 kg.');
   return {
     ...existing, id: existing?.id ?? input.newId, label: input.label.trim(),
     favorite: existing?.favorite ?? false, archived: false, createdAt: existing?.createdAt ?? now, updatedAt: now,
-    demographics: { ...existing?.demographics, ageYears: input.ageYears, sex: input.sex, heightCm: input.heightCm },
+    demographics: { ...existing?.demographics, ageYears: input.ageYears, sex: input.sex, heightCm: input.heightCm, ...(input.weightKg !== undefined ? {weightKg:input.weightKg} : {}) },
     clinical: { strokeType:'', lesionLocation:'', monthsSinceStroke:null, premorbidGaitNotes:'', jointOrOrthopaedicNotes:'', ...existing?.clinical, assistiveDevice:input.assistiveDevice,
+      ...(input.strokeType !== undefined ? {strokeType:input.strokeType.trim()} : {}),
+      ...(input.lesionLocation !== undefined ? {lesionLocation:input.lesionLocation.trim()} : {}),
+      ...(input.premorbidGaitNotes !== undefined ? {premorbidGaitNotes:input.premorbidGaitNotes.trim()} : {}),
+      ...(input.jointOrOrthopaedicNotes !== undefined ? {jointOrOrthopaedicNotes:input.jointOrOrthopaedicNotes.trim()} : {}),
       ...(input.affectedHemisphere ? { affectedHemisphere: input.affectedHemisphere } : {}),
       ...(input.affectedBodySide ? { affectedBodySide: input.affectedBodySide } : {}),
       ...(input.chronicityStatus ? { chronicityStatus: input.chronicityStatus, monthsSinceStroke: input.chronicityStatus === 'known' ? input.monthsSinceStroke ?? null : null } : {}),

@@ -636,3 +636,22 @@ test('Protocol Go offset and completion provenance survive JSON and raw CSV expo
   assert.equal(parsed.assessment,undefined);
  }
 });
+
+
+test('Research feature exports preserve quoted clinical notes and snapshot history',()=>{
+ const profile={id:'P01',demographics:{weightKg:61},clinical:{strokeType:'ischemic',lesionLocation:'subcortical',premorbidGaitNotes:'old limp, left',jointOrOrthopaedicNotes:'knee "repair"'}};
+ const session={id:'clinical-notes',recording:recordFixture(),windows:[],participantSnapshot:profile};
+ const parsed=JSON.parse(exporting.exportJSON(session));assert.equal(parsed.session.participantSnapshot.clinical.premorbidGaitNotes,'old limp, left');
+ const csv=exporting.exportFeatureCSV(session);assert.match(csv,/"premorbid_gait_notes","joint_or_orthopaedic_notes"/);assert.match(csv,/"old limp, left","knee ""repair"""/);
+});
+
+
+test('Observer ratings survive JSON review import and CSV without inventing an incomplete total',()=>{
+ const {newGaitAssessment}=load('gaitAssessment'),{gaitRubric}=load('gaitRubric');
+ const g=newGaitAssessment();g.ratings['1']={optionId:gaitRubric[0].options[1].id,notes:'shoulder, elevated'};
+ const session={id:'gait-observer',date:'2026-10-04T00:00:00Z',isPractice:false,duration:10,windows:[],recording:recordFixture(),assessment:{gaitAssessment:g}};
+ const text=exporting.exportJSON(session),imported=load('reviewRecording').parseReviewRecording(text);
+ assert.equal(imported.assessment.gaitAssessment.ratings['1'].notes,'shoulder, elevated');
+ const csv=exporting.exportFeatureCSV(session);assert.match(csv,/"gait_form_version"/);assert.match(csv,/"shoulder, elevated"/);
+ const bad=JSON.parse(text);bad.session.assessment.gaitAssessment.ratings['1'].optionId='invalid';assert.throws(()=>load('reviewRecording').parseReviewRecording(JSON.stringify(bad)));
+});

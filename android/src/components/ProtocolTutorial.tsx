@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, useWindowDimensions } from 'react-native';
+import { Modal, View, useWindowDimensions, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle, Line, Text as SvgText } from 'react-native-svg';
 import type { AssessmentProtocol } from '../store';
@@ -52,7 +52,7 @@ export default function ProtocolTutorial({protocol,onClose}:{protocol:Assessment
         <BigButton label={details?'Back to tutorial':step===steps.length-1?'Done':'Next step'} onPress={()=>details?setDetails(false):step===steps.length-1?onClose():setStep(step+1)} />
         <View style={ui.row}><BigButton style={ui.fill} label="Previous" variant="ghost" disabled={step===0||details} onPress={()=>setStep(step-1)}/><BigButton style={ui.fill} label="Close instructions" variant="ghost" onPress={onClose}/></View>
       </>}>
-        {details?<><Body>{guide.body}</Body>{guide.extra&&<Body>{guide.extra}</Body>}<Body>Source basis: Shirley Ryan AbilityLab RehabMeasures Database; ATS 6MWT statement. GaitTrace is a sensor-capture aid and does not itself administer or validate these clinical tests.</Body></>:<>
+        {details?<><Body>{guide.body}</Body>{guide.extra&&<Body>{guide.extra}</Body>}<Body>Source basis: Shirley Ryan AbilityLab RehabMeasures Database; ATS 6MWT statement. GaitTrace is a sensor-capture aid and does not itself administer or validate these clinical tests.</Body>{guide.sourceUrl&&<BigButton label="Open clinical protocol source" variant="outline" onPress={()=>void Linking.openURL(guide.sourceUrl!).catch(()=>setError('Could not open the protocol source.'))}/>}</>:<>
           <Diagram picture={current.picture} protocol={protocol}/>
           <Body>{current.text}</Body>
           <BigButton label={playing?'Stop sample':'Read aloud'} variant="outline" onPress={listen}/>

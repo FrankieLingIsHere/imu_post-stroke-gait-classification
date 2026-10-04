@@ -24,6 +24,7 @@ export interface AssessmentSetup {
   speedCondition: 'comfortable' | 'fast-safe'; turnDirection: 'left' | 'right' | 'self-selected';
 }
 export interface AssessmentForm {
+  gaitAssessment?: import('./gaitAssessment').GaitAssessment;
   completed: boolean; completionStatus: 'completed' | 'modified' | 'not-completed';
   timedZoneSeconds: number | null; distanceWalkedM: number | null; lapCount: number | null;
   restCount: number; perceivedExertion: number | null; symptoms: string; clinicianNotes: string;

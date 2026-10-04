@@ -1,8 +1,23 @@
 import { protocolMessages } from './protocolMessages';
+import { gaitMessages } from './gaitMessages';
 import { patientMessages } from './patientSummary';
 import { experienceMessages } from './experienceMessages';
 /** English source -> Bahasa Melayu, Simplified Chinese. Export schema remains English. */
 export const messages: Record<string, readonly [string, string]> = {
+  ...gaitMessages,
+  'Gait assessment form': ['Borang penilaian gaya berjalan', '步态评估表'],
+  'Open gait assessment form': ['Buka borang penilaian gaya berjalan', '打开步态评估表'],
+  'Review gait assessment form': ['Semak borang penilaian gaya berjalan', '查看或编辑步态评估表'],
+  'Hide gait assessment form': ['Sembunyikan borang penilaian gaya berjalan', '收起步态评估表'],
+  'Assessment saved with this recording.': ['Penilaian disimpan bersama rakaman ini.', '评估已随本次记录保存。'],
+  'No assessment has been saved for this recording yet.': ['Belum ada penilaian disimpan untuk rakaman ini.', '本次记录尚未保存评估。'],
+  'Record observed test results, symptoms and clinician notes for this recording. This is not an automatic G.A.I.T. score.': ['Rekodkan keputusan ujian yang diperhatikan, gejala dan nota klinikal bagi rakaman ini. Ini bukan skor G.A.I.T. automatik.', '填写本次记录的观察测试结果、症状和临床备注。这不是自动生成的G.A.I.T.评分。'],
+
+  'Open clinical protocol source': ['Buka sumber protokol klinikal', '查看临床测试规范来源'],
+  'Could not open the protocol source.': ['Tidak dapat membuka sumber protokol.', '无法打开测试规范来源。'],
+
+  'Clinical history is required for clinical tests. For research participants, record what is known.': ['Sejarah klinikal diperlukan untuk ujian klinikal. Bagi peserta penyelidikan, rekodkan maklumat yang diketahui.', '临床测试需要填写临床病史。研究参与者请记录已知信息。'],
+
   '10 m total · 5 m out and back': ['10 m keseluruhan · 5 m pergi dan balik', '总共10米 · 去程5米、返回5米'],
   '5 m out + 5 m back': ['5 m pergi + 5 m kembali', '去程5米＋返回5米'],
   'Measure 5 m between the start and turn marks. Walk out and back for 10 m total. Keep the phone horizontal at your lower back, screen facing out.': ['Ukur 5 m antara tanda mula dan tanda pusing. Berjalan pergi dan balik untuk jumlah 10 m. Letakkan telefon secara melintang pada bahagian bawah belakang, skrin menghadap ke luar.', '在起点与转弯标记之间量出5米。往返一次，总共走10米。将手机横放在下背部，屏幕朝外。'],

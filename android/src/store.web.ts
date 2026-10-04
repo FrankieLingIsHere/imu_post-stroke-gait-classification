@@ -3,10 +3,12 @@ import type { SessionRecord, ParticipantProfile } from './store';
 import type { DistanceCalibration } from './distanceEstimation';
 import { locale } from './language';
 import { parseReviewRecording } from './reviewRecording';
+import {flowLabEnabled,flowLabFixtures,FLOW_LAB_SESSION} from './flowLab';
 
 // Browser capture and review are memory-only. Export before closing or refreshing.
 const sessions = new Map<string, SessionRecord>();
 const participants = new Map<string, ParticipantProfile>();
+if(flowLabEnabled){const f=flowLabFixtures();sessions.set(f.session.id,f.session);participants.set(f.participant.id,f.participant);}
 export async function getParticipants() {
   const recovered=recoverParticipantProfiles([...participants.values()],[...sessions.values()]);
   for(const p of recovered)participants.set(p.id,p);
@@ -22,6 +24,7 @@ export function importReviewRecording(text: string) {
 export async function getSessions() { return [...sessions.values()].sort((a,b)=>b.date.localeCompare(a.date)); }
 export async function getSession(id:string) { return sessions.get(id); }
 export async function saveSession(session:SessionRecord) {
+  if(flowLabEnabled&&session.id===FLOW_LAB_SESSION&&session.isPractice&&!session.recording){sessions.set(session.id,session);return;}
   if(session.recording?.platform !== 'web' || session.recording.acquisition?.api !== 'generic-sensor-api-v1') throw new Error('Only browser sensor recordings can be saved here.');
   sessions.set(session.id, session);
 }

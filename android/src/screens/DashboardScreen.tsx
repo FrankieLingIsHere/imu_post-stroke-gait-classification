@@ -1,3 +1,4 @@
+import {gaitAssessmentSummary} from '../gaitAssessment';
 import React, { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -35,7 +36,7 @@ export default function DashboardScreen({ navigation }: NativeStackScreenProps<R
   useFocusEffect(load);
   const person=profiles.find(p=>p.id===selected); const rows=sessions.filter(s=>selected ? s.participantId===selected : !s.participantId||!profiles.some(p=>p.id===s.participantId));
   const protocolName=(s:SessionRecord)=>s.assessmentSetup?.protocol?.toUpperCase()??'RESEARCH WALK';
-  const score=(s:SessionRecord)=>{const a=s.assessment;if(!a)return null;const speed=a.speedMps,dist=a.distanceWalkedM;return [speed!==null?`${speed.toFixed(2)} m/s`:null,dist!==null?`${dist.toFixed(1)} m`:null,a.timedZoneSeconds!==null?`${a.timedZoneSeconds.toFixed(2)} s`:null].filter(Boolean).join(' · ')||null;};
+  const score=(s:SessionRecord)=>{const a=s.assessment;if(!a)return null;const speed=a.speedMps,dist=a.distanceWalkedM,g=a.gaitAssessment?gaitAssessmentSummary(a.gaitAssessment):null;return [g?.total!=null?t('G.A.I.T. total: {0} / 62').replace('{0}',String(g.total)):null,speed!==null?`${speed.toFixed(2)} m/s`:null,dist!==null?`${dist.toFixed(1)} m`:null,a.timedZoneSeconds!==null?`${a.timedZoneSeconds.toFixed(2)} s`:null].filter(Boolean).join(' · ')||null;};
   const latestSession=rows.filter(s=>!s.isPractice&&s.hasDeviceRecording===true).sort((a,b)=>b.date.localeCompare(a.date))[0];
   const latestProtocol=latestSession?.assessmentSetup?.protocol;
   const latestAid=latestSession?.participantSnapshot?.clinical.assistiveDevice;

@@ -2697,3 +2697,23 @@ After the user clarified that a longer turning walk is for the standalone Google
 ## [2026-10-02] sync | Approved out-and-back Google experiment publication
 
 User approved the 19-file publication scope. Pushed commit `8e553c3` to `main`; repository hygiene, results portal and Android preview OTA workflows passed. No native rebuild was required. Updated module/release/workflow/weekly records with publication status. Physical 10 m out-and-back Google response and accuracy remain untested.
+
+## [2026-10-04] sync | Supervisor-aligned collector milestone
+
+Reviewed the supplied 4 October conversation against current app and research status. Updated AI strategy, classification handoff, index and weekly progress: supervised paired-reference collection precedes synthesis/model personalization; autonomous distance and few-shot are not collector release prerequisites. Corrected Recording API identity and unverified 10 m threshold. No code, new data, training or clinical validation; documentation remains local for review.
+
+## [2026-10-04] sync | Camera mounting constraint revised
+
+User permits camera use and consideration of rear-camera exposure. Updated product specification, AI strategy, index and weekly progress with rear ARCore versus custom front-camera/marker feasibility routes, distance and coordinate-frame limits. No integration or physical validation; notes remain local.
+
+## [2026-10-04] sync | Profile intake parity and clinical source links
+
+Audited current forms and completed missing setup inputs for weight, stroke type/location and premorbid/orthopaedic notes; extended snapshot/export coverage and clinical tutorial source links. Updated product spec, workflow, index, changelog and weekly progress. TypeScript, 134 tests and Android export passed; no physical/clinical validation or publication. Preserved earlier local scope-review notes.
+
+## [2026-10-04] sync | Existing assessment form made discoverable
+
+Replaced misleading measured-reference entry with Gait assessment form and added direct saved-recording access. Documented existing outcome/note fields versus missing complete G.A.I.T. instrument. TypeScript and 134 tests pass; local only.
+
+## [2026-10-04] sync | Complete observer form and browser flow harness
+
+Digitized supplied 31-item/62-point Appendix A with source hash, branch/qualifier detail, explicit missingness, metadata, JSON/CSV and dashboard linkage. Added development-only sensor-free Flow Lab and Playwright checks. TypeScript, 138 unit/flow tests, six browser tests and Android bundle pass; visually inspected screenshot; runtime remains build-6 compatible. Updated current workflow/index/product/weekly records; clinical validation and publication remain pending.

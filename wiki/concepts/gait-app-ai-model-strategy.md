@@ -1,12 +1,24 @@
 ---
 type: concept
 status: active
-updated: 2026-10-02
+updated: 2026-10-04
 ---
 
 # GaitTrace AI model strategy: measure recovery before classifying disease
 
 Research synthesis as of 2026-10-01. This is a model-development recommendation, not a validated clinical claim or a report of a newly trained model. Product scope: independently ambulatory people after stroke, assessed with a horizontally held lower-back Android phone and, for clinical batteries, a worker-measured course and outcome form. See [[gait-app-collection-workflow]], [[classification-project-status]], and [the protocol specification](../../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md).
+
+## Current milestone: 4 October supervisor review
+
+The next milestone is a presentable supervised research collector, followed by validated feature extraction, clinically parameterized healthy-to-stroke-like synthesis, model training and later personalization. Autonomous clinical distance and few-shot adaptation should not block collector readiness. This preserves the future independent home-rehabilitation goal; it does not establish that the current app is a clinical outcome instrument.
+
+Structured clinical intake, participant/session linkage and raw sensor exports are implemented. Reference-video synchronization and clinician-labelled event accuracy are not established by the demo. Before the next collection event, verify consented paired video, coded participant/session IDs, a clinician-agreed course variant, mounting/aid metadata, measured clock alignment and annotations for boundaries, walking, turns, rests and handling. Record unknown/unobservable clinical labels explicitly.
+
+The integration is Google's on-device FitnessLocal Recording API, not Maps Directions. API access succeeded, but the first measured 3 m trial returned no records. The published 10 m out-and-back engineering option has no returned physical result yet. There is no verified 10 m minimum threshold. Keep this experiment separate from clinical outcomes. [Official Recording API guide](https://developer.android.com/health-and-fitness/recording-api).
+
+Retain all available raw sensors, including gyroscope, with native timestamps and explicit missingness; compare subsets empirically. G.A.I.T ratings require clinical observation and are not all measurable by one lumbar phone. Patient confidence needs an appropriate patient-reported reference; acceleration amplitude is not muscular strength. Voice commands may annotate events, but speech latency/missed recognition and patient speech difficulties prevent assuming exact floor crossings.
+
+Validate deterministic quality/cadence/regularity features against paired references before using them as synthesis conditions. Repeated personal baselines and descriptive tracking can precede AI. Few-shot learning needs a trained base model and should outperform simple calibration on held-out future visits. No new model, acquisition, feature validation or clinical evaluation occurred in this review.
 
 ## Decision
 
@@ -81,3 +93,11 @@ This feedback agrees with the prior functional app-model strategy. It does **not
 ## Autonomous phone measurement correction (2 October 2026)
 
 The local patient path now records hands-free, estimates distance/speed after capture and completes automatically. Worker stopwatch and entered outcomes remain an optional development reference route. A single horizontal lumbar phone observes movement but not exact floor-mark crossing or chair contact; the current 10MWT/TUG quiet-stop is provisional and can mistake a long rest for completion. Candidate walking/turn/sit events and a personal distance model need paired validation on this holder and target population. Do not label inferred boundaries or height-times-steps as verified clinical measurements. Keep calibration versioned and independent of the current test, and allow an unavailable estimate when quality or inputs are inadequate. See [[gait-app-collection-workflow#corrected-patient-workflow-target-2-october-2026]].
+
+## Camera feasibility decision update - 4 October 2026
+
+The user permits camera use and consideration of changing the mounting method to expose the rear camera. Recommend retaining the horizontal lower-back anatomical location, with a snug holder that exposes the rear lens and keeps it clear of clothing; confirm actual optical view and comfort before patient testing. ARCore front-camera sessions have paused world tracking and identity display-oriented pose, so face tracking is not a distance substitute. [Official camera configuration contract](https://developers.google.com/ar/reference/java/com/google/ar/core/CameraConfig.FacingDirection). Redmi Note 10 Pro is listed as supported, but runtime availability must be checked on the actual handset.
+
+Preferred feasibility route: rear-camera ARCore, local processing, separate experiment, measured 3/5/10 m paths including turns, explicit tracking-loss flags and reference timing. Test filtered horizontal path distance rather than raw 3D position increments, which can accumulate trunk sway/jitter; a return to the starting point must not report zero travelled distance. Camera motion estimates do not automatically identify clinical tape crossings or supply calibrated 10MWT outcomes. Do not silently replace lost visual tracking with heuristic distance.
+
+If the front camera must remain outward, a custom calibrated visual-inertial estimator such as OpenVINS is a research candidate, not verified phone support or a plug-in service. A calibrated known-size printed-marker setup is another controlled-course candidate; its range/visibility must be validated and a single endpoint marker does not provide continuous path length. No camera route was implemented or tested in this review. Native integration would require a new APK and paired validation; changing the mount also requires orientation/frame metadata so opposite-facing raw axes are not mixed with earlier captures.

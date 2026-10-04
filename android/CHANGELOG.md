@@ -4,6 +4,10 @@ This file records source releases and installation requirements. `app.json` decl
 
 ## 0.3.0 preview updates - October 2026
 
+- Local 4 October complete observer G.A.I.T.: supplied 31-item/62-point form with assessor/limb/context, all scoring branches, qualifiers and item notes; JSON import/export, feature CSV and dashboard totals. Development-only Flow Lab and Playwright UI checks; 138 unit/flow tests, six browser checks, TypeScript and Android export pass. Runtime fingerprint remains build-6 compatible. Original scoring criteria remain English; interface translations are not clinically validated. Unpublished.
+
+- Local 4 October intake parity: setup now captures weight, stroke type/location and pre-existing gait/orthopaedic notes in participant snapshots; feature CSV includes both baseline-note fields. Three-language prompts and per-test clinical source links. TypeScript, 134 tests and Android Metro export pass. Compatible JavaScript change, not yet published.
+
 - Separate Research tools > Quick Google API check; no participant, placement, countdown, gait recording or deliberate post-stop wait.
 - Checks native availability/permission, subscription, detailed reads over recent 60-second and 600-second context windows, and cleanup. Empty successful replies pass API access while records remain unavailable. Context counts are never walking distance. Four-second request timeouts and late-subscription cleanup are included.
 - EN/MS/ZH messages and structured technical logging (`GaitGoogleApiCheck`) for connected-device inspection. Waving is not a walking accuracy test.
@@ -53,3 +57,5 @@ The app configuration preceding this release declared 0.2.0. Earlier implementat
 - `dist/`: ignored publication reviews, exports and verification output. A publication review is not the release history.
 
 Keep APKs, local dependencies, SDK binaries, demo video assets and generated review artifacts outside source commits.
+
+Local 4 October form navigation: explicit Gait assessment form entries in results and saved summaries; direct expansion on review, three-language labels. Existing observer outcome form is not a complete standardized G.A.I.T. instrument. TypeScript and 134 tests pass; unpublished.

@@ -40,6 +40,11 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
   const [ageText, setAgeText] = useState(route.params.demographics?.ageYears?.toString() ?? '');
   const [sex, setSex] = useState<ParticipantSex | null>(route.params.demographics?.sex ?? null);
   const [heightText, setHeightText] = useState(route.params.demographics?.heightCm?.toString() ?? '');
+  const [weightText,setWeightText]=useState(route.params.participantSnapshot?.demographics.weightKg?.toString() ?? '');
+  const [strokeType,setStrokeType]=useState(route.params.participantSnapshot?.clinical.strokeType ?? '');
+  const [lesion,setLesion]=useState(route.params.participantSnapshot?.clinical.lesionLocation ?? '');
+  const [premorbid,setPremorbid]=useState(route.params.participantSnapshot?.clinical.premorbidGaitNotes ?? '');
+  const [orthopaedic,setOrthopaedic]=useState(route.params.participantSnapshot?.clinical.jointOrOrthopaedicNotes ?? '');
   const [protocol, setProtocol] = useState<AssessmentProtocol>(route.params.assessmentSetup?.protocol ?? 'research-walk');
   const [courseText, setCourseText] = useState(route.params.assessmentSetup?.courseLengthM?.toString() ?? '');
   const [hemisphere,setHemisphere]=useState<ClinicalSide|undefined>(route.params.participantSnapshot?.clinical.affectedHemisphere);
@@ -92,9 +97,10 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     setSex(p.demographics.sex);setHeightText(p.demographics.heightCm?.toString()??'');setAid(p.clinical.assistiveDevice);
     setHemisphere(p.clinical.affectedHemisphere);setAffectedSide(p.clinical.affectedBodySide);
     setChronicityStatus(p.clinical.chronicityStatus ?? (p.clinical.monthsSinceStroke != null ? 'known' : undefined));
+    setWeightText(p.demographics.weightKg?.toString()??'');setStrokeType(p.clinical.strokeType);setLesion(p.clinical.lesionLocation);setPremorbid(p.clinical.premorbidGaitNotes);setOrthopaedic(p.clinical.jointOrOrthopaedicNotes);
     setMonthsText(p.clinical.monthsSinceStroke?.toString()??'');setHistorySource(p.clinical.historySource);setError('');
   }
-  function participantInput() { return {id:selectedId,newId:newId.current,label:participantLabel,ageYears:ageText.trim()?Number(ageText):null,sex,heightCm:heightText.trim()?Number(heightText):null,assistiveDevice:aid,
+  function participantInput() { return {id:selectedId,newId:newId.current,label:participantLabel,ageYears:ageText.trim()?Number(ageText):null,sex,heightCm:heightText.trim()?Number(heightText):null,assistiveDevice:aid,weightKg:weightText.trim()?Number(weightText):null,strokeType,lesionLocation:lesion,premorbidGaitNotes:premorbid,jointOrOrthopaedicNotes:orthopaedic,
     affectedHemisphere:hemisphere,affectedBodySide:affectedSide,chronicityStatus,monthsSinceStroke:monthsText.trim()?Number(monthsText):null,historySource}; }
   function checkedParticipant(rows:ParticipantProfile[]) {
     const person=resolveTestParticipant(rows,participantInput());
@@ -180,7 +186,7 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
     {Platform.OS==='web'&&page===0&&<Text style={ui.caption}>Browser profiles and recordings last only for this tab. Export before closing.</Text>}
     {page===0&&<View style={{gap:8}}>
       <Text style={ui.caption}>Choose a saved person, or enter a new study ID. A new profile is saved when you start the test.</Text>
-      <AgeInput value={participantLabel} autoCorrect={false} autoCapitalize="none" maxLength={80} accessibilityLabel={t('Study ID or participant label')} placeholder={t('Study ID or participant label')} style={fieldStyle} onChangeText={(v:string)=>{setParticipantLabel(v);if(selectedId){newId.current=`participant-${Date.now()}-${Math.random().toString(16).slice(2,10)}`;setSelectedId(undefined);setAgeText('');setSex(null);setHeightText('');setAid('none');setHemisphere(undefined);setAffectedSide(undefined);setChronicityStatus(undefined);setMonthsText('');setHistorySource(undefined);}}}/>
+      <AgeInput value={participantLabel} autoCorrect={false} autoCapitalize="none" maxLength={80} accessibilityLabel={t('Study ID or participant label')} placeholder={t('Study ID or participant label')} style={fieldStyle} onChangeText={(v:string)=>{setParticipantLabel(v);if(selectedId){newId.current=`participant-${Date.now()}-${Math.random().toString(16).slice(2,10)}`;setSelectedId(undefined);setAgeText('');setSex(null);setHeightText('');setAid('none');setHemisphere(undefined);setAffectedSide(undefined);setChronicityStatus(undefined);setMonthsText('');setHistorySource(undefined);setWeightText('');setStrokeType('');setLesion('');setPremorbid('');setOrthopaedic('');}}}/>
       {profiles.some(p=>!p.archived)&&<BigButton label="Choose a saved person" variant="ghost" onPress={()=>{setSavedSearch('');setMenu('saved');}}/>}
       <Text style={ui.caption}>{selectedId?'Using a saved participant':'New participant'}</Text>
       <AgeInput value={ageText} onChangeText={setAgeText} accessibilityLabel={t('Age in years')} placeholder={t('Age in years')} maxLength={3} keyboardType="number-pad" style={fieldStyle}/>
@@ -188,6 +194,8 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
       <View style={[ui.row,{flexWrap:'wrap'}]}>{(['female','male','prefer-not-to-say'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:sex===value}} onPress={()=>setSex(value)} style={[ui.choice,{flexBasis:90},sex===value&&ui.selected]}><Text style={ui.caption}>{sex===value?'● ':'○ '}{t(value==='prefer-not-to-say'?'Prefer not to say':value==='female'?'Female':'Male')}</Text></Pressable>)}</View>
       <BigButton label="Set height and walking aid" variant="outline" icon="›" onPress={()=>setMenu('participant')}/>
       <Text style={ui.caption}>{heightText ? t('Height: {0} cm').replace('{0}',heightText) : t('Height not entered — distance estimate may be unavailable.')}</Text>
+      <BigButton label="Review stroke history" variant="outline" onPress={()=>setMenu('clinical')}/>
+      <Text style={ui.caption}>Clinical history is required for clinical tests. For research participants, record what is known.</Text>
       {!profilesReady&&<BigButton label="Retry" variant="outline" onPress={()=>void loadProfiles()}/>}
       {Platform.OS==='web'&&<BigButton label="Preview hands-free flow" variant="ghost" onPress={()=>navigation.navigate('Walkthrough',{protocol})}/>}
     </View>}
@@ -272,12 +280,17 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
         {menu==='participant'&&<View style={{gap:12}}>
           <Text style={ui.caption}>Enter measured height if known. It supports a rough distance estimate, not a measured distance. Leave blank rather than guess.</Text>
         <AgeInput value={heightText} onChangeText={setHeightText} accessibilityLabel={t('Height in centimetres')} placeholder={t('Height cm (for experimental estimate)')} keyboardType="decimal-pad" style={fieldStyle}/>
+        <AgeInput value={weightText} onChangeText={setWeightText} accessibilityLabel={t('Weight kg')} placeholder={t('Weight kg')} keyboardType="decimal-pad" style={fieldStyle}/>
         <Text style={ui.label}>Usual walking aid</Text>
         <View style={[ui.row,{flexWrap:'wrap'}]}>{([['none','None'],['single-point-cane','Single-point cane'],['quad-cane','Quad cane'],['other','Other']] as const).map(([value,label])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:aid===value}} onPress={()=>setAid(value)} style={[ui.choice,{flexBasis:120},aid===value&&ui.selected]}><Text style={ui.caption}>{aid===value?'● ':'○ '}{t(label)}</Text></Pressable>)}</View>
 
         </View>}
         {menu==='clinical'&&<View style={{gap:14}}>
           <Text style={ui.caption}>Use the participant's clinical record when available. Choose Unknown if the answer is not known; do not guess.</Text>
+          <Text style={ui.label}>Stroke type (optional)</Text>
+          <AgeInput value={strokeType} onChangeText={setStrokeType} accessibilityLabel={t('Stroke type (optional)')} placeholder={t('Stroke type (optional)')} style={fieldStyle}/>
+          <Text style={ui.label}>Lesion location (optional)</Text>
+          <AgeInput value={lesion} onChangeText={setLesion} accessibilityLabel={t('Lesion location (optional)')} placeholder={t('Lesion location (optional)')} style={fieldStyle}/>
           <Text style={ui.label}>Affected brain hemisphere</Text>
           <View style={[ui.row,{flexWrap:'wrap'}]}>{(['left','right','bilateral','unknown'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:hemisphere===value}} onPress={()=>setHemisphere(value)} style={[ui.choice,{flexBasis:110},hemisphere===value&&ui.selected]}><Text>{t(value)}</Text></Pressable>)}</View>
           <Text style={ui.label}>Affected body side</Text>
@@ -287,6 +300,10 @@ export default function PrepareScreen({ navigation, route }: NativeStackScreenPr
           {chronicityStatus==='known'&&<AgeInput value={monthsText} onChangeText={setMonthsText} accessibilityLabel={t('Whole months since stroke')} placeholder={t('Whole months since stroke')} keyboardType="number-pad" style={fieldStyle}/>}
           <Text style={ui.label}>History source</Text>
           <View style={[ui.row,{flexWrap:'wrap'}]}>{([['patient-or-caregiver-report','Patient or caregiver'],['clinician-record','Clinical record']] as const).map(([value,label])=><Pressable key={value} accessibilityRole="radio" accessibilityState={{selected:historySource===value}} onPress={()=>setHistorySource(value)} style={[ui.choice,{flexBasis:130},historySource===value&&ui.selected]}><Text>{t(label)}</Text></Pressable>)}</View>
+          <Text style={ui.label}>Pre-existing gait pattern/asymmetry</Text>
+          <AgeInput value={premorbid} onChangeText={setPremorbid} accessibilityLabel={t('Pre-existing gait pattern/asymmetry')} placeholder={t('Pre-existing gait pattern/asymmetry')} style={fieldStyle}/>
+          <Text style={ui.label}>Joint conditions or orthopaedic history</Text>
+          <AgeInput value={orthopaedic} onChangeText={setOrthopaedic} accessibilityLabel={t('Joint conditions or orthopaedic history')} placeholder={t('Joint conditions or orthopaedic history')} style={fieldStyle}/>
         </View>}
         {menu==='tests'&&<View style={{gap:12}}>
       <Text style={ui.label}>Main clinical tests</Text>

@@ -9,12 +9,14 @@ import BigButton from '../components/BigButton';
 import { colours as c } from '../theme';
 import PwaInstall from '../components/PwaInstall';
 import ReleaseInfo from '../components/ReleaseInfo';
+import {flowLabEnabled,FLOW_LAB_SESSION} from '../flowLab';
 export default function HomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) {
   const [more, setMore] = useState(false);
   return <Screen title="Your walking space" actions={<>
     <BigButton label="Start a walk" onPress={() => navigation.navigate('Prepare', { duration: 20, audioEnabled: true, isPractice: false })} />
   </>}>
     <LanguagePicker />
+    {flowLabEnabled&&<Card><Text>FLOW LAB — DEMONSTRATION ONLY. No sensors or patient measurements.</Text><BigButton label="Open demo assessment" variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:FLOW_LAB_SESSION,openAssessment:true})}/></Card>}
     <Body>Take your time. We will guide you.</Body>
     <View style={{flexDirection:'row',flexWrap:'wrap',gap:10}}>
       <BigButton style={s.tile} label="My recordings" variant="outline" onPress={() => navigation.navigate('History')} />
