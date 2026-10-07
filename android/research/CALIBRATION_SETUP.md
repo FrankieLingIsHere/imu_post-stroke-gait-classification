@@ -26,11 +26,14 @@ and optical setup. Patients do not repeat it before their walking tests.
    the computer job; **Resume calibration processing** retrieves its result.
    Restarting the processor creates a new pairing code: reconnect first.
 
-This ergonomic revision is local source, not yet delivered to the installed app.
-It uses the verified build-15 native APIs and unchanged Android runtime, so it
-can be delivered by a compatible update after publication approval. The existing
-build-15 APK contains the previous phone-moving lens guidance. Restart the local
-computer launcher after its source is updated.
+Published on 7 October 2026 from commit `2cce693`. GitHub's three publication
+workflows passed. The first functional Android update is
+`01a115df-b6e0-7bf6-9760-2c02061813e8` on channel `preview`, runtime
+`e1383287be615da4c75a7a9ce08b9260cfd2cfb3`. Expo's client endpoint serves that
+manifest for build 15. Later documentation-only updates may have a newer ID.
+If build 15 is installed, open the app online, let the update download, then
+fully close and reopen it. Older builds need the build-15 APK for the new native
+APIs. Restart the computer launcher so it runs the current companion source.
 
 The computer shows a mirrored framing diagram detected from actual phone JPEGs,
 not another coded board/video image. That prevents a duplicate target appearing

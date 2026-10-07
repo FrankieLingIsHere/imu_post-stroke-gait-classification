@@ -183,7 +183,7 @@ reference calibration mathematics. Native JNI tests exercise real OpenCV and the
 app's solver with known projections, duplicate/blur/invalid geometry and retained
 phone images. See notebook outputs for actual upstream processing evidence.
 
-Physical checks after installing build 15 and receiving the pending compatible
+Physical checks after installing build 15 and receiving the published compatible
 guidance update: scan a computer pairing code on private Wi-Fi, verify the board
 and live framing diagram on the computer, move the bagged phone while watching
 the computer, verify accepted-view feedback and translated spoken instructions,

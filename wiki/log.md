@@ -3086,3 +3086,16 @@ APK lacks this follow-up and no compatible update has been published. Updated
 current setup/specification/workflow/index/testing/release notes and local weekly
 progress together. Generated files remain ignored. Publication awaits exact scope
 review under AGENTS.md; no push or OTA yet.
+
+## [2026-10-07] sync | Approved publication and verified preview update
+
+User approved all 116 reviewed source/documentation files. Pushed `2cce693` to
+main. GitHub hygiene, web and Android update workflows all passed, including
+Linux npm installation/TypeScript/app checks. First functional preview update
+`01a115df-b6e0-7bf6-9760-2c02061813e8` matches the source and build-15 runtime
+`e1383287be615da4c75a7a9ce08b9260cfd2cfb3`; independently verified Expo's actual
+multipart client manifest. Later documentation-only updates may have newer IDs.
+Physical receipt/usability, complete calibration review and distance validation
+remain unverified. Updated release/setup/specification, current workflow/index
+and weekly progress together. Dependencies, APKs, recordings, generated research
+and demo assets remain local/ignored; unrelated files were not staged.

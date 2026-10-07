@@ -543,3 +543,26 @@ phone trial. Runtime stays e1383287be615da4c75a7a9ce08b9260cfd2cfb3, compatible 
 the verified 0.3.6/build 15. The existing APK lacks this follow-up. Source publication
 requires exact scope review under AGENTS.md; push/OTA have not occurred. Setup,
 testing guide, release notes, product spec and wiki updated in the same batch.
+
+### 7 October approved source publication and verified Android delivery
+
+The user explicitly approved the exact 116-file scope. Pushed source commit
+`2cce6939c42d9ef0ce75a00a5c03353955aa34be` to main, excluding APKs, recordings,
+dependencies, generated research outputs and all demo assets. GitHub runs
+37606432300 (hygiene), 37606432307 (web) and 37606432312 (Android update) all
+completed successfully, including fresh npm installation, TypeScript and app
+tests on Linux. Native source/license bytes remain unchanged from build 15;
+intentional CRLF and upstream licence whitespace are preserved.
+
+The first functional Android update is `01a115df-b6e0-7bf6-9760-2c02061813e8`,
+group `f8b8e064-3577-4ad3-af1e-ceac9ade2d97`, channel/branch preview, created
+2026-10-07T10:19:05.312Z. EAS binds it to source `2cce693` and runtime
+`e1383287be615da4c75a7a9ce08b9260cfd2cfb3`. Independently queried Expo's actual
+client endpoint with build-15 headers; the returned multipart manifest has the
+same ID/runtime/group. Delivery to the installed physical device is not yet
+verified. Build 15 can receive the update without a new APK; older native builds
+require that APK. Later documentation-only updates may have different IDs with
+the same app code. Restart the local computer launcher for its updated framing
+page. Release metadata/manifests/CI evidence stay local under dist; current
+setup, product specification and wiki now reflect publication rather than pending
+approval. No clinical distance/readiness or physical usability pass is claimed.

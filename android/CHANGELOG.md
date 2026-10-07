@@ -1,6 +1,16 @@
 # GaitTrace release history
 
-## 0.3.6 - guided published calibration and local reference processor (local)
+## 0.3.6 - guided published calibration and local reference processor
+
+Published 7 October 2026 as source commit `2cce693`. Repository hygiene, web
+publication and compatible Android update workflows all passed. First functional
+update: `01a115df-b6e0-7bf6-9760-2c02061813e8`, group
+`f8b8e064-3577-4ad3-af1e-ceac9ade2d97`, channel `preview`, runtime
+`e1383287be615da4c75a7a9ce08b9260cfd2cfb3`. The actual client manifest is verified.
+This is compatible with build 15; earlier native builds need its replacement APK.
+Subsequent documentation-only updates can change the displayed update ID while
+retaining the same app code/runtime. APKs, captures and generated/demo assets
+remain local/ignored. Physical usability and distance validation are unverified.
 
 Local follow-up: computer-only lens calibration is the default. The computer
 displays the stationary board and a mirrored live framing diagram derived from
@@ -14,8 +24,9 @@ admit calibration. Fixed a worker race so job completion follows durable save.
 188 app and 43 research checks pass; actual companion/browser checks verify
 computer framing/board layout and optional tablet layout using a synthetic image
 and simulated counts. Android export passes. The Android
-fingerprint remains build-15-compatible. This follow-up is not in the existing
-APK and has not been published as an update. Physical usability is unverified.
+fingerprint remains build-15-compatible. This follow-up arrives through the
+published compatible update; it is not in the original APK bundle. Physical
+usability is unverified.
 
 Phone calibration now selects clear, diverse ChArUco views and runs the published
 Zhang method through native OpenCV 4.12. Successful lens parameters save
@@ -44,7 +55,7 @@ controls pass; retained calibration replay correctly fails coverage. These are
 software/development checks, not new participant or clinical validation. Build
 14 failed Android's checked JSON-exception compilation; explicit declarations
 correct the issue. Replacement build 15 completed and its APK is verified. Native changes require a
-new APK; there is no Git push or OTA publication in this local batch.
+build-15 APK; this native verification preceded the publication recorded above.
 
 
 Release verification: 0.3.6/build 15 completed on 7 October 2026 as EAS
@@ -60,7 +71,7 @@ compilation and has no installable APK. No physical-device pass is claimed.
 The actual local processor starts successfully, its QR payload decodes, token
 health access works and uploaded board state becomes available for display.
 That is a local CLI/HTTP smoke check, not physical phone/Wi-Fi pairing validation.
-No source push or OTA publication. Exact pending source scope is listed in the
+At that initial verification, source/OTA publication was pending. Its scope is listed in the
 ignored local publication-review page.
 
 ## 0.3.5 - native acquisition and sensor-noise preparation (local)

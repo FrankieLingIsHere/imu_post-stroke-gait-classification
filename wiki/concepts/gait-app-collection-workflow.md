@@ -23,8 +23,11 @@ outline reach the page, avoiding a second coded target. They are not saved or
 used to admit calibration. Brief target loss keeps accepted views; partial ChArUco views may qualify
 under unchanged corner/coverage gates. [Zhang](https://www.microsoft.com/en-us/research/publication/a-flexible-new-technique-for-camera-calibration/)
 permits either object to move; [OpenCV](https://docs.opencv.org/4.x/da/d13/tutorial_aruco_calibration.html)
-supports partial target visibility. This ergonomic follow-up remains local and
-has not reached the installed build-15 APK; its Android runtime is unchanged.
+supports partial target visibility. Source `2cce693` and the first functional
+preview update `01a115df-b6e0-7bf6-9760-2c02061813e8` were published on 7 October.
+All three GitHub workflows passed. Expo's actual client response matches the
+build-15 runtime, allowing a compatible update. Physical receipt/usability is
+not yet verified. Later documentation-only updates may have newer IDs.
 The app automatically selects clear varied views, saves a successful lens profile,
 stops the alignment capture and transfers/retrieves the reference result. No print,
 ruler or manual ZIP exchange is required. Digital board shape/flatness still matter.
@@ -81,7 +84,7 @@ compilation and has no installable APK. No physical-device pass is claimed.
 The actual local processor starts successfully, its QR payload decodes, token
 health access works and uploaded board state becomes available for display.
 That is a local CLI/HTTP smoke check, not physical phone/Wi-Fi pairing validation.
-No source push or OTA publication. Exact pending file scope is listed in the
+At that initial verification, source/OTA publication was pending. Its scope is listed in the
 ignored local publication-review page.
 
 ### Prior build-13 native acquisition preparation - 7 October 2026

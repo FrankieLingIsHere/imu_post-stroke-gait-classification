@@ -22,8 +22,10 @@ brief target loss keeps accepted views. The separate camera/IMU alignment moves
 the phone in a stationary room. The diagram receives only detected coordinates,
 preventing a duplicate coded target. Preview JPEGs are discarded after local
 processing. Display feedback cannot admit calibration or relax numerical checks.
-The ergonomic update is local, compatible with the
-verified build-15 runtime, and has not been delivered to the installed APK. No
+Source `2cce693` and the first functional Android update
+`01a115df-b6e0-7bf6-9760-2c02061813e8` were published on 7 October. All three
+GitHub workflows passed; Expo's client manifest matches the verified build-15
+runtime. Installed-device receipt/usability still requires a physical check. No
 printing, ruler, manual ZIP transfer or patient-specific device calibration is
 required. Digital board aspect ratio and flatness still matter. Native selection
 requires 24 diverse clear views and checks held-out reprojection, subset stability,

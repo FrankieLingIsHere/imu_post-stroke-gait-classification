@@ -5,8 +5,10 @@ lens calibration and QR-paired, one-time local iKalibr reference processing.
 [Start here](CALIBRATION_SETUP.md). The computer displays the stationary board
 and a live framing diagram from actual phone frames while the bagged phone moves.
 No tablet is needed; a moving-tablet mode is explicitly optional. Brief loss of
-the target retains accepted lens views. This ergonomic source revision has not
-been delivered to the installed build-15 APK; its Android runtime is unchanged.
+the target retains accepted lens views. Source `2cce693` and a compatible preview
+update were published on 7 October; all three GitHub workflows passed and the
+client manifest matches build 15. Update/reopen that app; no new APK is needed
+if build 15 is installed. See the setup guide for release provenance.
 The app transfers/retrieves alignment captures automatically. No print, ruler,
 manual export/import or patient-specific hardware calibration is required.
 
@@ -233,5 +235,6 @@ compilation and has no installable APK. No physical-device pass is claimed.
 The actual local processor starts successfully, its QR payload decodes, token
 health access works and uploaded board state becomes available for display.
 That is a local CLI/HTTP smoke check, not physical phone/Wi-Fi pairing validation.
-No source push or OTA publication. Proposed scope is 28 modified and 81 new
-files, listed in the ignored local publication-review page.
+That initial native verification preceded source/OTA publication. The user later
+approved the final 116-file scope, published as `2cce693`; see the current status
+and setup guide above. The exact review page stays local/ignored.
