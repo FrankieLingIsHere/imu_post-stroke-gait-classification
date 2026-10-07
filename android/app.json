@@ -2,9 +2,11 @@
   "expo": {
     "name": "GaitTrace",
     "slug": "gait-steps",
-    "version": "0.3.0",
+    "version": "0.3.6",
     "icon": "./assets/branding/icon.png",
-    "runtimeVersion": { "policy": "fingerprint" },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
     "updates": {
       "url": "https://u.expo.dev/3db4ae90-2d4d-41f9-9689-f70f656ac581",
       "checkAutomatically": "ON_LOAD",
@@ -25,9 +27,17 @@
     },
     "android": {
       "package": "com.gaitsteps.app",
-      "versionCode": 1,
-      "permissions": ["android.permission.ACTIVITY_RECOGNITION"],
-      "adaptiveIcon": { "foregroundImage": "./assets/branding/icon.png", "backgroundColor": "#176B62" }
+      "versionCode": 15,
+      "permissions": [
+        "android.permission.ACTIVITY_RECOGNITION"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/branding/icon.png",
+        "backgroundColor": "#176B62"
+      },
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "name": "GaitTrace",
@@ -48,6 +58,7 @@
       }
     },
     "plugins": [
+      "./plugins/with-local-calibration",
       [
         "expo-location",
         {
@@ -58,6 +69,13 @@
         "expo-sensors",
         {
           "motionPermission": "Allow GaitTrace to record motion for your walking research session."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow GaitTrace to record front-camera video alongside motion sensors for a local research trial.",
+          "recordAudioAndroid": false
         }
       ]
     ],

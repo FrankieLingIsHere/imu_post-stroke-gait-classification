@@ -1,23 +1,75 @@
 const {test,expect}=require('@playwright/test');
+test('Leaving through navigation saves an unfinished worker draft',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Open demo assessment',exact:true}).click();
+ await page.getByLabel('Assessor ID or initials',{exact:true}).fill('BACK-SAVE');
+ await page.getByRole('button',{name:'left',exact:true}).click();await page.getByRole('button',{name:'Video observation',exact:true}).click();
+ await page.getByRole('button',{name:'Begin items',exact:true}).click();await page.getByRole('radio').nth(1).click();
+ await page.getByRole('checkbox',{name:'elevated',exact:true}).click();
+ await page.getByRole('button',{name:/back/i}).first().click();
+ await page.getByRole('button',{name:'Open demo assessment',exact:true}).click();
+ await expect(page.getByText('Items rated: 1 of 31',{exact:true})).toBeVisible();
+ await expect(page.getByText('2. Elbow flexion',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Previous item',exact:true}).click();
+ await expect(page.getByRole('checkbox',{name:'elevated',exact:true})).toBeChecked();
+});
+test('Draft resumes at first missing item, preserves branches, and keeps navigation visible',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Open demo assessment',exact:true}).click();
+ await page.getByLabel('Assessor ID or initials',{exact:true}).fill('DRAFT-PT');
+ await page.getByRole('button',{name:'right',exact:true}).click();await page.getByRole('button',{name:'In-person observation',exact:true}).click();
+ await page.getByRole('button',{name:'Begin items',exact:true}).click();await page.getByRole('radio').first().click();
+ await page.getByRole('button',{name:'Save draft',exact:true}).click();
+ await page.getByRole('button',{name:'Previous item',exact:true}).click();await page.getByRole('button',{name:'Save & back',exact:true}).click();
+ await page.getByRole('button',{name:'Open demo assessment',exact:true}).click();
+ await expect(page.getByText('2. Elbow flexion',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Overview',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Finish assessment',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:/^Review item 13:/}).click();
+ await expect(page.getByRole('radio')).toHaveCount(4);
+ const branch=page.getByRole('button',{name:/^Branch D\./});await branch.click();
+ await expect(page.getByRole('radio')).toHaveCount(4);await page.getByRole('radio').nth(1).click();
+ // Long original criteria must expand the card, rather than overlap the next choice.
+ const cards=await page.getByRole('radio').all();
+ for(let i=0;i<cards.length-1;i++){
+  const a=await cards[i].boundingBox(),b=await cards[i+1].boundingBox();
+  expect(a.y+a.height).toBeLessThanOrEqual(b.y+1);
+ }
+ for(const card of cards){
+  const overflow=await card.evaluate(el=>{const r=el.getBoundingClientRect();return [...el.children].some(c=>c.getBoundingClientRect().bottom>r.bottom+1);});
+  expect(overflow).toBe(false);
+ }
+ const box=await page.getByRole('button',{name:'Next item',exact:true}).boundingBox();
+ expect(box.y+box.height).toBeLessThanOrEqual(page.viewportSize().height);
+ await page.screenshot({path:'dist/flow-lab/observer-flashcard.png',fullPage:true});
+});
+for(const language of ['Bahasa Melayu','简体中文'])test(`Patient language ${language} keeps the entire worker form English`,async({page})=>{
+ await page.goto('/');await page.getByRole('radio',{name:language,exact:true}).click();
+ // The development tool's label is intentionally stable; the clinical screen uses English.
+ await page.getByRole('button',{name:'Open demo assessment',exact:true}).click();
+ await expect(page.getByText('Assessor details',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Begin items',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Begin items',exact:true}).click();
+ await expect(page.getByText('1. Shoulder position',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Not observed / not assessable',exact:true})).toBeVisible();
+});
 test('Real UI: all 31 observer ratings save and reopen on the same recording',async({page})=>{
  await page.goto('/');await expect(page.getByText(/FLOW LAB/).first()).toBeVisible();
  await page.getByRole('button',{name:'Open demo assessment',exact:true}).click();
- await page.getByRole('button',{name:'Open item-by-item G.A.I.T. form',exact:true}).click();
  await page.getByLabel('Assessor ID or initials',{exact:true}).fill('DEMO-RATER');
  await page.getByRole('button',{name:'left',exact:true}).click();
  await page.getByRole('button',{name:'Video observation',exact:true}).click();
  await expect(page.getByText('Total unavailable until all items and assessor details are complete.')).toBeVisible();
+ await page.getByRole('button',{name:'Begin items',exact:true}).click();
  for(let i=0;i<31;i++){
   await page.getByRole('radio').first().click();
   if(i<30)await page.getByRole('button',{name:'Next item',exact:true}).click();
  }
  await expect(page.getByText('G.A.I.T. total: 0 / 62',{exact:true})).toBeVisible();
- await page.getByRole('button',{name:'Save assessment to this phone',exact:true}).click();
- await page.getByRole('button',{name:'View summary & signals',exact:true}).click();
- await expect(page.getByText('Assessment saved with this recording.')).toBeVisible();
- await page.getByRole('button',{name:'Review gait assessment form',exact:true}).click();
+ await page.getByRole('button',{name:'Review assessment',exact:true}).click();
+ await page.getByRole('button',{name:'Finish assessment',exact:true}).click();
+ await page.getByRole('button',{name:'Open demo assessment',exact:true}).click();
  await expect(page.getByText('Items rated: 31 of 31',{exact:true})).toBeVisible();
  await expect(page.getByText('G.A.I.T. total: 0 / 62',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Review item 1: Shoulder position',exact:true}).click();
  await page.getByRole('radio').first().scrollIntoViewIfNeeded();
  await page.screenshot({path:'dist/flow-lab/observer-form.png',fullPage:true});
 });

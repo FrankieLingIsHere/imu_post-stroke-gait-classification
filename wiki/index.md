@@ -4,6 +4,14 @@ type: index
 
 # Index
 
+Current calibration integration (7 October): [[gait-app-collection-workflow#Published calibration and reduced setup burden - 7 October 2026|guided published calibration and one-time local processing]]. Local 0.3.6 uses the stationary computer board and live framing diagram from actual phone frames by default; no tablet is needed. The bagged phone moves while the operator watches computer framing/counts and follows EN/MS/ZH speech. Moving-tablet mode remains explicitly optional. Partial views/temporary target loss preserve accepted views. Private-LAN preview frames are discarded after detection; display-only coordinates cannot admit a calibration. QR pairing and targetless iKalibr transfer/retrieval remain automatic. No printing/ruler/manual ZIP transfer. 188 app and 43 research checks, TypeScript and Android export pass. An actual companion/browser check verifies real detections from synthetic JPEGs, drawn framing, computer fit and optional tablet layout using simulated native counts. CPU/GPU-assisted numerical controls passed; final reference calibration stays CPU. Full noise/geometry, native VIO, physical usability and independent distance validation are incomplete. The verified 0.3.6/build 15 APK contains the native APIs, but lacks this UI follow-up; its unchanged runtime can receive a compatible update. No Git/OTA publication.
+
+Current collector review, 6 October: required observer assessments, pending-first review queues, English clinical wizard with multilingual patient UI, and simultaneous front-camera/IMU research capture are in [[gait-app-collection-workflow]] and [this week's local progress](../docs/classification/WEEKLY_PROGRESS_2026-10-05.md). Version 0.3.1 requires a new camera-enabled APK; source publication awaits review. Camera-clock calibration, metric distance and physical/clinical validation remain incomplete.
+
+Corrected camera trial: the user supplied the intended 41.288-second JSON with saved-video metadata and three continuous streams. Timestamp-selected movement-to-stop data covers 7.547 seconds; earlier motion overlaps spoken guidance and is retained separately. Initial failed JSON is a different attempt. See the current weekly review; precise video synchronization and gait/distance validation remain incomplete.
+
+Camera-trial simplification: long briefing removed; short stage cues and four-second quiet auto-finish replace waiting out a selected duration. Optional settings/details are collapsed. 157 tests and Android export pass; build-7-compatible publication pending. Clinical test/rest rules remain unchanged.
+
 GaitTrace capture update (2026-09-23): [[classification-project-status#2026-09-23 Stationary-start and obsolete speech correction|stationary-start and speech correction]] documents provisional candidate-step gating, automated checks and pending physical validation.
 
 Current implementation: [workspace guide](../docs/classification/README.md) and [weekly progress](../docs/classification/WEEKLY_PROGRESS_2026-09-07.md). Completed public results are in Week 3 commit `b462795`; remaining local files include both completed work and active research.
@@ -286,10 +294,24 @@ GaitTrace 0.2.0 (2) APK is ready; [[classification-project-status]] records the 
 - 2026-10-02 short-trial diagnostics: [[gait-app-collection-workflow]] tracks a local wider post-finish provider read separately from measured test distance; physical validation remains open.
 - 2026-10-02 Google trial route: [[gait-app-collection-workflow]] distinguishes an experimental 5 m out-and-back, 10 m total provider check from the straight clinical 10MWT.
 
-Camera feasibility update (4 October): [[gait-app-ai-model-strategy#Camera feasibility decision update - 4 October 2026|rear-camera holder versus custom front-camera tracking]]. Lower-back location retained; rear ARCore trial preferred if lens exposure is accepted. No camera integration or validation yet.
+Camera feasibility decision (4 October): [[gait-app-ai-model-strategy#Camera feasibility decision update - 4 October 2026|rear-camera holder versus custom front-camera tracking]]. The confirmed screen-out holder remains unchanged. The 6 October [[gait-app-collection-workflow#Simultaneous mounted-camera research trial|simultaneous front-camera/IMU trial]] now implements acquisition; front-camera odometry and physical validation remain incomplete.
 
 Profile entry parity (4 October): [[gait-app-collection-workflow#Profile entry parity and protocol sources - 4 October 2026|test setup clinical details, snapshot/export verification and source links]]. Local implementation passes automated checks; publication and physical-device review pending.
 
 Assessment form location: [[gait-app-collection-workflow#Assessment form discoverability - 4 October 2026|results and saved recording summaries]]. The full 31-item observer form is now implemented locally; see the completion/testing section below.
 
 Complete observer form and sensor-free checks: [[gait-app-collection-workflow#Complete observer G.A.I.T. and sensor-free flow testing - 4 October 2026|31-item form, provenance, exports and test evidence]]; [local Flow Lab instructions](../android/FLOW_TESTING.md). Published in 4d268d3 with successful Android preview OTA (update 01a10777); physical and clinical validation remain pending.
+
+Phone calibration (6 October): [[gait-app-collection-workflow#Current camera processing investigation|executed native capture analysis and row-timed rotation/gyro candidate]]; full geometry, working walking odometry and independent distance validation remain incomplete. Participants retain separate standing baselines.
+
+Phone calibration APK: native 0.3.2/build 8 succeeded, downloaded and used for two real user calibration captures; neither establishes validated distance.
+
+7 October camera app integration: [[gait-app-collection-workflow#Current camera processing investigation|separate native camera-distance research trial, phone-bound profile, voice-gated start and diagnostic ZIP]]. 172 app checks and five desktop Java/OpenCV JNI known-answer checks pass; bench artifact replay rejects tracking. Replacement 0.3.3/build 10 APK has built successfully and passed package/ZIP/native-library verification; it is required for the new tracker. First uploaded physical 3 m capture has healthy raw streams but no imported profile; offline profile replay loses its fixed map after 20 poses. Distance validation remains unsuccessful. See the current workflow investigation and saved notebook outputs.
+
+Calibration ZIP save repair: [[gait-app-collection-workflow#Calibration ZIP persistence repair|same-file URI handling and orphan-capture recovery]], published with approval as build-8-compatible Android preview OTA 01a11195; device receipt/recovery pending.
+
+Actual calibration ZIP: [[gait-app-collection-workflow#Actual calibration capture reviewed - 6 October 2026|native capture and provisional lens fit supported; moved-tablet camera/IMU alignment rejected]]. Offline reprojection-shape bug corrected; no distance claim.
+
+Second phone calibration: [[gait-app-collection-workflow#Current camera processing investigation|row-timed rotation/timing candidate passes internal checks]]; full translation calibration and metric distance remain unavailable. Original angular-rate results are preserved as historical diagnostics.
+
+Current camera-distance retry (7 October): [[gait-app-collection-workflow#Camera-distance retry implementation - 0.3.4 / build 11|profile prerequisite and same-scale map renewal]]. Retained development walk replay follows 151 poses but rejects scale. Two actual profile-loaded build-11 trials reject reprojection. Better mounting improves one pose/0.23 s to six poses/0.72 s with 25 renewed points, but general live tracking and metric distance remain unsuccessful. 173 app/21 Python/six JNI checks and web export pass. Native build 11 finished and downloaded APK package/version, ZIP, growing-map method, profile gate and license assets are verified; exact source scope awaits review before push.

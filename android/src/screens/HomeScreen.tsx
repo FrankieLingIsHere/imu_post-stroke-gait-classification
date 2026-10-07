@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
     <BigButton label="Start a walk" onPress={() => navigation.navigate('Prepare', { duration: 20, audioEnabled: true, isPractice: false })} />
   </>}>
     <LanguagePicker />
-    {flowLabEnabled&&<Card><Text>FLOW LAB — DEMONSTRATION ONLY. No sensors or patient measurements.</Text><BigButton label="Open demo assessment" variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:FLOW_LAB_SESSION,openAssessment:true})}/></Card>}
+    {flowLabEnabled&&<Card><Text>FLOW LAB — DEMONSTRATION ONLY. No sensors or patient measurements.</Text><BigButton label="Open demo assessment" variant="outline" onPress={()=>navigation.navigate('Assessment',{sessionId:FLOW_LAB_SESSION})}/></Card>}
     <Body>Take your time. We will guide you.</Body>
     <View style={{flexDirection:'row',flexWrap:'wrap',gap:10}}>
       <BigButton style={s.tile} label="My recordings" variant="outline" onPress={() => navigation.navigate('History')} />
@@ -26,7 +26,7 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
       <BigButton style={s.tile} label={more?'Close import, research tools and app information':'Import, research tools and app information'} variant="outline" onPress={()=>setMore(!more)} />
     </View>
     {more && <View style={{gap:12}}>
-    {Platform.OS==='android'&&<Card><Text style={s.label}>Research tools</Text><BigButton label="Quick Google API check" variant="outline" onPress={()=>navigation.navigate('GoogleApiCheck')}/><BigButton label="Google distance trial" variant="outline" onPress={()=>navigation.navigate('GoogleDistanceTrial')}/><Body muted>Try 2, 3 or 5 m straight, or 5 m out and back (10 m total). This is separate from clinical tests.</Body></Card>}
+    {Platform.OS==='android'&&<Card><Text style={s.label}>Research tools</Text><BigButton label="Camera distance trial" variant="outline" onPress={()=>navigation.navigate('CameraDistanceTrial')}/><BigButton label="Phone calibration" variant="outline" onPress={()=>navigation.navigate('CameraCalibration')}/><BigButton label="Camera + IMU trial" variant="outline" onPress={()=>navigation.navigate('CameraIMUTrial')}/><BigButton label="Quick Google API check" variant="outline" onPress={()=>navigation.navigate('GoogleApiCheck')}/><BigButton label="Google distance trial" variant="outline" onPress={()=>navigation.navigate('GoogleDistanceTrial')}/><Body muted>Try 2, 3 or 5 m straight, or 5 m out and back (10 m total). This is separate from clinical tests.</Body></Card>}
     <ReleaseInfo />
     {Platform.OS === 'web' && <PwaInstall />}
     <Card><Text style={s.label}>Your walk can help research</Text><Body muted>{Platform.OS==='web'?'Check whether this browser can record all three sensors, or preview the steps and review an exported file.':'Record your movement and choose when to share it. Your recordings stay on this phone.'}</Body></Card>

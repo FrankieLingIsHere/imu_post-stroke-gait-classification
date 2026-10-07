@@ -11,9 +11,10 @@ import PatientSummary from '../components/PatientSummary';
 import { colours } from '../theme';
 import { researchFeatures } from '../researchFeatures';
 import { protocolPhoneEstimate } from '../distanceEstimation';
-import GaitAssessmentForm from '../components/GaitAssessmentForm';
-import { validGaitAssessment } from '../gaitAssessment';
+import { validGaitAssessment, gaitReviewStatus } from '../gaitAssessment';
+import {useFocusEffect} from '@react-navigation/native';
 import { shareRecording } from '../export';
+import CameraTrialReview from '../components/CameraTrialReview';
 
 const Field: React.ComponentType<any> = TextInput ?? View;
 const inputStyle = { minHeight: 48, borderWidth: 1, borderColor: colours.border, borderRadius: 12, paddingHorizontal: 12, fontSize: 17, color: colours.textPrimary, backgroundColor: colours.surface };
@@ -39,7 +40,8 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
     finally{setSaving(false);}
   }
   const [form, setForm] = useState<AssessmentForm>({ completed: false, completionStatus: 'not-completed', timedZoneSeconds: null, distanceWalkedM: null, lapCount: null, restCount: 0, perceivedExertion: null, symptoms: '', clinicianNotes: '', observedGaitScore: null, observedGaitScale: '' });
-  useEffect(() => { Promise.all([getSession(route.params.sessionId), getSessions()]).then(([current, sessions]) => {
+  useFocusEffect(React.useCallback(() => { let active=true; Promise.all([getSession(route.params.sessionId), getSessions()]).then(([current, sessions]) => {
+    if(!active)return;
     setSession(current);
     if (current?.assessment) {
       const saved = current.assessment;
@@ -52,7 +54,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
     const currentAid=current?.participantSnapshot?.clinical.assistiveDevice;
     const previous = sessions.filter(s => s.id !== route.params.sessionId && !!current?.participantId && s.participantId === current.participantId && s.recording && !s.isPractice && s.duration === current.duration && (s.assessmentSetup?.protocol ?? 'research-walk') === currentProtocol && s.participantSnapshot?.clinical.assistiveDevice === currentAid).sort((a, b) => b.date.localeCompare(a.date))[0];
     setPreviousRecording(previous?.recording ?? null);
-  }).catch(() => setError('Could not load details. Open My recordings to try again.')); }, [route.params.sessionId]);
+  }).catch(() => {if(active)setError('Could not load details. Open My recordings to try again.');});return()=>{active=false;}; }, [route.params.sessionId]));
   const r = session?.recording;
   const issues = r ? recordingIssues(r) : [];
   const protocol = session?.assessmentSetup?.protocol ?? 'research-walk';
@@ -101,15 +103,18 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
     <BigButton label="View summary & signals" onPress={() => navigation.navigate('Details', route.params)} />
     <BigButton label="Back to home" variant="outline" onPress={() => navigation.popToTop()} />
   </>}>
-    {session && !session.googleDistanceTrial && <Card>
+    {session?.cameraTrial&&<CameraTrialReview session={session}/>}
+    {session && !session.googleDistanceTrial && !session.cameraTrial && <Card>
       <Text style={ui.label}>Gait assessment form</Text>
       <Body>Record observed test results, symptoms and clinician notes for this recording. This is not an automatic G.A.I.T. score.</Body>
-      <BigButton label={showReference?'Hide gait assessment form':session.assessment?'Review gait assessment form':'Open gait assessment form'} variant="outline" onPress={()=>setShowReference(v=>!v)}/>
+      <Text style={ui.caption}>{gaitReviewStatus(session).required?(gaitReviewStatus(session).complete?'G.A.I.T. assessment complete.':'Required G.A.I.T. assessment is unfinished.'):'Practice or provider experiment — assessment not required.'}</Text>
+      <BigButton label={gaitReviewStatus(session).complete?'G.A.I.T. complete — review':'Complete required G.A.I.T. assessment'} onPress={()=>navigation.navigate('Assessment',{sessionId:session.id})}/>
+      <BigButton label="Test outcomes and worker notes" variant="outline" onPress={()=>setShowReference(v=>!v)}/>
     </Card>}
     {session?.protocolExecution&&<Card><Text style={ui.label}>Protocol capture timing</Text><Body>Capture includes time before Go. The app timer is not a worker-verified clinical outcome.</Body><Text style={ui.caption}>{t('Seconds from Go: {0}').replace('{0}',session.protocolExecution.elapsedFromGoSeconds?.toFixed(1)??t('Not provided'))}</Text><Text style={ui.caption}>{t('Capture ended: {0}').replace('{0}',t(session.protocolExecution.end))}</Text></Card>}
     {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
-    {!session?.googleDistanceTrial && (r ? <PatientSummary recording={r} previousRecording={previousRecording} /> : <Body>Loading recording details…</Body>)}
-    {phoneEstimate && !session?.googleDistanceTrial && <Card><Text style={ui.label}>Single-phone distance estimate · experimental</Text><Body>{phoneOutcome?.distanceM !== null ? `${phoneOutcome?.distanceM?.toFixed(1)} m · ${phoneOutcome?.meanSpeedMps?.toFixed(2) ?? '—'} m/s` : 'No estimate available from this recording.'}</Body>{session?.participantSnapshot?.distanceCalibration&&<Text style={ui.caption}>Using this participant’s reference walk: {session.participantSnapshot.distanceCalibration.referenceDistanceM.toFixed(1)} m across {session.participantSnapshot.distanceCalibration.referenceEventCount} candidate events.</Text>}<Text style={ui.caption}>{protocol==='2mwt'||protocol==='6mwt'?'Average speed includes the full timed interval and any rests.':protocol==='10mwt'?'This is whole-walk estimated speed, not speed in the central 10 m timed zone.':protocol==='tug'?'This is not a verified TUG time or walking distance.':''}</Text><Text style={ui.caption}>{phoneEstimate.reason ?? 'Heuristic based on height and candidate step peaks. Not a measured distance or validated clinical speed.'}</Text></Card>}
+    {!session?.googleDistanceTrial && !session?.cameraTrial && (r ? <PatientSummary recording={r} previousRecording={previousRecording} /> : <Body>Loading recording details…</Body>)}
+    {phoneEstimate && !session?.googleDistanceTrial && !session?.cameraTrial && <Card><Text style={ui.label}>Single-phone distance estimate · experimental</Text><Body>{phoneOutcome?.distanceM !== null ? `${phoneOutcome?.distanceM?.toFixed(1)} m · ${phoneOutcome?.meanSpeedMps?.toFixed(2) ?? '—'} m/s` : 'No estimate available from this recording.'}</Body>{session?.participantSnapshot?.distanceCalibration&&<Text style={ui.caption}>Using this participant’s reference walk: {session.participantSnapshot.distanceCalibration.referenceDistanceM.toFixed(1)} m across {session.participantSnapshot.distanceCalibration.referenceEventCount} candidate events.</Text>}<Text style={ui.caption}>{protocol==='2mwt'||protocol==='6mwt'?'Average speed includes the full timed interval and any rests.':protocol==='10mwt'?'This is whole-walk estimated speed, not speed in the central 10 m timed zone.':protocol==='tug'?'This is not a verified TUG time or walking distance.':''}</Text><Text style={ui.caption}>{phoneEstimate.reason ?? 'Heuristic based on height and candidate step peaks. Not a measured distance or validated clinical speed.'}</Text></Card>}
     {r?.locationDistance && <Card><Text style={ui.label}>{t('Outdoor GPS distance cross-check')}</Text><Body>{r.locationDistance.distanceM === null ? t('No usable location fixes were received.') : `${r.locationDistance.distanceM.toFixed(1)} m`}{r.locationDistance.medianAccuracyM !== null ? ` · ${t('median reported accuracy')} ${r.locationDistance.medianAccuracyM.toFixed(1)} m` : ''}</Body><Text style={ui.caption}>{t(r.locationDistance.status === 'usable-cross-check' ? 'Location signal supports a rough outdoor cross-check only.' : 'Location signal quality was too weak for a useful distance cross-check.')}{' '}{t(r.locationDistance.note)}</Text></Card>}
     {r?.googleRecording && <Card>
       <Text style={ui.label}>Google distance test · experimental</Text>
@@ -142,7 +147,7 @@ export default function ResultScreen({ navigation, route }: NativeStackScreenPro
       {(protocol==='2mwt'||protocol==='6mwt')&&<Field accessibilityLabel={t('Completed course laps')} value={numberText(form.lapCount)} onChangeText={(v:string)=>setNumber('lapCount',v)} placeholder={t('Full laps of {0} m loop').replace('{0}',String(session.assessmentSetup?.courseLengthM ?? '?'))} keyboardType="number-pad" style={inputStyle}/>}
       {(protocol==='2mwt'||protocol==='6mwt')&&<Field accessibilityLabel={t('Rest count')} value={String(form.restCount)} onChangeText={(v:string)=>setForm(p=>({...p,restCount:Math.max(0,Math.floor(Number(v)||0))}))} placeholder={t('Number of rests')} keyboardType="number-pad" style={inputStyle}/>}
       <Field accessibilityLabel={t('Perceived exertion score')} value={numberText(form.perceivedExertion)} onChangeText={(v:string)=>setNumber('perceivedExertion',v)} placeholder={t('Perceived exertion score (optional)')} keyboardType="decimal-pad" style={inputStyle}/>
-      <GaitAssessmentForm value={form.gaitAssessment} onChange={gaitAssessment=>setForm(p=>({...p,gaitAssessment}))}/>
+      <BigButton label="Open G.A.I.T. worker assessment" variant="outline" onPress={()=>navigation.navigate('Assessment',{sessionId:session.id})}/>
       <Field accessibilityLabel={t('Observed gait scale')} value={form.observedGaitScale} onChangeText={(v:string)=>setForm(p=>({...p,observedGaitScale:v}))} placeholder={t('Observed gait scale/name (optional)')} style={inputStyle}/>
       <Field accessibilityLabel={t('Observed gait score')} value={numberText(form.observedGaitScore)} onChangeText={(v:string)=>setNumber('observedGaitScore',v)} placeholder={t('Observed gait score (optional)')} keyboardType="decimal-pad" style={inputStyle}/>
       <Field accessibilityLabel={t('Symptoms')} value={form.symptoms} onChangeText={(v:string)=>setForm(p=>({...p,symptoms:v}))} placeholder={t('Symptoms or reason for stopping (optional)')} multiline style={[inputStyle,{minHeight:72}]}/>

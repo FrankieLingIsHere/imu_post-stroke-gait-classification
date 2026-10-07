@@ -1,9 +1,20 @@
 import { protocolMessages } from './protocolMessages';
 import { gaitMessages } from './gaitMessages';
+import { cameraMessages } from './cameraMessages';
 import { patientMessages } from './patientSummary';
 import { experienceMessages } from './experienceMessages';
 /** English source -> Bahasa Melayu, Simplified Chinese. Export schema remains English. */
 export const messages: Record<string, readonly [string, string]> = {
+  ...cameraMessages,
+  '{0} recordings need G.A.I.T. assessment. Unfinished records appear first.': ['{0} rakaman memerlukan penilaian G.A.I.T. Rekod belum lengkap dipaparkan dahulu.', '{0}份记录需要完成G.A.I.T.评估。未完成的记录优先显示。'],
+  'Complete required G.A.I.T. assessment': ['Lengkapkan penilaian G.A.I.T. wajib', '完成必需的G.A.I.T.评估'],
+  'G.A.I.T. complete — review': ['G.A.I.T. lengkap — semak', 'G.A.I.T.已完成 — 查看'],
+  'Required G.A.I.T. assessment is unfinished.': ['Penilaian G.A.I.T. wajib belum lengkap.', '必需的G.A.I.T.评估尚未完成。'],
+  'G.A.I.T. assessment complete.': ['Penilaian G.A.I.T. lengkap.', 'G.A.I.T.评估已完成。'],
+  'Practice or provider experiment — assessment not required.': ['Latihan atau eksperimen pembekal — penilaian tidak diwajibkan.', '练习或服务接口实验 — 无需完成评估。'],
+  'Open G.A.I.T. worker assessment': ['Buka penilaian G.A.I.T. petugas', '打开工作人员G.A.I.T.评估'],
+  'Review G.A.I.T. worker assessment': ['Semak penilaian G.A.I.T. petugas', '查看工作人员G.A.I.T.评估'],
+  'Test outcomes and worker notes': ['Keputusan ujian dan nota petugas', '测试结果与工作人员备注'],
   ...gaitMessages,
   'Gait assessment form': ['Borang penilaian gaya berjalan', '步态评估表'],
   'Open gait assessment form': ['Buka borang penilaian gaya berjalan', '打开步态评估表'],

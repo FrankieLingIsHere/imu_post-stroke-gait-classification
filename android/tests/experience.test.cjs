@@ -47,6 +47,158 @@ test('All actual tutorial and worker-guide text has Malay and Chinese translatio
   }
  }
 });
+
+test('Camera trial prompts and speech have complete Malay/Chinese catalog entries',()=>{
+ const {messages}=load('translations'),c=load('cameraTrial');
+ for(const cue of [c.cameraPlacementCue,c.cameraWalkCue,c.cameraFinishCue])assert.ok(messages[cue],cue);
+ for(const file of ['screens/CameraIMUTrialScreen.tsx','components/CameraTrialReview.tsx']){
+  const s=fs.readFileSync(path.resolve(__dirname,'../src',file),'utf8');
+  for(const match of s.matchAll(/<Body>([^<{]+)<\/Body>|label="([^"{]+)"/g)){
+   const text=match[1]??match[2];if(!messages[text])assert.equal(text,'Retry save',text);
+  }
+ }
+ for(const [key,values] of Object.entries(load('cameraMessages').cameraMessages)){
+  for(const value of values){assert.ok(value.trim());assert.ok(!/\?\?\?/.test(value),key);}
+ }
+});
+
+test('Guided calibration waits for spoken instructions, selects real native views, and transfers alignment automatically',async()=>{
+ const node=name=>props=>React.createElement(name,props,props.children);let progress,resolveLens,resolveAlignment,voice,begin=0,uploads=0;
+ const voices=[];const computer={url:'http://192.168.1.2:8765',token:'x'};
+ const bridge={addListener(_n,fn){progress=fn;return{remove(){}};},async phoneCalibrationInfo(){return '{}';},async digitalCalibrationBoard(){return 'file:///board.html';},captureGuidedLens(){return new Promise(r=>resolveLens=r);},captureAlignment(){return new Promise(r=>resolveAlignment=r);},async beginAlignmentMovement(){begin++;},async stop(){}};
+ const native={View:node('View'),Image:node('Image'),Pressable:node('Pressable'),Modal:node('Modal'),AppState:{addEventListener(){return{remove(){}};}},BackHandler:{addEventListener(){return{remove(){}};}}};
+ const mocks={'react-native':native,'expo-camera':{CameraView:node('Camera'),useCameraPermissions:()=>[{granted:true},async()=>({granted:true})]},'expo-keep-awake':{useKeepAwake(){}},'expo-sharing':{},'expo-file-system':{async readAsStringAsync(){return 'board';}},
+  '../components/Screen':{Screen:p=>React.createElement('Screen',p,p.children,p.actions),Body:node('Body'),ui:{}},'../components/BigButton':{default:node('Button'),__esModule:true},'./CameraCalibrationScreen':{default:node('Legacy'),__esModule:true},'../i18n':{Text:node('Text'),t:s=>s},
+  '../audio':{speakQueued(s,o){voices.push(s);return new Promise(r=>voice=()=>{o?.onDone?.();r();});},stopSpeaking(){}},
+  '../cameraCalibration':{calibrationBridge:()=>bridge,async currentLensReport(){return null;},async savedReference(){return null;},async retainCalibrationCapture(r){return r;},async recoverLensReport(r){return r.report;}},
+  '../referenceCalibration':{createLensFeedback(){return{send(){},close(){}};},async calibrationComputer(){return computer;},async pendingReference(){return null;},async savedReference(){return null;},async showComputerBoard(){},async submitAlignment(){uploads++;},async pollReference(){return {distanceReady:false};}}};
+ const C=load('screens/PhoneCalibrationScreen',mocks).default;let tree;await act(async()=>{tree=create(React.createElement(C,{navigation:{goBack(){}}}));});
+ const button=label=>tree.root.findAllByType('Button').find(n=>n.props.label===label);
+ await act(async()=>{button('Calibrate camera lens').props.onPress();});assert.equal(resolveLens,undefined);
+ await act(async()=>voice());assert.equal(typeof resolveLens,'function');
+ assert.match(voices[0],/Watch the framing on your computer/);
+ assert.ok(button('Share digital board')===undefined,'Actions are hidden during capture');
+ act(()=>progress({phase:'lens',imageUri:'file:///view.jpg',lens:JSON.stringify({acceptedViews:12,hint:'Tilt the board view gently.'})}));
+ assert.ok(tree.root.findAllByType('Text').some(n=>n.props.children==='Clear views saved: 12'));
+ await act(async()=>resolveLens({report:{lensReady:true},error:null}));assert.match(voices.at(-1),/Lens parameters saved/);
+ await act(async()=>voice());assert.ok(button('Align camera and sensors'));
+ await act(async()=>button('Align camera and sensors').props.onPress());assert.equal(resolveAlignment,undefined);
+ await act(async()=>voice());assert.equal(typeof resolveAlignment,'function');
+ await act(async()=>progress({phase:'alignment-cue',imageUri:''}));assert.equal(begin,0);
+ await act(async()=>voice());assert.equal(begin,1);
+ act(()=>progress({phase:'alignment-cue',imageUri:''}));assert.equal(begin,1,'Movement instruction must not repeat');
+ await act(async()=>resolveAlignment({metadata:'{}',uri:'file:///alignment.zip'}));assert.equal(uploads,0);
+ await act(async()=>voice());assert.equal(uploads,1);assert.match(voices.at(-1),/Research review is still needed/);
+ await act(async()=>voice());assert.ok(button('Align camera and sensors'));act(()=>tree.unmount());
+});
+
+test('Every native lens hint has translated computer and optional tablet handling, including loss of board view',()=>{
+ const guide=load('lensGuidance'),language=load('language'),source=fs.readFileSync(path.resolve(__dirname,'../modules/gait-camera-calibration/android/src/main/java/expo/modules/gaitcalibration/GuidedLensCalibration.java'),'utf8');
+ const hints=[...source.matchAll(/(?:hint=|return )"([^"]+)"/g)].map(m=>m[1]);
+ assert.ok(hints.length>=10);
+ for(const text of [...hints.map(s=>guide.lensGuidance(s)),...hints.map(s=>guide.lensGuidance(s,'tablet')),guide.lensPreparation,guide.tabletLensPreparation]){
+  assert.doesNotMatch(text,/whole board/);
+  for(const l of ['ms','zh'])assert.notEqual(language.translate(text,l),text,text);
+ }
+ assert.match(guide.lensGuidance('Tilt the phone gently left and right.'),/Turn the phone/);
+ assert.match(guide.lensGuidance('Tilt the phone gently left and right.','tablet'),/Turn the tablet/);
+ assert.match(guide.lensGuidance('Keep the whole board in view.'),/back into view/);
+ assert.equal(guide.lensGuidance('Lens parameters saved. Sensor alignment is still needed.'),'Lens parameters saved. Sensor alignment is still needed.');
+});
+
+test('Guided calibration cancels before capture instead of starting after an interrupted instruction',async()=>{
+ const node=name=>p=>React.createElement(name,p,p.children);let voice,captures=0,stops=0;
+ const bridge={addListener(){return{remove(){}};},async phoneCalibrationInfo(){return '{}';},async captureGuidedLens(){captures++;},async stop(){stops++;}};
+ const mocks={'react-native':{View:node('View'),Image:node('Image'),Pressable:node('Pressable'),Modal:node('Modal'),AppState:{addEventListener(){return{remove(){}};}},BackHandler:{addEventListener(){return{remove(){}};}}},'expo-camera':{CameraView:node('Camera'),useCameraPermissions:()=>[{granted:true},async()=>({granted:true})]},'expo-keep-awake':{useKeepAwake(){}},'expo-sharing':{},'expo-file-system':{},'../components/Screen':{Screen:p=>React.createElement('Screen',p,p.children,p.actions),Body:node('Body'),ui:{}},'../components/BigButton':{default:node('Button'),__esModule:true},'./CameraCalibrationScreen':{default:node('Legacy'),__esModule:true},'../i18n':{Text:node('Text'),t:s=>s},'../audio':{speakQueued(){return new Promise(r=>voice=r);},stopSpeaking(){}},'../cameraCalibration':{calibrationBridge:()=>bridge,async currentLensReport(){return null;}},'../referenceCalibration':{async calibrationComputer(){return null;},async pendingReference(){return null;},async savedReference(){return null;}}};
+ const C=load('screens/PhoneCalibrationScreen',mocks).default;let tree;await act(async()=>{tree=create(React.createElement(C,{navigation:{goBack(){}}}));});
+ const button=label=>tree.root.findAllByType('Button').find(n=>n.props.label===label);
+ await act(async()=>button('Use a tablet instead').props.onPress());
+ await act(async()=>button('Calibrate camera lens').props.onPress());act(()=>button('Cancel capture').props.onPress());await act(async()=>voice());
+ assert.equal(captures,0);assert.equal(stops,1);assert.ok(button('Calibrate camera lens'));act(()=>tree.unmount());
+});
+
+test('Every guided calibration screen instruction and spoken cue has both patient translations',()=>{
+ const {messages}=load('translations'),source=fs.readFileSync(path.resolve(__dirname,'../src/screens/PhoneCalibrationScreen.tsx'),'utf8');
+ for(const match of source.matchAll(/<Body>([^<{]+)<\/Body>|label="([^"{]+)"|(?:sayComplete|speakQueued|setHint)\('([^']+)'\)/g)){
+  const text=match[1]??match[2]??match[3];assert.ok(messages[text],text);
+  for(const language of ['ms','zh'])assert.notEqual(load('language').translate(text,language),text,text);
+ }
+});
+
+test('Researcher calibration UI follows native progress and keeps processing separate from readiness',async()=>{
+ const node=name=>props=>React.createElement(name,props,props.children);
+ let progress,resolveCapture;const speech=[],saved=[],shared=[];
+ const bridge={addListener(_name,listener){progress=listener;return {remove(){}};},captureWithOptics(setup){assert.equal(setup,'waist-bag-window');return new Promise(r=>resolveCapture=r);},async stop(){}};
+ const native={View:node('View'),Image:node('Image'),Pressable:node('Pressable'),AppState:{addEventListener(){return {remove(){}};}},BackHandler:{addEventListener(){return {remove(){}};}}};
+ const Screen=props=>React.createElement('Screen',props,props.children,props.actions);
+ const mocks={'react-native':native,'expo-camera':{useCameraPermissions:()=>[{granted:true},async()=>({granted:true})]},'expo-keep-awake':{useKeepAwake(){}},
+  'expo-sharing':{async isAvailableAsync(){return true;},async shareAsync(uri){shared.push(uri);}},'expo-document-picker':{},'expo-file-system':{},
+  '../components/Screen':{Screen,Body:node('Body'),ui:{}},'../components/BigButton':{default:node('Button'),__esModule:true},
+  '../i18n':{Text:node('Text'),t:s=>s},'../audio':{async speakQueued(s,o){speech.push(s);o?.onDone?.();},stopSpeaking(){}},
+  '../cameraCalibration':{calibrationBridge:()=>bridge,async latestCalibrationCapture(){return null;},async latestNoiseCapture(){return null;},async hasCalibrationGeometry(){return false;},async retainCalibrationCapture(v){saved.push(v);return v;},async retainCalibrationReport(){}}};
+ const Component=load('screens/CameraCalibrationScreen',mocks).default;let tree;
+ await act(async()=>{tree=create(React.createElement(Component,{navigation:{goBack(){}}}));});
+ const button=label=>tree.root.findAllByType('Button').find(n=>n.props.label===label);
+ await act(async()=>{void button('Capture calibration').props.onPress();});
+ assert.ok(button('Cancel capture'));assert.equal(shared.length,0);
+ await act(async()=>{progress({elapsedSeconds:1,frames:10,imageUri:'file://frame.jpg',phase:'still'});});
+ await act(async()=>{progress({elapsedSeconds:6,frames:80,imageUri:'file://next.jpg',phase:'move'});});
+ assert.deepEqual(speech.slice(0,2),['Hold the phone still, facing the board.','Slowly tilt and move the phone. Keep the board in view.']);
+ await act(async()=>{resolveCapture({uri:'file://calibration.zip',metadata:'{}',error:null});});
+ assert.equal(saved.length,1);assert.ok(button('Import processed calibration'));
+ assert.ok(tree.root.findAllByType('Body').some(n=>n.props.children==='No distance calibration is active yet.'));
+ await act(async()=>{await button('Export calibration capture').props.onPress();});assert.deepEqual(shared,['file://calibration.zip']);
+ await act(async()=>tree.unmount());
+});
+
+test('Noise UI waits for completed guidance, uses native elapsed time and exports its separate ZIP',async()=>{
+ const node=name=>props=>React.createElement(name,props,props.children);let progress,resolveVoice,resolveNoise,noiseCalls=0,permissions=0;const shared=[],retained=[];
+ const bridge={addListener(_,f){progress=f;return {remove(){}};},captureNoise(){noiseCalls++;return new Promise(r=>resolveNoise=r);},async stop(){}};
+ const mocks={'react-native':{View:node('View'),Image:node('Image'),Pressable:node('Pressable'),AppState:{addEventListener(){return {remove(){}};}},BackHandler:{addEventListener(){return {remove(){}};}}},
+ 'expo-camera':{useCameraPermissions:()=>[{granted:false},async()=>{permissions++;return {granted:true};}]},'expo-keep-awake':{useKeepAwake(){}},'expo-document-picker':{},'expo-file-system':{},
+ 'expo-sharing':{async isAvailableAsync(){return true;},async shareAsync(uri){shared.push(uri);}},
+ '../components/Screen':{Screen:p=>React.createElement('Screen',p,p.children,p.actions),Body:node('Body'),ui:{}},'../components/BigButton':{default:node('Button'),__esModule:true},'../i18n':{Text:node('Text'),t:s=>s},
+ '../audio':{speakQueued(s,o){return new Promise(r=>{resolveVoice=()=>{o?.onDone?.();r();};});},stopSpeaking(){}},
+ '../cameraCalibration':{calibrationBridge:()=>bridge,async latestCalibrationCapture(){return null;},async latestNoiseCapture(){return null;},async retainNoiseCapture(v){retained.push(v);return v;},async hasCalibrationGeometry(){return false;}}};
+ const C=load('screens/CameraCalibrationScreen',mocks).default;let tree;await act(async()=>{tree=create(React.createElement(C,{navigation:{goBack(){}}}));});
+ const button=label=>tree.root.findAllByType('Button').find(n=>n.props.label===label);
+ act(()=>tree.root.findAllByType('Pressable').find(n=>n.props.accessibilityRole==='tab'&&n.props.children.props.children==='Sensor noise').props.onPress());
+ await act(async()=>{button('Measure sensor noise (5 min)').props.onPress();});assert.equal(noiseCalls,0);
+ await act(async()=>resolveVoice());assert.equal(noiseCalls,1);assert.equal(permissions,0);
+ act(()=>progress({elapsedSeconds:125,phase:'noise',imageUri:'',frames:0}));assert.ok(tree.root.findAllByType('Text').some(n=>Array.isArray(n.props.children)&&n.props.children[0]===175));
+ await act(async()=>resolveNoise({uri:'file:///noise.zip',metadata:'{}',error:null}));assert.equal(retained.length,1);assert.equal(button('Measure sensor noise (5 min)'),undefined);
+ await act(async()=>resolveVoice());assert.ok(button('Export sensor noise'));assert.equal(button('Import processed calibration'),undefined);
+ await act(async()=>button('Export sensor noise').props.onPress());assert.deepEqual(shared,['file:///noise.zip']);act(()=>tree.unmount());
+});
+
+test('Native camera UI follows real controller stages and saves matching video/IMU metadata with injected hardware',async()=>{
+ const React=require('react'),renderer=require('react-test-renderer');let now=0,tick,finishVideo;const spoken=[],sessions=[],files=new Map();
+ const node=name=>props=>React.createElement(name,props,props.children);
+ const native={View:node('View'),Text:node('Text'),TextInput:node('TextInput'),Pressable:node('Pressable'),Platform:{OS:'android'},AppState:{currentState:'active',addEventListener(){return {remove(){}};}},BackHandler:{addEventListener(){return {remove(){}};}}};
+ const Camera=React.forwardRef((props,ref)=>{React.useImperativeHandle(ref,()=>({recordAsync:()=>new Promise(r=>finishVideo=r),stopRecording(){}}),[]);React.useEffect(()=>{props.onCameraReady();},[]);return React.createElement('Camera',props);});
+ let engine;class Engine{
+  constructor(){engine=this;this.allReceiving=true;this.baselineReady=true;this.motionStatus={enough:true,upright:true,steady:true,context:'rest-or-quiet'};this.pulses=0;}
+  connect(){}begin(){this.recordingClock={monotonicMs:now,startedAt:'2026-10-06T00:00:00Z'};}disconnect(){}preserveSetupBaseline(){}candidateStepsAfter(){return this.pulses;}
+  stop(reason){return {source:'device',schemaVersion:2,startedAt:'2026-10-06T00:00:00Z',elapsedSeconds:now/1000,stopReason:reason,requestedHz:{accelerometer:100,gyroscope:100,magnetometer:50},streams:{accelerometer:[{x:1,y:0,z:0,elapsedMs:0,sensorTimestampSeconds:0}],gyroscope:[],magnetometer:[]},guidanceEvents:[]};}
+ }
+ const storage={documentDirectory:'file://doc/',async getFreeDiskStorageAsync(){return 1024**3;},async makeDirectoryAsync(){},async getInfoAsync(p){return files.get(p)??{exists:false};},async moveAsync({to}){files.set(to,{exists:true,isDirectory:false,size:1024});}};
+ const mocks={react:React,'react-native':native,'expo-camera':{CameraView:Camera,useCameraPermissions:()=>[{granted:true},async()=>({granted:true})]},'expo-keep-awake':{useKeepAwake(){}},'expo-file-system':storage,'expo-sharing':{},
+ '../components/Screen':{Screen:props=>React.createElement('Screen',props,props.children,props.actions),Card:node('Card'),Body:node('Body'),ui:{row:{},choice:{},selected:{},label:{},caption:{},error:{}}},'../components/BigButton':node('Button'),'../components/CameraTrialReview':node('Review'),'../i18n':{Text:node('Text'),t:s=>s},'../sensors':{SensorRecorder:Engine,checkSensors:async()=>{}},'../audio':{speakQueued:(text,opts)=>{spoken.push({text,opts});return Promise.resolve();},stopSpeaking(){}},
+ '../store':{generateSessionId:()=> 'paired-ui',saveSession:async s=>sessions.push(JSON.parse(JSON.stringify(s)))},'./store':{saveSession:async s=>sessions.push(JSON.parse(JSON.stringify(s)))},'./language':{translate:s=>s},'../theme':{colours:{border:'#ddd'}}};
+ const Screen=load('screens/CameraIMUTrialScreen',mocks,{performance:{now:()=>now},setInterval:fn=>{tick=fn;return 1;},clearInterval(){}}).default;
+ let tree;await renderer.act(async()=>{tree=renderer.create(React.createElement(Screen,{navigation:{goBack(){}}}));});
+ const button=label=>tree.root.findAll(n=>n.type==='Button'&&n.props.label===label)[0];
+ assert.equal(button('Start paired capture').props.disabled,false);
+ await renderer.act(async()=>{button('Start paired capture').props.onPress();await new Promise(r=>setImmediate(r));});assert.equal(spoken.length,1);
+ assert.ok(engine);assert.ok(spoken[0].text.split(/\s+/).length<=15);
+ await renderer.act(async()=>{spoken[0].opts.onDone();});await renderer.act(async()=>{now=1000;tick();});await renderer.act(async()=>{now=6000;tick();});assert.equal(spoken.length,2);
+ await renderer.act(async()=>{spoken[1].opts.onDone();});await renderer.act(async()=>{now=10000;tick();});assert.equal(sessions.length,0);
+ engine.motionStatus={enough:true,upright:true,steady:false,context:'movement'};engine.pulses=1;
+ await renderer.act(async()=>{tick();});engine.motionStatus={enough:true,upright:true,steady:true,context:'rest-or-quiet'};await renderer.act(async()=>{now=12000;tick();});await renderer.act(async()=>{now=16000;tick();});assert.equal(sessions[0].cameraTrial.video.status,'pending');assert.match(spoken.at(-1).text,/Finished/);const cueCount=spoken.length;
+ await renderer.act(async()=>{finishVideo({uri:'file://cache/paired.mp4'});await new Promise(r=>setImmediate(r));});
+ const s=sessions.at(-1);assert.equal(s.id,'paired-ui');assert.equal(s.cameraTrial.video.fileName,'camera-paired-ui.mp4');assert.equal(s.cameraTrial.end,'quiet-stop');assert.equal(s.cameraTrial.video.status,'saved');assert.equal(s.isPractice,true);
+ assert.equal(s.cameraTrial.timing.vioReady,false);assert.equal(spoken.length,cueCount);await renderer.act(async()=>tree.unmount());
+});
 test('Speech uses translated text and matching installed voice; missing Malay voice errors explicitly', async () => {
  const l=load('language');l.setLanguage('zh');let spoken,failed;
  const speech={async isSpeakingAsync(){return false},async stop(){},async getAvailableVoicesAsync(){return [{language:'en-US',identifier:'en'},{language:'zh-CN',identifier:'zh'}]},speak(text,options){spoken={text,options}}};

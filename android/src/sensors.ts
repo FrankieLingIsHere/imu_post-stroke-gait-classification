@@ -140,6 +140,9 @@ export class SensorRecorder {
     this.shift = this.baseline ? new ShiftMonitor(this.baseline.mean.accelerometer) : null;
     this.streams = emptyStreams(); this.direction.begin(); this.startTime = now; this.startedAt = new Date().toISOString();
   }
+  get recordingClock() {
+    return this.startTime===null?null:{monotonicMs:this.startTime,startedAt:this.startedAt};
+  }
   stop(reason: Recording['stopReason']): Recording {
     if (this.stopped) return this.stopped;
     this.disconnect();

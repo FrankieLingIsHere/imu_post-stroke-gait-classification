@@ -1,5 +1,5 @@
 import {gaitRubric} from './gaitRubric';
-import {gaitAssessmentSummary} from './gaitAssessment';
+import {gaitAssessmentSummary,gaitReviewStatus} from './gaitAssessment';
 import type { SessionRecord } from './store';
 import { SENSOR_NAMES, SENSOR_UNITS } from './recording';
 import { describeMovement } from './movement';
@@ -7,21 +7,21 @@ import { researchFeatures } from './researchFeatures';
 import { protocolPhoneEstimate } from './distanceEstimation';
 import { comparisonSignals } from './comparisonSignals';
 import { alternatingTiming } from './alternatingTiming';
-const GAIT_COLUMNS=['gait_form_version','gait_assessor','gait_assessed_at','gait_limb','gait_observation_source','gait_video_reference','gait_rated_items','gait_total',...gaitRubric.flatMap(i=>[`gait_${i.id}_option`,`gait_${i.id}_score`,`gait_${i.id}_notes`,`gait_${i.id}_qualifiers`])];
+const GAIT_COLUMNS=['gait_review_status','gait_labelled_analysis_ready','gait_form_version','gait_assessor','gait_assessed_at','gait_limb','gait_observation_source','gait_video_reference','gait_rated_items','gait_total',...gaitRubric.flatMap(i=>[`gait_${i.id}_option`,`gait_${i.id}_score`,`gait_${i.id}_notes`,`gait_${i.id}_qualifiers`])];
 function gaitCells(session:SessionRecord):unknown[]{
  const g=session.assessment?.gaitAssessment,summary=g?gaitAssessmentSummary(g):null;
- return [g?.version??'',g?.assessor??'',g?.assessedAt??'',g?.limb??'',g?.observationSource??'',g?.videoReference??'',summary?.rated??'',summary?.total??'',...gaitRubric.flatMap(i=>{
+ return [gaitReviewStatus(session).status,gaitReviewStatus(session).labelledAnalysisReady,g?.version??'',g?.assessor??'',g?.assessedAt??'',g?.limb??'',g?.observationSource??'',g?.videoReference??'',summary?.rated??'',summary?.total??'',...gaitRubric.flatMap(i=>{
   const r=g?.ratings[String(i.id)],o=i.options.find(o=>o.id===r?.optionId);return [o?.id??'',o?.score??'',r?.notes??'',r?.qualifiers?.join(' | ')??''];
  })];
 }
 const GOOGLE_COLUMNS = ['google_distance_m','google_steps','google_mean_speed_mps','google_record_status','google_distance_coverage_fraction','google_window_start_unix_ms','google_window_end_unix_ms','google_poll_count','google_boundary_records_excluded','google_cleanup_status','google_provider_version','experiment_kind','trial_reference_distance_m','trial_route_completed','trial_end','trial_route_pattern'];
 function googleCells(session: SessionRecord): unknown[] {
   const g = session.recording?.googleRecording;
-  return [g?.distanceM??'',g?.steps??'',g?.meanSpeedMps??'',g?.status??'not-recorded',g?.distanceCoverageFraction??'',g?.startUnixMs??'',g?.endUnixMs??'',g?.polls.length??'',g?.boundaryRecordsExcluded??'',g?.subscriptionCleanup??'',g?.version??'',session.googleDistanceTrial?.version??'',session.googleDistanceTrial?.referenceDistanceM??'',session.googleDistanceTrial?.completedMarkedRoute??'',session.googleDistanceTrial?.end??'',session.googleDistanceTrial?.routePattern??''];
+  return [g?.distanceM??'',g?.steps??'',g?.meanSpeedMps??'',g?.status??'not-recorded',g?.distanceCoverageFraction??'',g?.startUnixMs??'',g?.endUnixMs??'',g?.polls.length??'',g?.boundaryRecordsExcluded??'',g?.subscriptionCleanup??'',g?.version??'',session.cameraTrial?.version??session.googleDistanceTrial?.version??'',session.googleDistanceTrial?.referenceDistanceM??'',session.googleDistanceTrial?.completedMarkedRoute??'',session.googleDistanceTrial?.end??'',session.googleDistanceTrial?.routePattern??''];
 }
 export function exportJSON(session: SessionRecord): string {
   const features=session.recording?researchFeatures(session.recording,session.demographics?.heightCm??null,session.participantSnapshot?.distanceCalibration):null;
-  return JSON.stringify({ exportSchemaVersion: 3, source: session.recording ? 'device' : 'legacy-simulation', note: 'Research capture, not diagnosis. Device streams are asynchronous and unresampled.', analysisOrigin: 'computed-from-saved-signals', alternatingTiming: session.recording ? alternatingTiming(session.recording) : null, comparisonSignals: session.recording ? comparisonSignals(session.recording) : null, movementSummary: session.recording ? describeMovement(session.recording) : null, researchFeatures:features, protocolPhoneEstimate:features?protocolPhoneEstimate(features.distanceEstimate,session.assessmentSetup?.protocol??'research-walk',session.protocolExecution?.elapsedFromGoSeconds):null, session }, null, 2);
+  return JSON.stringify({ exportSchemaVersion: 3, analysisPurpose: session.cameraTrial?'camera-imu-feasibility':'gait-research', gaitReview: gaitReviewStatus(session), source: session.recording ? 'device' : 'legacy-simulation', note: 'Research capture, not diagnosis. Device streams are asynchronous and unresampled.', analysisOrigin: 'computed-from-saved-signals', alternatingTiming: session.recording ? alternatingTiming(session.recording) : null, comparisonSignals: session.recording ? comparisonSignals(session.recording) : null, movementSummary: session.recording ? describeMovement(session.recording) : null, researchFeatures:features, protocolPhoneEstimate:features?protocolPhoneEstimate(features.distanceEstimate,session.assessmentSetup?.protocol??'research-walk',session.protocolExecution?.elapsedFromGoSeconds):null, session }, null, 2);
 }
 /** Separate tidy feature CSV; raw event CSV remains unchanged. JSON carries full provenance. */
 export function exportFeatureCSV(session: SessionRecord): string {

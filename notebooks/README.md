@@ -153,3 +153,47 @@ This is a complete structural inventory, not a full semantic review or deletion
 approval. No experiments were run or scripts deleted by this check.
 
 - [39_phone_sampling_feasibility.ipynb](39_phone_sampling_feasibility.ipynb): executed development-data rate-reduction audit, with coverage and explicit nonclinical limitations.
+
+- [phone_camera_imu_calibration.ipynb](phone_camera_imu_calibration.ipynb): phone-specific board capture/processing, two real calibration artifact analyses, rotation-only research profile export, numerical/rejection checks and actual Java/OpenCV JNI known-answer execution plus bench-capture replay. First uploaded physical 3 m build-10 trial confirms acquisition but lacks a profile; original profile replay loses the map after 20 poses; revised same-scale map renewal reaches 151 poses, then rejects physical scale. Six native numerical checks include renewal scale preservation. Distance remains unvalidated.
+
+  Executed 7 October continuation: pinned offline VINS-Mono estimator replay of
+  three retained phone captures and OpenVINS library build. Corrected harness
+  analytic control passes (559 initialized states, 0.0003602 m rigid-only RMSE),
+  26 research checks pass. Two phone replays maintain initialized states; third
+  diverges/resets. Calibration/startup integrity remains unresolved, with all
+  clinical distance flags false. Reference frontend is diagnostic Python LK,
+  not the complete unchanged upstream ROS application.
+
+  Execution 41 records the 7 October native acquisition preparation: 34 research
+  checks, 177 app checks, TypeScript, real JVM queue/concurrency checks, known
+  white-noise control and rejection of retained walks/scalar replay states as
+  complete noise/readiness evidence. No new physical phone capture or VINS run.
+
+  Execution 42 adds an end-to-end synthetic stationary ZIP check (35 total
+  research checks) and records the native build-12 Kotlin JSON-map failure,
+  explicit-cast correction, build-13 submission and refreshed source hashes.
+  Capture improvement remains awaiting physical validation.
+
+  Execution 43 records final 35 research checks and verified 0.3.5/build 13 APK,
+  actual native fingerprint/package/methods/ABIs/licenses, and false physical/
+  calibration/distance readiness. The matching APK/release record remains local
+  in android/dist/apk; no source push or OTA publication.
+
+  Executions 44–49 record actual published-reference integration failures and
+  the completed CPU control, retaining each failure rather than hiding it.
+  Execution 50 analyses that newly executed synthetic control: 582.2 seconds,
+  reusing earlier upstream image preparation, 199 measured SfM keyframes, 5.68 mm
+  translation and 0.0165-degree rotation error,
+  with clock/readout errors below 0.04 ms. It also records verified 0.3.6/build 15
+  and actual local QR/HTTP startup. These are software/numerical checks; physical
+  phone and clinical distance validation remain false. CUDA SfM controls are
+  recorded separately, with their own worker identity and no solver-GPU claim.
+
+  Executions 51–52 contain the fresh CUDA SfM + published-reference control and
+  explicit artifact analysis: 199 registered images, 6.46 mm translation error,
+  0.033-degree rotation error and 0.161 ms clock error. Actual GPU extractor/matcher
+  logs, observed RTX 5060 usage, 24/19-second stage times, immutable worker/binary
+  identities, 938.9-second total runtime, 40 passing research tests and unchanged
+  build-15 Android fingerprint are retained. No overall speedup is claimed across
+  different COLMAP versions/preparation states. Physical phone readiness remains
+  false, and generated controls remain ignored outside the notebook.

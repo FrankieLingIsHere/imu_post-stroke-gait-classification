@@ -2721,3 +2721,368 @@ Digitized supplied 31-item/62-point Appendix A with source hash, branch/qualifie
 ## [2026-10-04] sync | Approved observer-form publication and OTA confirmation
 
 User approved push for phone testing. Published 4d268d3; all three workflows passed. Expo confirms Android update 01a10777-32e3-787a-b168-cbfae2e54e84 on the installed build-6 runtime. Recorded publication in workflow/index/weekly notes; physical receipt and native review still pending. Generated artifacts remain local.
+
+## [2026-10-06] sync | Required observer review, clinical language agreement and camera sample
+
+Added required/pending observer status, unfinished-first history/dashboard, dedicated item-card worker wizard, draft/resume/navigation saving and explicit JSON/feature CSV readiness. User chose multilingual patient UI with consistently English clinical G.A.I.T. form. Updated current workflow, specification, index and current-week progress. Inspected supplied front-camera clip and documented visibility/blur/obstruction and missing calibration/synchronized IMU/reference trajectory; no distance accuracy or clinical validation was established. All new changes remain local pending scope approval, with generated video/frame artifacts ignored.
+
+## [2026-10-06] sync | Mounted-camera occlusion clarification
+
+Compared 12 time-spaced frames with 10%/20% image-height guides. Several frames suggest roughly 10-20% upper-edge obstruction with a varying soft boundary; this is visual estimation, not segmentation or a proven accuracy limit. Updated workflow, specification and weekly progress. Current holder remains a viable feasibility-test candidate; synchronized calibration/tracking and metric validation are still absent. Generated contact sheet stays local and ignored.
+
+## [2026-10-06] sync | Simultaneous front-camera/IMU capture implemented locally
+
+Added a separate native research trial with in-app camera permission, muted uncropped video, all three real IMU streams, participant-paced placement, completed speech/fresh-movement timer and matching-ID MP4/JSON exports. Version 0.3.1 requires a new APK; EAS assigned build 7 with runtime 33936923bf8f867ab7acf5673f6214eab56383c9, completion pending verification. Updated current workflow, specification, index, weekly progress and release/testing notes. 153 automated controller/storage/UI tests, 10 web checks, TypeScript and Android export pass. Actual camera-frame timing/calibrated offset are unavailable; VIO readiness is false. Physical concurrent capture, distance and clinical validation remain incomplete. Source publication awaits review; generated artifacts remain local/ignored.
+
+## [2026-10-06] sync | Camera-enabled APK build completed
+
+EAS build c1bee024-4f46-40e3-b060-06a3a0e3524e completed successfully for GaitTrace 0.3.1 Android build 7, preview runtime 33936923bf8f867ab7acf5673f6214eab56383c9. Updated current workflow, weekly progress, release history and local publication review. The APK contains the uploaded local working-tree changes; source publication remains pending approval. Real-device capture, precise synchronization and distance validation are still incomplete.
+
+## [2026-10-06] sync | First supplied camera/IMU pair cannot establish walking capture
+
+Inspected build-7 session 2026-10-06T09-19-25-370Z-410c6bc3: interrupted after 0.154 seconds, twelve total readings, camera error and no walking-stage events. Accompanying MP4 is 41.13 seconds with later creation metadata; matching identity is unresolved. No synchronized crop, sensor-rate quality result, gait or distance was invented. Updated workflow, index and weekly progress; contact sheet/provenance remain local/ignored. Matching longer JSON is required and native-error cause remains undiagnosed.
+
+## [2026-10-06] sync | Corrected camera-trial export and walking-window selection
+
+User corrected the JSON to session ending 5084d08e: 41.288 seconds with saved-video metadata and continuous accelerometer/gyroscope/magnetometer streams at approximately 81.05/80.79/37.08 Hz, no native gaps above 100 ms. Selected official movement-to-stop window 33.741-41.288 seconds (7.547 seconds), marked user-stopped; preserved earlier approximately 23-39 seconds motion separately because it overlaps speech and cannot be silently treated as verified walking. Updated current workflow, index and weekly progress, resolving the earlier export mismatch. Raw originals/axes remain unchanged; local CSVs and provenance are ignored. Accurate video-frame alignment, gait and distance remain unvalidated.
+
+## [2026-10-06] sync | Camera stopping guidance corrected; visual tracking screened
+
+User attributed the early Stop action to reaching the reference route and unclear stopping behavior. Added complete pre-capture time/route briefing, short final start command and immediate stop speech before video saving, with EN/MS/ZH prompts and cancellation guards. 156 tests, TypeScript, Android export and unchanged build-7 fingerprint pass; source/OTA publication pending. Image-only screened 89 adjacent sampled pairs with upper obstruction masked: median short-term consistent feature retention 92.5%, not a distance accuracy score. Updated current specification, workflow, weekly progress, release history and index. Camera calibration, geometry/timing and independent distance validation remain incomplete. Local artifacts stay ignored.
+
+## [2026-10-06] sync | Simplified camera trial replaces instruction-heavy briefing
+
+Removed long briefing and default duration picker. Short placement/walking/finish cues, fresh-movement gate and four-second quiet auto-finish make the route trial hands-free, with 60-second default fallback. Technical settings/results are collapsed; exports remain visible. A pause may end this engineering trial, not establish a measured finish. Clinical rest rules unchanged. Updated current specification, workflow, index, weekly progress, changelog and local review; 157 tests, TypeScript and Android export pass. Build-7-compatible source/OTA publication remains pending.
+
+## [2026-10-06] sync | Phone-specific camera/IMU calibration acquisition and offline processing
+
+Local 0.3.2 adds native board capture, ZIP export, reusable geometry/timing fitting and a notebook with seven executed numerical/rejection checks. Processed reports bind to the originating phone/pixel pipeline and remain geometry candidates, distanceReady=false. Per-phone setup is separate from each participant standing reference. No real calibration capture or walking-distance validation completed. Updated workflow, index, specification, release history, notebook registry and weekly progress; source publication pending review, native build 8 submitted. Local artifacts stay ignored.
+
+## [2026-10-06] sync | Native calibration APK build 8 verified
+
+EAS 32cf3ae5-0e74-4e38-a043-61d6e38ace08 finished successfully. Downloaded GaitTrace 0.3.2/build 8 to ignored android/dist/apk. ZIP integrity, compiled package/version, native calibration class and CAMERA/no-microphone permission checks pass; 95,595,245 bytes, SHA-256 f1cc80e14f6895cc8525dda48494578e9811ba4b5a852bb28e33e556f14fe7b2. Updated current workflow, index, release history and weekly progress. No real calibration capture, odometry or measured-distance validation claimed; source/OTA publication remains pending review.
+
+## [2026-10-06] sync | Calibration ZIP self-copy repaired and existing-capture recovery added
+
+Screenshot and source confirm native/Expo paths refer to the same ZIP. Local persistence now bypasses same-file copy, checks nonempty data and recovers unindexed captures from native manifest/ZIP pairs without inventing completion. Four regressions reproduce the reported failure and recovery. 165 app tests, TypeScript, Android export and unchanged build-8 fingerprint pass. Updated release history, workflow, index and weekly progress; source/OTA scope remains local pending review. No physical calibration result is claimed.
+
+## [2026-10-06] sync | Approved calibration ZIP repair OTA published
+
+Published by explicit user approval on 6 October 2026: Android preview OTA 01a11195-6294-7fba-93b2-b6eb1f075a52 (group 00541cb9-c847-468e-9f68-5ab0c2942d5c), runtime 0894d523161346acbefbbe6ac62b46e3a244f31f, compatible with 0.3.2/build 8. Server-side update and active preview-channel mapping verified. Installed device receipt and recovery remain to be checked. Source Git publication remains unapproved/pending; no Git push made. Updated current workflow, index, weekly progress, release history and local review. Earlier local/pending entries remain historical.
+
+## [2026-10-06] sync | First real calibration ZIP reviewed, reprojection checker corrected
+
+Processed user ZIP calibration-1791297358282 (SHA-256 18ca43aa7ab2bc876399958668f16f96dafc2db006f1b7f11a3bcc1ea4bfc4ec). Completed 40.212 seconds, 499 front-camera 640x480 frames, all 499 native timestamp/capture-result matches, saved-frame rate 12.66 Hz. Raw accelerometer/gyroscope 8416/8415 samples at 210.40 Hz, maximum native gaps 4.94 ms; magnetometer 2000 samples, 50 Hz, 20 ms gap. All finite/monotonic. These rates belong to the calibration recorder, not the separate gait recorder.
+
+Detected board corners in 397 frames; 277 supply at least 16. Corrected lens training RMS 0.1673 pixels and held-out point-coordinate RMS p90 0.1547 pixels support a provisional native-pipeline lens fit. Found and fixed an offline checker bug: Nx1x2 projected points broadcast against Nx2 observations, falsely creating NxNx2 residuals. Flatten corresponding points before subtraction; explicit regression passes. Eight Python tests pass; notebook stores actual capture results separately from synthetic checks. Earlier apparent lens rejection was a processor error, not user capture failure.
+
+Full profile remains rejected: held-out camera/gyro coordinate RMS 0.09780 rad/s exceeds the existing 0.08 engineering gate. User confirmed the tablet target was also held/moved; static-reference prerequisite is unmet, independent of residual threshold. User verified displayed 20 mm squares (operator reported). No accepted clock/extrinsic/lever-arm calibration or walking distance. Keep this capture for acquisition/lens work; for alignment, place tablet fixed on a table/stand and move only the recording phone. Previous digital instructions omitted that crucial requirement; they are clarified rather than blaming the user.
+
+Images, ZIP and generated reports/contact sheet remain local/ignored. Source notebook/reusable checker and current docs updated locally; no new app OTA or Git publication in this review.
+
+
+## [2026-10-06] sync | Second real calibration ZIP reviewed with unchanged gates
+
+Executed the same corrected gates on the second user ZIP (SHA-256 df8a30cbc16ff40d21e8b3096e3f370ac87094b3ad375679998d56cbe8db6314), preserving first-capture outputs. Completed 40.241 seconds; 500 640x480 front-camera images, all with matching native capture results, saved-frame rate 12.664 Hz, maximum image gap 233.1 ms. Accelerometer/gyroscope each 8417 samples at 210.338 Hz, maximum gaps 4.893 ms; magnetometer 2001 samples, 50 Hz, 20 ms maximum gap. Finite, strictly monotonic native data. No save/copy failure.
+
+Board corners detected in 333 frames, 226 with at least 16. Provisional lens training RMS 0.12265 pixels, held-out coordinate RMS p90 0.11681 pixels (previous 0.15472). Camera/gyro held-out coordinate RMS improves from 0.09780 to 0.080378 rad/s; existing gate remains 0.0800, so full profile stays rejected, distanceReady=false. The exceedance is only 0.000378 rad/s (0.47%); this is a borderline engineering fit, not evidence of clinically meaningful sensor failure. Threshold is not relaxed to admit the sample. Clock offset estimate -31.02 ms remains a failed-fit diagnostic, not accepted calibration.
+
+Timing diagnostics: exposure 30-33.33 ms, rolling readout 32.203 ms; capture uses an approximate frame midpoint model. Native clocks are retained; median image callback arrival lag 75.0 ms must not be substituted for hardware time. These approximations/visual pose noise are plausible contributors, not an established cause. Early motion settles from gyro coordinate RMS 0.4305 in second 0 to 0.01614 in second 4; the nominal initial five seconds are not entirely still.
+
+Visual contact sheet shows the tablet resting against furniture/support rather than visibly being held; target stationarity cannot be independently guaranteed from sampled images. Earlier operator-verified 20 mm display scale is contextual, not remeasured by this processor. Keep this useful capture for processing/intrinsics; no repeat requested solely for this near-threshold residual. Full rotation/timing/lever-arm validation and independent walking distance remain incomplete. Raw ZIP/images/generated reports remain local, notebook contains executed outputs and interpretations. No source push/OTA.
+
+
+## [2026-10-06] sync | row-timed calibration and conservative distance prototype
+
+## Row-timed calibration and distance prototype investigation - 6 October 2026
+
+Implemented per-corner exposure/readout timing, joint gyro-driven image fitting and contiguous translation screening. Mean-row timestamp correction alone still fails the original angular-rate gate (0.08162 rad/s); no gate was relaxed. The second actual ZIP passes new internal rotation/timing checks (held-out coordinate RMS 1.1594 px, p90 1.6068 px, candidate offset -29.73 ms). The confirmed moving-tablet first ZIP fails the same model (RMS 6.9382 px). These are development fits, not independent accuracy validation or a full importable calibration.
+
+Translation screening finds 218 usable second-capture poses, but no sufficiently long continuous segment; largest pose gap 2.136 s. Added local fixed-map visual tracking and metric scale/bias/gravity/lever-arm initialization, plus a route connector using real SI IMU and consistent map poses without entered route length. The frontend loses tracking on the second bench capture; failure is preserved, not replaced by estimated steps or invented movement. Rolling-shutter visual correction, map expansion/continuous inertial fusion, native walking integration and unseen measured-route validation remain incomplete. No working clinical camera distance/stop is claimed.
+
+21 Python numerical/rejection checks pass, including known-scale/clock recovery, pure rotation, constant-speed scale degeneracy, inconsistent motion and frame-gap rejection. Actual code execution and outputs are retained in the existing calibration notebook; raw images/ZIPs/generated reports stay local/ignored. Updated current specification, research README, release history, flow-testing instructions, wiki concept/index/log and local publication scope. No app/native version change, APK requirement, new OTA, Git commit or push in this batch. Previous unrelated working changes remain preserved.
+
+## [2026-10-07] sync | native camera-distance research trial
+
+### App and verification changes
+
+Integrated the local prototype into a separate 0.3.3 Android research screen: native Camera2 frames/results and three raw IMU streams, phone-bound research profile import, patient-paced placement/stillness, complete speech cue before arming, motion start, sustained-quiet stop and safety limits. No paid service or entered route length supplies scale. Missing calibration/tracking/clock/scale integrity withholds the estimate while saving a single diagnostic ZIP. Clinical protocol/rest/observer form rules are unchanged. Research camera travel is a tracked interior segment with initialization/boundary loss and possible sway, not a validated full clinical route or 10MWT endpoint.
+
+171 app checks, TypeScript and Android bundle pass. New screen tests use mocked speech/hardware and verify callback-complete gating, duplicate-cue prevention, background cancellation, profile binding and self-copy-safe recovery. Actual application Java/OpenCV JNI code passes five desktop synthetic known-answer checks: metric scale 2.7301 versus known 2.7000, map scale preserved, pure rotation and unobservable scale rejected. The desktop adapter executes no Android capture/permission path. Replaying the second real bench ZIP processes 443 post-five-second frames, obtains one map pose then rejects inconsistent-map-pose. All IMU data is available before frames in that replay; no live-latency or walking accuracy result is claimed.
+
+Exported a separate rotation-only research profile from the second capture; full geometry/independentDistanceValidation/distanceReady stay false. Profile and raw artifacts remain local/ignored. Native build 9 succeeded as an intermediate package; final build 10 adds bundled license/notice assets and release/build/runtime/update provenance in the exported manifest. Both use 0.3.3; only final build is intended for physical testing. New OpenCV/native methods cannot reach build 8 by OTA. Local docs/wiki/notebook/weekly pages and publication scope updated together; no Git push or new OTA authorized/published. Physical marked-route validation remains pending.
+
+
+## [2026-10-07] sync | Final native research APK verified
+
+Final 0.3.3/build 10 (EAS e2cfa528-ebff-4062-ada1-c8591516d09c, runtime 037f976718a2d2ef78c79b8705adeb04596f072c) completed and downloaded to ignored android/dist/apk/GaitTrace-0.3.3-build10.apk. Verified compiled package/version, ZIP integrity, tracker class, all four OpenCV ABI libraries and four license assets. APK is 233,322,474 bytes, SHA-256 2cc0ff8d10f96c2644ee483e0865ac209d3b2deb7204b4a28189762c3f5b248c. Final 172 app checks and TypeScript pass, with five actual desktop OpenCV JNI known-answer checks already recorded in the notebook. These are implementation checks, not Android capture or physical distance accuracy. Updated current specification, workflow, index, release history, notebook registry and weekly page together. Research profile/raw artifacts/tools remain local and ignored. No Git push or new OTA. Physical trial instructions: install over existing app, import phone research profile in Research tools ? Camera distance trial, walk a measured short route after the complete cue, stand still until finish and export diagnostic ZIP with measured length/turn notes.
+
+
+## [2026-10-07] sync | First uploaded 3 m camera-distance trial audited
+
+Audited user ZIP distance-trial-1791347211905 with intact ZIP and source SHA-256 0636e70d9e720042081a1dac6bae75adf585c99fab21945e5a385d1a83d6b588. Physical build-10 acquisition confirmed: 270 matched camera frames at 12.82 Hz, accelerometer/gyro 4,510 each at 210.40 Hz, magnetometer 1,072 at 50 Hz, finite/monotonic streams, automatic quiet-stop. No imported profile, hence needs-profile and no on-device distance. Actual offline replay with existing matching rotation-only profile produces 20 poses over 1.50 s and rejects inconsistent-map-pose 1.84 s after trigger. All IMU available before frames in replay; live latency untested. User-reported 3 m is not independently verified here and no metric distance/error/speed accepted. Pre-trigger motion and holder obstruction/blur retained as observations, not established first-step time or isolated failure causes. Saved executed audit/replay and source identity in themed notebook. Updated current specification/workflow/index/notebook guide/weekly page in this batch. Next gap is explicit profile readiness and map continuity before requesting a repeat; no app code change, OTA or Git push. Private raw data and generated reports remain local/ignored.
+
+## [2026-10-07] sync | Profile prerequisite and same-scale map renewal
+
+Start is now unavailable until a matching phone research profile has been
+imported. Missing profiles are also rejected by the native capture API. EN/MS/ZH
+prompts present import as the required first action. The saved profile persists
+when installing the APK over the existing application. Export of older trials
+remains available.
+
+The Java tracker now renews scene landmarks from accepted world-camera poses,
+with forward/backward flow, positive depth, parallax, reprojection and spacing
+checks. It preserves the existing map scale and never stitches independently
+initialized maps. PnP, timing, IMU and physical-fit rejection limits are unchanged.
+Method identifier is native-growing-map-scale-v2. On the retained development
+3 m artifact, explicit profile replay improves from 20 poses/1.50 s to 151
+poses/11.823 s, adding 318 points across eight candidate keyframes. No tracking
+loss occurs in that replay. Metric scale still fails physical checks, including
+implausible fitted bias. No accepted distance or route error is claimed. All IMU
+is available before frames in replay, so live callback latency remains untested.
+
+Validation: TypeScript, 173 app checks, 21 Python numerical/rejection checks,
+six actual desktop JNI checks and web export pass. The new JNI check confirms
+renewed landmarks preserve known map coordinates and scale. Executed source
+hash/results are retained in the existing notebook. Native changes require a
+new 0.3.4/build 11 APK, runtime 36ef802b5c8463d2c0a172abd85bb56d75f0ea0e.
+EAS build 784326fd-4a29-4477-a61b-58f93000b00f is submitted. Completion and
+physical retry remain pending. Clinical boundaries and distanceReady remain
+false. No Git push or OTA has been made, pending exact-scope publication review.
+
+## [2026-10-07] sync | Retry browser checks and native-byte compatibility
+
+All 10 Playwright phone-viewport flow checks pass. Added scoped .gitattributes rule preserving exact bytes under android/modules/gait-camera-calibration, avoiding Windows/Linux newline changes to native runtime inputs. All 11 native-module file Git-filter hashes match raw hashes. The final local fingerprint remains 36ef802b5c8463d2c0a172abd85bb56d75f0ea0e, matching submitted build 11. These are repository/runtime checks, not physical distance validation. Scope remains local for required publication review.
+
+## [2026-10-07] sync | Retry APK completion and delivery
+
+Final 0.3.4/build 11 completed successfully on 7 October 2026 (EAS
+784326fd-4a29-4477-a61b-58f93000b00f). Downloaded APK:
+`android/dist/apk/GaitTrace-0.3.4-build11.apk`, 233,322,494 bytes, SHA-256
+93c94fa267bd4ecea6083c374e2d1f69a2829a92725c3401ff51cbc3335081fa.
+Compiled package/version, ZIP integrity, revised growing-map method/profile
+prerequisite, four OpenCV ABIs and license assets verified. Runtime remains
+36ef802b5c8463d2c0a172abd85bb56d75f0ea0e. Install over the existing app,
+open Research tools > Camera distance trial, import the same phone research
+profile once if absent, then Start and follow the cue. Walk the measured short
+route, stand still until finish and export the diagnostic ZIP. Physical retry
+and metric accuracy remain pending. No Git push or new OTA has been made.
+
+Current source checks remain 173 app, 21 Python, six native JNI and 10 browser flow checks, plus TypeScript and web export. Retained walk replay now tracks 151 poses but rejects physical scale. Updated current wiki/specification/release/weekly pages together. Complete 73-file proposed source scope includes prior unpublished observer-form/camera/calibration support and native-byte Git attributes. Private trials, profile, generated tools/media/reports/APKs remain local and ignored. Source approval still awaits exact-scope review.
+
+## [2026-10-07] sync | Actual build-11 retry reviewed
+
+Reviewed distance-trial-1791349028491 (SHA-256
+e53a543aa1211aeb5042c2fc5d76355f6f1a3f466f842a11ee2398a304068899).
+Actual 0.3.4/build 11 native capture contains the matching research profile.
+On-device tracking obtains one pose, then rejects reprojection-error 0.230 s
+after the movement trigger: coordinate reprojection RMS 1.6478 px exceeds the
+unchanged 1.5 px engineering gate. It adds zero landmarks and zero keyframes.
+The map-renewal stage therefore never becomes useful on this live trial. No
+metric estimate, distance error, gait speed or independent validation is available.
+Route length was not restated, so it is not assumed to be 3 m here.
+
+Acquisition is healthy: 367 camera frames at 12.64 Hz, all with capture-result
+metadata, max frame gap 133.2 ms. Acceleration 6,179 and gyro 6,178 samples at
+210.37 Hz, max gaps 4.92 ms, magnetic 1,469 at 50 Hz, max gap 20 ms. All sensor
+values finite and times strictly monotonic. Automatic quiet-stop completed the
+29.65 s capture, 12.98 s after the movement trigger. Finish includes quiet time,
+so this duration is not walking speed or a measured-course timing result.
+
+Explicit JPEG replay, supplied the profile stored in this ZIP, also produces one
+pose and rejects reprojection-error (1.6152 px). Its feature count differs from
+native luma, so it is not a bit-identical live replay. The reusable desktop
+replayer now starts at the actual first tracking-log camera timestamp instead
+of dropping frames just before the wall/motion trigger. First native frame is
+2.97 ms before that trigger in this capture. Earlier replay outputs are retained
+with their original cutoff semantics and are not relabelled as device results.
+All IMU samples are available before images offline, so live latency is untested.
+
+Sampled images show holder obstruction, walking blur and textured room features.
+Their individual causal contributions have not been isolated. Current evidence
+supports a fragile visual-map initialization, not missing profile or sensor data.
+Next work should validate initialization over multiple views and investigate
+holder-feature rejection/rolling-readout and blur handling. Do not relax the
+1.5 px gate or request repeated walks as if profile import solved odometry.
+The earlier retained walk's 151-pose replay did not demonstrate general live
+robustness, and its scale also remained rejected. Raw ZIP/profile/images and
+outputs stay ignored. Actual audit/replay code and results are in the existing
+notebook. No Android source change, APK, OTA or Git push in this review.
+
+## [2026-10-07] sync | Better-placement trial compared
+
+User reports a slip during the preceding setup and better mounting in the new
+trial distance-trial-1791349358636. Source SHA-256:
+b47807a3ccfc7f0d1ac57830268b88c0d137b7883b0297a0803aea1490bb1642.
+Profile is present and release remains 0.3.4/build 11. Native tracking improves
+from one to six poses, with 25 renewed map points and one candidate keyframe.
+Failure occurs 0.721 s after the movement trigger instead of 0.230 s. Both runs
+reject reprojection-error: 1.5537 px here, previously 1.6478 px, versus the same
+1.5 px engineering gate. No accepted scale, metre estimate or route error.
+This is modest tracking improvement, not a successful distance result.
+
+Full capture lasts 28.478 s; visual tracking begins around the movement trigger
+13.677 s after capture starts. Setup duration alone does not enter the visual
+trajectory; early IMU rows are stored but scale interpolation would use pose
+segment times. There is appreciable movement in the two seconds preceding the
+trigger. The records do not identify an exact slip time or prove that motion
+was placement rather than walking, and do not validate first-step timing.
+The operator report makes a placement effect plausible, not an isolated causal
+finding. Failure with better placement shows handling is not the whole problem.
+
+Acquisition remains healthy: 353 frames at 12.686 Hz, all matched to camera
+metadata, max gap 103.6 ms. Accel/gyro 5,938 each at 210.407 Hz with max gap
+4.89 ms, magnetometer 1,411 at 50 Hz with max gap 20.0 ms. All finite/monotonic.
+JPEG artifact replay using the included profile and actual first native frame
+rejects after one pose (1.7598 px). JPEG/native luma and RANSAC differences mean
+it is not bit-identical and cannot overwrite the actual six-pose device result.
+Sampled images still show holder obstruction and walking blur. No isolated cause
+or validated distance error can be inferred. Route length was not restated.
+
+Both profile-loaded physical captures remain available to validate a more robust
+bootstrap rather than fitting only the first walk. Next work remains multi-view
+initialization, camera-motion/occlusion handling and start-cue timing, followed
+by metric consistency. Do not relax the gate just to accept the near-threshold
+sample. Executed audit/replay outputs are in the existing notebook. Raw/private
+artifacts stay ignored. No app change, new APK, OTA or source publication in this
+review, and the existing publication scope has not been approved.
+
+
+## [2026-10-07] search + sync | Front-camera distance architecture review
+
+Reviewed primary OpenVINS/mobile, VINS-Mono/Mobile, Aalto Android VIO tester,
+PIVO, ADVIO and Kalibr sources against the native collector/tracker and prior
+2 October decisions. Current Android port resolves to the same pinned commit;
+rear selection is existing evidence. New synthesis identifies late rather than
+continuous fusion, ~13 Hz throttled tracker input, uncorrected live rolling
+shutter, incomplete full geometry/noise calibration and camera-path versus
+clinical-distance mismatch. Superseded current patch-first direction with a
+pinned established-VIO feasibility benchmark. Updated product specification,
+research README, workflow concept, index and local weekly page together.
+No external engine execution/integration, raw benchmark download, metric
+validation, new APK/OTA or Git publication. Existing physical results retained;
+private/generated artifacts remain local. This is engineering-source enrichment,
+not admission of new studies to the systematic review.
+
+
+## [2026-10-07] sync | Executed VIO reference feasibility and calibration integrity
+
+Built pinned VINS-Mono estimator/Ceres 1.14 offline wrapper and ROS-disabled
+OpenVINS library. Added reusable clock/unit/profile adapters, diagnostic feature
+frontend, reference CMake/logging shims, analytic non-gait control and four contract
+checks. Executed all three retained capture replays and corrected static-storage
+harness verification; 25 Python checks pass. Control has 559 initialized states
+and 0.0003602 m rigid-only RMSE, without scale fitting. First two phone replays
+retain 154/161 post-trigger initialized states, but early geometry is impossible
+before settling; third diverges/resets and is rejected. Rotation/time refinements
+flag calibration investigation. No clinical readiness or independent accuracy.
+Updated themed notebook, registry, specification, research READMEs, workflow/index
+and weekly page in the same local batch. Native app/runtime/APK unchanged; no OTA
+or source publication. Raw ZIPs, dependency checkouts, binaries and generated
+outputs remain local. Prior source-only assessment is superseded as current state,
+with history retained. No AI training or raw benchmark dataset acquisition.
+
+Final verification in the same batch: five adapter/integrity checks, 26 total Python research checks pass; reset suppression is covered. Current notebook provenance records the final sources. The earlier 25-check count above describes the preceding verification, not the final count.
+
+## [2026-10-07] sync | Native camera acquisition and stationary-noise preparation
+
+Updated existing notebook, research/flow guides, product specification, workflow,
+index and local weekly page. Actual 177 app, 34 research, JVM concurrent-queue and
+10 browser checks pass. Camera callbacks now hand work to bounded storage; new
+sensor-only capture/profile optics binding and future-estimator readiness contract.
+Retained walks are not stationary noise data; scalar replay states cannot establish
+convergence. New 0.3.5/build 12 submitted, native build/physical validation pending.
+No live VINS port, complete noise/geometry calibration, clinical distance, model
+training, new datasets, Git push or OTA. Existing unrelated work preserved.
+
+## [2026-10-07] sync | Build 13 verified after native compilation fix
+
+Final 35 research checks include complete synthetic stationary ZIP processing,
+magnetometer coverage rejection and optics binding in the offline adapter.
+Build 12 failed a Kotlin JSON Map generic check; corrected build 13 completed.
+Downloaded 0.3.5/build 13 APK, compiled native APIs, package/version, actual
+fingerprint asset, ZIP, ABIs and licenses verified. Runtime matches local/EAS;
+12 native source/license Git byte-preservation checks pass. Notebook, research/
+flow guides, product spec, workflow/index and weekly page updated. Physical
+noise/board capture and complete calibration/native VIO remain pending; no
+validated distance, new dataset or model training. APK/release record generated
+locally under dist/apk; proposed source scope is 28 modified and 64 new files.
+No commit, push, OTA or demo-artifact publication.
+
+## [2026-10-07] search | Published calibration tools and researcher burden
+
+Compared existing custom calibration code and retained phone manifest fields with
+official Kalibr/iKalibr methods, iKalibr's pre-calibrated camera requirement,
+published online-calibration observability analysis and Android factory metadata.
+iKalibr is a new candidate, not an integrated or phone-verified solution. The
+retained exports contain no factory lens parameters; camera pose/reference remain
+unchecked. Recorded reference-solver/quality-check preparation before another
+manual capture request. Updated product spec, workflow/index and local weekly
+page together. No source app changes, new solver execution, dataset acquisition,
+model training, new APK, validated distance or publication. All notes stay local.
+
+## [2026-10-07] sync | Guided published calibration, verified build 15 and local GPU processing
+
+Integrated native Zhang/OpenCV lens fitting, clear/diverse-view admission,
+digital board without a measured size, camera/pipeline/optics binding, QR-paired
+local computer processing, voice-completion-gated 50-second alignment capture
+and automatic upload/reference retrieval. Preserved older custom fits as research
+history; they are not fallback calibration solvers. Recorded JNI lens numerical
+and retained-capture evidence, 185 app/40 research/10 browser checks and verified
+0.3.6/build 15 native APK/runtime. Physical Camera2/audio and phone pairing remain
+unverified. New native calibration features require build 15 installation.
+
+The published reference executable completed CPU and separate fresh CUDA SfM
+synthetic controls. Numerical translation/rotation errors are 5.68 mm/0.0165
+degrees and 6.46 mm/0.033 degrees respectively, not patient/route accuracy.
+Installed NVIDIA Container Toolkit and configured WSL Docker for the RTX 5060;
+actual GPU extractor/matcher logs and observed GPU usage are retained. The pinned
+CUDA worker performs extraction/matching automatically with disclosed CPU fallback;
+final calibration remains CPU because the reference Ceres build lacks CUDA.
+Different software/preparation states prevent a controlled whole-job speed claim.
+Notebook executions 44–52 retain failures, real runs, artifact analyses and source/
+binary provenance. Full noise, repeatability, independent distance validation and
+native VIO integration remain incomplete; all metric/full-calibration flags false.
+
+Updated product specification, research setup, notebook registry, workflow/index
+and this week's local progress together. Original recordings and synthetic inputs
+stay local/ignored, as do dependencies, Docker images, generated reports, demo
+assets and APKs. No new dataset acquisition, model training, commit, push or OTA.
+Exact pending publication scope remains local for user review.
+
+## [2026-10-07] sync | Stationary phone and moving-tablet lens calibration
+
+Corrected the front-camera handling assumption using Zhang's published permission
+to move either object and OpenCV's partial-view ChArUco support. Lens-only capture
+now supports the bagged phone and moves the tablet, with EN/MS/ZH voice prompts,
+retained accepted views on temporary target loss, a board-only tablet link and
+computer progress feedback. Camera/IMU alignment still moves the phone in a
+stationary room. Numerical gates and all metric-readiness flags are unchanged.
+
+187 app/41 research checks and TypeScript pass. Additional actual companion/browser
+checks use simulated progress to verify count/completion display and portrait/
+landscape board layout; no physical-phone pass is claimed. Android runtime remains
+build-15-compatible; the existing APK lacks this follow-up and no update has been
+published. Updated setup, specification, testing guide, workflow/index and local
+weekly progress together. Generated screenshots/proof remain ignored. No push.
+
+## [2026-10-07] sync | Computer-only lens calibration and live framing
+
+The prior stationary-phone revision assumed a tablet. Restored computer-only as
+the default: the computer displays its stationary board plus live framing while
+the bagged phone moves. Tablet mode remains explicitly optional. EN/MS/ZH speech
+matches the selected method. Repeat lens check is available for saved profiles.
+At most one actual JPEG per second reaches display-only local OpenCV detection;
+the companion discards it and returns only corner/outline coordinates. Display
+feedback cannot admit calibration, change pixels or release metric readiness.
+Native views survive temporary target loss. Alignment remains a separate phone-
+movement capture in a stationary room. Job completion now follows durable save.
+
+188 app/43 research checks, TypeScript and Android export pass. Real HTTP/browser
+checks with synthetic frames and simulated native counts verify detection/drawing,
+computer board/panel fit, progress/completion and optional tablet layouts. Physical
+phone ergonomics/accuracy are untested. Build-15 runtime is unchanged; the existing
+APK lacks this follow-up and no compatible update has been published. Updated
+current setup/specification/workflow/index/testing/release notes and local weekly
+progress together. Generated files remain ignored. Publication awaits exact scope
+review under AGENTS.md; no push or OTA yet.

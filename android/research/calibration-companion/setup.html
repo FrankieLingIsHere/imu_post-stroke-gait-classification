@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GaitTrace phone calibration</title>
+<style>
+*{box-sizing:border-box}body{font:18px system-ui;color:#164e48;background:#f6faf9;margin:0;padding:20px}h1{font-size:28px;margin:0 0 14px}h2{font-size:22px;margin:0 0 12px}p{line-height:1.5}#pair{max-width:700px;margin:auto}#pair img{width:260px;max-width:80vw}.card{background:white;border:1px solid #ccdcd8;border-radius:18px;padding:20px}.layout{display:none;gap:20px;grid-template-columns:minmax(0,1fr) 330px}body.paired #pair{display:none}body.paired .layout{display:grid}#board-area{height:calc(100vh - 140px);min-height:300px}#board{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}#tablet{display:none}body.tablet #board-area{display:none}body.tablet #tablet{display:block}body.tablet .layout{grid-template-columns:360px 1fr}#tablet img{width:220px;max-width:100%}#count{font-size:28px;font-weight:bold}#hint{font-size:22px;margin:12px 0}a{overflow-wrap:anywhere;color:#176b62}#feedback{align-self:start;border-left:6px solid #176b62}small{display:block;line-height:1.4;color:#48665f}canvas{display:block;width:100%;aspect-ratio:4/3;background:#edf4f2;border:2px solid #9cbab1;border-radius:10px;margin:12px 0}#framing-label{font-size:16px}footer{font-size:14px;margin-top:12px}@media(max-width:850px){body.paired .layout,body.tablet .layout{grid-template-columns:1fr}#board-area{height:65vh}#feedback{order:-1}}
+</style>
+<h1>Phone calibration</h1>
+<section id="pair" class="card"><h2>Connect your phone</h2><p>On the same Wi-Fi, open Phone calibration and tap Connect calibration computer.</p><img src="data:image/png;base64,__PAIR_QR__" alt="Phone pairing code"></section>
+<div class="layout">
+<section id="board-area" class="card"><img id="board" alt="Stationary computer ChArUco board"></section>
+<section id="tablet" class="card"><h2>Optional tablet board</h2><img src="data:image/png;base64,__BOARD_QR__" alt="Tablet board link"><p><a href="__BOARD_URL__" target="_blank" rel="noopener">Open tablet board</a></p><p>Support the bagged phone. Move and tilt only the tablet. Follow the phone's voice.</p></section>
+<section id="feedback" class="card" aria-live="polite"><h2>Live camera framing</h2><canvas id="framing" width="640" height="480" aria-label="Board position detected in the phone camera"></canvas><small id="framing-label">Waiting for a camera frame</small><div id="count">Ready when you are</div><p id="hint">Tap Calibrate camera lens on the phone.</p><small id="status">Keep this board still. Move the phone slowly; pause between positions.</small></section>
+</div>
+<footer>Temporary loss of the board keeps saved views. This checks the lens; camera–sensor alignment is a separate stage.</footer>
+<script>
+const canvas=document.getElementById('framing'),ctx=canvas.getContext('2d');
+function draw(v){const f=v.framing,stale=v.progressAgeSeconds>8;if(f&&!f.error){canvas.height=Math.round(640*f.height/f.width);canvas.style.aspectRatio=f.width+'/'+f.height;}ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#bbcec7';ctx.setLineDash([8,8]);ctx.strokeRect(canvas.width*.1,canvas.height*.1,canvas.width*.8,canvas.height*.8);ctx.setLineDash([]);
+ if(stale||!f||f.error){document.getElementById('framing-label').textContent=stale?'Framing paused; follow the phone’s voice.':'Waiting for a camera frame';return;}
+ // Mirror display coordinates like a selfie preview; raw calibration pixels never change.
+ const xy=p=>[(1-p[0])*canvas.width,p[1]*canvas.height];
+ ctx.strokeStyle='#176b62';ctx.lineWidth=4;if(f.outline.length){ctx.beginPath();f.outline.forEach((p,i)=>{const [x,y]=xy(p);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();ctx.stroke();}
+ ctx.fillStyle='#176b62';for(const p of f.corners){const [x,y]=xy(p);ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}
+ document.getElementById('framing-label').textContent=f.corners.length?'Board position in your camera · mirrored view':'Board not visible — face the camera toward the board';
+}
+let loading=false;
+async function refresh(){if(loading)return;loading=true;try{const r=await fetch('/api/page-state',{headers:{Authorization:'Bearer __TOKEN__'}});if(!r.ok)throw Error();const v=await r.json();if(v.png){document.body.classList.add('paired');document.body.classList.toggle('tablet',v.mode==='tablet');const src='data:image/png;base64,'+v.png;if(document.getElementById('board').getAttribute('src')!==src)document.getElementById('board').src=src;}draw(v);const p=v.progress;if(p){document.getElementById('count').textContent=p.acceptedViews+' clear views saved';document.getElementById('hint').textContent=p.hint;document.getElementById('status').textContent=p.status==='completed'?'Lens saved. Sensor alignment is still needed.':p.status==='checking'?(v.progressAgeSeconds>8?'Feedback paused. Follow the phone’s voice.':'Checking view quality and coverage.'):'Capture ended. Check the phone before trying again.';}}catch(e){ctx.clearRect(0,0,canvas.width,canvas.height);document.getElementById('framing-label').textContent='Connection paused';document.getElementById('status').textContent='Follow the phone’s voice.';}finally{loading=false;}}
+refresh();setInterval(refresh,500);
+</script></html>

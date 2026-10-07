@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GaitTrace tablet board</title>
+<style>body{margin:0;background:white;font:18px system-ui;color:#164e48;text-align:center}img{display:block;margin:auto;width:96vw;height:85vh;object-fit:contain;image-rendering:pixelated}p{margin:10px;padding:0 12px}</style>
+<img id="board" alt="Digital ChArUco lens calibration board"><p>Face this screen toward the supported phone. Move and tilt the tablet; follow the phone's voice.</p>
+<script>
+async function loadBoard(){try{const r=await fetch(location.pathname+'/state');if(!r.ok)throw Error();const v=await r.json();if(v.png)document.getElementById('board').src='data:image/png;base64,'+v.png;}catch(e){document.querySelector('p').textContent='Board unavailable. Reopen the tablet link on your computer.';}}
+loadBoard();setInterval(loadBoard,3000);
+</script></html>

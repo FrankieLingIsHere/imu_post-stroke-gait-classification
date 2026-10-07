@@ -11,6 +11,9 @@ import { recordingIssues, SENSOR_NAMES, SENSOR_UNITS, SensorName, streamStats, S
 import { shareRecording } from '../export';
 import RecordingParticipant from '../components/RecordingParticipant';
 import PatientSummary from '../components/PatientSummary';
+import {useFocusEffect} from '@react-navigation/native';
+import {gaitReviewStatus} from '../gaitAssessment';
+import CameraTrialReview from '../components/CameraTrialReview';
 const labels = { accelerometer: 'Acceleration', gyroscope: 'Rotation', magnetometer: 'Magnetic field' };
 export default function DetailsScreen({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'Details'>) {
   useLanguage();
@@ -22,10 +25,10 @@ export default function DetailsScreen({ route, navigation }: NativeStackScreenPr
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  useEffect(() => { let active = true; setError(''); setLoading(true);
+  useFocusEffect(React.useCallback(() => { let active = true; setError(''); setLoading(true);
     getSession(route.params.sessionId).then(s => { if (active) { setSession(s); if (!s) setError('This recording could not be found.'); } }).catch(() => { if (active) setError('Could not load the recording. Please try again.'); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [route.params.sessionId, attempt]);
+  }, [route.params.sessionId, attempt]));
   const r = session?.recording;
   const legacy: Sample[] = session?.windows.map(s => ({ x: s.x, y: s.y, z: s.z, elapsedMs: s.timestamp - (session.windows[0]?.timestamp ?? 0), receivedAtUnixMs: s.timestamp, sensorTimestampSeconds: null })) ?? [];
   const samples = r ? r.streams[sensor] : sensor === 'accelerometer' ? legacy : [];
@@ -53,13 +56,15 @@ export default function DetailsScreen({ route, navigation }: NativeStackScreenPr
 
       <RecordingParticipant session={session} onLinked={setSession} onCreate={()=>navigation.navigate('Participants')}/>
       {r?.platform === 'web' && <Body>Browser recording: export before refreshing or closing this tab. Sensor timing and rates may differ from Android.</Body>}
-    {!session.googleDistanceTrial&&<Card>
+    {!session.googleDistanceTrial&&!session.cameraTrial&&<Card>
       <Text style={ui.label}>Gait assessment form</Text>
       <Body>{session.assessment?'Assessment saved with this recording.':'No assessment has been saved for this recording yet.'}</Body>
-      <BigButton label={session.assessment?'Review gait assessment form':'Open gait assessment form'} variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:session.id,openAssessment:true})}/>
+      <Text style={ui.caption}>{gaitReviewStatus(session).required?(gaitReviewStatus(session).complete?'G.A.I.T. assessment complete.':'Required G.A.I.T. assessment is unfinished.'):'Practice or provider experiment — assessment not required.'}</Text>
+      <BigButton label={session.assessment?.gaitAssessment?'Review G.A.I.T. worker assessment':'Open G.A.I.T. worker assessment'} variant="outline" onPress={()=>navigation.navigate('Assessment',{sessionId:session.id})}/>
+      <BigButton label="Test outcomes and worker notes" variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:session.id,openAssessment:true})}/>
     </Card>}
     {session.demographics && <Card><Text style={ui.label}>Participant information</Text><Body>{t('Age')}: {session.demographics.ageYears ?? t('Not provided')} · {t('Sex')}: {t(session.demographics.sex === 'prefer-not-to-say' ? 'Prefer not to say' : session.demographics.sex[0].toUpperCase() + session.demographics.sex.slice(1))}</Body><Text style={ui.caption}>Self-reported research metadata; not used for diagnosis.</Text></Card>}
-    {session.googleDistanceTrial ? <Card><Text style={ui.label}>Google distance trial</Text><Body>{t('Measured reference route: {0} m').replace('{0}',String(session.googleDistanceTrial.referenceDistanceM))}</Body>{session.googleDistanceTrial.routePattern==='5m-out-and-back'&&<Body>5 m out + 5 m back, with one turn.</Body>}<Body>This is a distance experiment, not a rehabilitation assessment.</Body><BigButton label="Open trial result" variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:session.id})}/></Card> : r ? <PatientSummary recording={r} /> : <Body>No gait summary is calculated from older simulated recordings.</Body>}
+    {session.cameraTrial ? <CameraTrialReview session={session}/> : session.googleDistanceTrial ? <Card><Text style={ui.label}>Google distance trial</Text><Body>{t('Measured reference route: {0} m').replace('{0}',String(session.googleDistanceTrial.referenceDistanceM))}</Body>{session.googleDistanceTrial.routePattern==='5m-out-and-back'&&<Body>5 m out + 5 m back, with one turn.</Body>}<Body>This is a distance experiment, not a rehabilitation assessment.</Body><BigButton label="Open trial result" variant="outline" onPress={()=>navigation.navigate('Result',{sessionId:session.id})}/></Card> : r ? <PatientSummary recording={r} /> : <Body>No gait summary is calculated from older simulated recordings.</Body>}
     </>}
     {session && tab === 'Signals' && <>
       <View style={ui.row}>{SENSOR_NAMES.map((n, i) => <Pressable key={n} accessibilityRole="tab" accessibilityLabel={t(n)} accessibilityState={{ selected: sensor === n }} onPress={() => { setSensor(n); setPage(0); }} style={[ui.choice, sensor === n && ui.selected]}><Text style={ui.caption}>{['Accel', 'Gyro', 'Mag'][i]}</Text></Pressable>)}</View>

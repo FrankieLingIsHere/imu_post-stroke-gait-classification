@@ -655,3 +655,42 @@ test('Observer ratings survive JSON review import and CSV without inventing an i
  const csv=exporting.exportFeatureCSV(session);assert.match(csv,/"gait_form_version"/);assert.match(csv,/"shoulder, elevated"/);
  const bad=JSON.parse(text);bad.session.assessment.gaitAssessment.ratings['1'].optionId='invalid';assert.throws(()=>load('reviewRecording').parseReviewRecording(JSON.stringify(bad)));
 });
+
+test('Every real gait record stays pending until all observer labels are complete; drafts sort first',()=>{
+ const {newGaitAssessment,gaitReviewStatus,orderGaitReviews,gaitAssessmentSummary}=load('gaitAssessment');
+ const {gaitRubric}=load('gaitRubric');
+ const g=newGaitAssessment();g.assessor='PT01';g.limb='left';g.observationSource='video';
+ const pending={id:'older-unrated',date:'2026-10-01',isPractice:false,assessment:{gaitAssessment:g}};
+ assert.equal(gaitReviewStatus(pending).status,'pending');assert.equal(gaitReviewStatus(pending).labelledAnalysisReady,false);
+ for(const i of gaitRubric)g.ratings[String(i.id)]={optionId:i.options[0].id,notes:''};
+ const complete={...pending,id:'complete',date:'2026-10-06',assessment:{gaitAssessment:JSON.parse(JSON.stringify(g))}};
+ assert.equal(gaitReviewStatus(complete).labelledAnalysisReady,true);
+ g.ratings['1']={optionId:gaitRubric[0].options[1].id,notes:'observed'};
+ assert.equal(gaitReviewStatus(pending).complete,false);
+ assert.deepEqual(Array.from(gaitAssessmentSummary(g).missingItems),[1]);
+ const practice={id:'practice',date:'2026-10-07',isPractice:true};
+ const api={id:'api',date:'2026-10-08',isPractice:false,googleDistanceTrial:{}};
+ assert.equal(gaitReviewStatus(practice).status,'not-required');assert.equal(gaitReviewStatus(api).labelledAnalysisReady,false);
+ assert.deepEqual(Array.from(orderGaitReviews([complete,practice,pending,api]),s=>s.id),['older-unrated','api','practice','complete']);
+ g.ratings['1'].qualifiers=['elevated'];assert.equal(gaitReviewStatus(pending).complete,true);
+ g.ratings['1'].optionId='invalid';assert.equal(gaitReviewStatus(pending).complete,false);
+});
+
+test('Exports explicitly label incomplete observer reviews without withholding raw data',()=>{
+ const session={id:'pending-review',date:'2026-10-06T00:00:00Z',isPractice:false,duration:10,windows:[],recording:recordFixture()};
+ const json=JSON.parse(exporting.exportJSON(session));
+ assert.equal(json.gaitReview.status,'pending');assert.equal(json.gaitReview.labelledAnalysisReady,false);
+ assert.equal(json.session.recording.streams.accelerometer.length,session.recording.streams.accelerometer.length);
+ assert.match(exporting.exportFeatureCSV(session),/"gait_review_status","gait_labelled_analysis_ready"/);
+ assert.match(exporting.exportFeatureCSV(session),/"pending","false"/);
+});
+
+test('Paired camera JSON preserves real streams and event timing, and cannot claim VIO-ready synchronization',()=>{
+ const {newCameraTrial}=load('cameraTrial');
+ const trial=newCameraTrial(30,3,'2026-10-06T00:00:00Z');trial.end='duration';trial.video={status:'saved',fileName:'camera-pair-test.mp4',error:null};trial.timing.events=[{type:'camera-request',elapsedMs:0},{type:'movement-detected',elapsedMs:1500},{type:'stop-request',elapsedMs:31500}];
+ const session={id:'pair-test',date:'2026-10-06T00:00:00Z',isPractice:true,duration:30,windows:[],recording:recordFixture(),cameraTrial:trial};
+ const json=exporting.exportJSON(session);const payload=JSON.parse(json),parsed=load('reviewRecording').parseReviewRecording(json);
+ assert.equal(payload.analysisPurpose,'camera-imu-feasibility');assert.equal(payload.gaitReview.labelledAnalysisReady,false);assert.equal(parsed.cameraTrial.video.fileName,'camera-pair-test.mp4');assert.equal(parsed.cameraTrial.timing.actualVideoStartOffsetMs,null);
+ assert.equal(parsed.recording.streams.accelerometer.length,session.recording.streams.accelerometer.length);
+ for(const mutate of [v=>v.session.cameraTrial.timing.vioReady=true,v=>v.session.cameraTrial.video.fileName='camera-other-session.mp4',v=>v.session.isPractice=false]){const bad=JSON.parse(json);mutate(bad);assert.throws(()=>load('reviewRecording').parseReviewRecording(JSON.stringify(bad)));}
+});

@@ -19,7 +19,7 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, View, StyleSheet, ActivityIndicator, type ViewStyle, type TextStyle,  } from 'react-native';
+import { Text as NativeText, TouchableOpacity, View, StyleSheet, ActivityIndicator, type ViewStyle, type TextStyle,  } from 'react-native';
 import { Text, t, useLanguage } from '../i18n';
 import { colours, fontSizes, fontWeights, spacing, touchTargets, radii, shadows } from '../theme';
 
@@ -28,6 +28,7 @@ import { colours, fontSizes, fontWeights, spacing, touchTargets, radii, shadows 
 export type BigButtonVariant = 'primary' | 'outline' | 'ghost' | 'danger';
 
 export interface BigButtonProps {
+  translateLabel?: boolean;
   /** Button label — always visible alongside the icon */
   label: string;
   /** Emoji or text icon shown to the left of the label */
@@ -63,9 +64,11 @@ export default function BigButton({
   style,
   labelStyle,
   testID,
+  translateLabel = true,
 }: BigButtonProps): React.JSX.Element {
   useLanguage();
   const isDisabled = disabled || loading;
+  const LabelText=translateLabel?Text:NativeText;
 
   // Resolve colours based on variant and disabled state
   const containerStyle = [
@@ -89,7 +92,7 @@ export default function BigButton({
       disabled={isDisabled}
       activeOpacity={0.75}
       accessibilityRole="button"
-      accessibilityLabel={t(label)}
+      accessibilityLabel={translateLabel?t(label):label}
       accessibilityHint={accessibilityHint ? t(accessibilityHint) : undefined}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       testID={testID}
@@ -113,9 +116,9 @@ export default function BigButton({
         ) : null}
 
         {/* Label — always visible */}
-        <Text style={textStyle}>
+        <LabelText style={textStyle}>
           {label}
-        </Text>
+        </LabelText>
       </View>
     </TouchableOpacity>
   );

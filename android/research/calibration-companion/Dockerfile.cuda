@@ -1,0 +1,6 @@
+# Official COLMAP CUDA snapshot (4.2.1), fixed by immutable image digest.
+# The only added dependency is Python for the local orchestration wrapper.
+FROM colmap/colmap@sha256:c1de51615dff33066cd305071226b6343c1168324ef3bd622f0825e55feb5efe
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*
+ENV QT_QPA_PLATFORM=offscreen
+WORKDIR /data

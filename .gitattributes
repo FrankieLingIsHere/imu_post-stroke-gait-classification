@@ -1,0 +1,5 @@
+# Native module bytes contribute to Expo runtime fingerprints. Preserve the
+# reviewed source and license bytes across Windows builds and Linux OTA jobs.
+android/modules/gait-camera-calibration/** -text
+android/plugins/** -text
+android/research/calibration-companion/*.sh text eol=lf

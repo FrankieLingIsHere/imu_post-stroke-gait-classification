@@ -1,0 +1,6 @@
+diff --git a/ov_msckf/CMakeLists.txt b/ov_msckf/CMakeLists.txt
+--- a/ov_msckf/CMakeLists.txt
++++ b/ov_msckf/CMakeLists.txt
+@@ -11,1 +11,1 @@
+-find_package(Boost REQUIRED COMPONENTS system filesystem thread date_time)
++find_package(Boost REQUIRED COMPONENTS filesystem thread date_time)

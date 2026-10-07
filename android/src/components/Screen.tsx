@@ -1,17 +1,20 @@
-import React from 'react';
-import { ScrollView, View, StyleSheet, useWindowDimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import React, {useEffect,useRef} from 'react';
+import { Text as NativeText, ScrollView, View, StyleSheet, useWindowDimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text } from '../i18n';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colours as c } from '../theme';
 
 /** Primary actions stay outside content scrolling; constrained areas scroll within their bounds. */
-export function Screen({ children, actions, title, eyebrow, fullScreen = false }: React.PropsWithChildren<{ actions?: React.ReactNode; title: string; eyebrow?: string; fullScreen?: boolean }>) {
+export function Screen({ children, actions, title, eyebrow, fullScreen = false, scrollKey, translateTitle=true }: React.PropsWithChildren<{ actions?: React.ReactNode; title: string; eyebrow?: string; fullScreen?: boolean; scrollKey?:string|number;translateTitle?:boolean }>) {
   const { height } = useWindowDimensions();
+  const scroll=useRef<ScrollView>(null);
+  useEffect(()=>{scroll.current?.scrollTo({y:0,animated:false});},[scrollKey]);
+  const TitleText=translateTitle?Text:NativeText;
   return <SafeAreaView edges={fullScreen ? ['top', 'left', 'right', 'bottom'] : ['left', 'right', 'bottom']} style={s.safe}>
     <KeyboardAvoidingView style={s.frame} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView style={{flex:1,minHeight:0}} keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { gap: height < 700 ? 8 : 16, padding: height < 700 ? 16 : 20 }]}>
-        {eyebrow && <Text style={s.eyebrow}>{eyebrow}</Text>}
-        <Text accessibilityRole="header" style={s.title}>{title}</Text>
+      <ScrollView ref={scroll} style={{flex:1,minHeight:0}} keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { gap: height < 700 ? 8 : 16, padding: height < 700 ? 16 : 20 }]}>
+        {eyebrow && <TitleText style={s.eyebrow}>{eyebrow}</TitleText>}
+        <TitleText accessibilityRole="header" style={s.title}>{title}</TitleText>
         {children}
       </ScrollView>
       {actions && <ScrollView style={{flexGrow:0,flexShrink:0,maxHeight:'42%'}} keyboardShouldPersistTaps="handled" contentContainerStyle={s.actions}>{actions}</ScrollView>}
