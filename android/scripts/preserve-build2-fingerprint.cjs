@@ -1,11 +1,13 @@
-// Build 2 was fingerprinted from Windows files. Restore only the exact known
-// config bytes after Git's LF checkout; never override a native runtime hash.
+// Installed builds were fingerprinted from Windows files. Restore only exact
+// reviewed config bytes after Git's LF checkout; never override a runtime hash.
 const fs = require('node:fs');
 const crypto = require('node:crypto');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const hash = value => crypto.createHash('sha1').update(value).digest('hex');
 const contracts = [
+  // Build 31 added local-only artifact patterns. Its content differs from build 2.
+  ['.gitignore', '6dc84646b1f799bcfabd660b8eff95308c957993', '2cb8092cdc3ecccb6753f098542fa4b44c822bfa', s => s.replace(/\n/g, '\r\n')],
   ['.gitignore', 'c3f1927251ca5385fef89328bf01b6bb240941af', '1ad48a15cd3dd8bef674da678a0ac7f107afab80', s => s.replace(/\n/g, '\r\n')],
   ['eas.json', 'b14cf15ac6ee2741dd7e2d74235044a1d29a046e', '7a378f6ebb71e73acbcd084afcfc4f32f4994591',
     s => s.split('\n').map((line,i,lines) => i === lines.length-1 ? line : line + (/^  "cli":|^    "preview":/.test(line) ? '\n' : '\r\n')).join('')],
@@ -20,5 +22,5 @@ for (const [file, canonicalHash, installedHash, restore] of contracts) {
   const restored=restore(canonical);
   if(hash(restored)!==installedHash)throw new Error(`Unexpected compatibility bytes for ${file}`);
   fs.writeFileSync(target,restored);
-  console.log(`${file}: preserved build 2 config bytes.`);
+  console.log(`${file}: preserved verified installed config bytes.`);
 }
