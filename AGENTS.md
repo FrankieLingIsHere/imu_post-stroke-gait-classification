@@ -1,5 +1,21 @@
 # Project collaboration
 
+## Reusable mobile interaction testing
+
+Use `tools/mobile/README.md` for the workspace Android Emulator/Appium lab.
+Prefer phone-free software checks (`npm run test:sandbox` in `android/`) and
+emulator interaction checks before requesting physical-device retries. Launch
+with `Start Android test lab.cmd`; `tools/mobile/mobile-lab.ps1 -Action Test`
+runs the APK smoke checks, and `tools/mobile/interact.cjs` captures/replays UI
+actions and replies. All scripted device operations must explicitly target the
+dedicated `emulator-5560`, never the first attached ADB device. The emulator needs
+its x86_64 lab APK; do not install or publish that package as a phone release.
+Keep downloaded tools, AVD data, builds, screenshots and logs local/ignored.
+Report actual scenario coverage and retain failures. Virtual camera/IMU controls
+do not establish audible TTS, physical distance accuracy, OEM behaviour or clinical
+validation; name those remaining evidence gaps rather than claiming every real
+phone interaction is proven by simulation.
+
 ## Git publication review
 
 Present the proposed new and modified files for user review before pushing.
@@ -88,3 +104,10 @@ rerunning. Label artifact replays explicitly; never present reloaded historical
 results as a newly executed training run. Migrate old runners with dependency
 checks before removing them; preserve historical source hashes and experiment
 contracts. Publication still requires user review.
+
+
+## Manuscript figure clarity
+
+User-confirmed requirement (2026-10-19): every manuscript figure must be understandable independently of the manuscript or external references. Include its subject, clear labels, explained arrows and symbols, any necessary key and explicit conceptual versus empirical status within the image. Avoid unexplained abbreviations and dependence on see-text instructions. Captions should add attribution and detail rather than repair missing explanations. Verify labels, populations and any plotted values against their sources, retain construction provenance and visually inspect final exports.
+
+User preference (2026-10-19): keep the number of figures small and prioritize visual explanations of concepts rather than many numerical graphs or dense text in boxes. Use simple, meaningful imagery and short labels while preserving standalone interpretation.
