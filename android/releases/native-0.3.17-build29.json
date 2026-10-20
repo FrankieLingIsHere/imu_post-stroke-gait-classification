@@ -1,0 +1,33 @@
+{
+  "embeddedUpdateId": "3f8767cd-cb21-4e7e-8c1d-da73c66881c4",
+  "bundleSha256": "ac0871fd9732f48648bd69d12951257d4baab1b487ca7b975a7e9b434a921ecc",
+  "runtimeVersion": "44ce3bbc749a7a1753796c29cf901b8454c77af3",
+  "apkSha256": "e7510ab9851116178e95c0cedb2262467ce695fd12835d874247b61cba462718",
+  "appVersion": "0.3.17",
+  "nativeVersionCode": 29,
+  "certificateSha256": "e6b4b904939ddb670aaee857156f3e6345b410970b3c6b690ce70aaa34387fdc",
+  "package": "com.gaitsteps.app",
+  "channel": "preview",
+  "apk": "android\\dist\\apk\\GaitTrace-0.3.17-build29.apk",
+  "apkBytes": 75002498,
+  "sourceRuntimeVerified": true,
+  "physicalLaunchVerified": false,
+  "activeEmbeddedUpdateVerified": false,
+  "physicalSetupValidated": false,
+  "independentDistanceValidated": false,
+  "publiclyPublished": false,
+  "installedApkMatchesLocal": false,
+  "workingTreeMatchesInstalledRelease": false,
+  "localSourceChangesNotPackaged": false,
+  "physicalDeviceTestRequested": false,
+  "clinicalReadinessEstablished": false,
+  "localSoftwareEvidence": "dist/acceptance/verification.json",
+  "emulatorEvidenceIsDifferentArchitecture": true,
+  "validationLimitations": [
+    "Phone ARM64 launch has not been checked for this APK.",
+    "Audible speech, physical distance and OEM behaviour remain unverified.",
+    "No older-adult usability study or clinical validation is established."
+  ],
+  "emulatorEvidenceAppVersion": "0.3.16",
+  "emulatorEvidenceBuildNumber": 28
+}

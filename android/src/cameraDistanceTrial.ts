@@ -1,9 +1,11 @@
 import {Platform} from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import type {CalibrationCapture} from './cameraCalibration';
-export type DistanceProgress={elapsedSeconds:number;frames:number;imageUri:string;phase:'placing'|'cue'|'waiting'|'walking';tracking?:string|null};
+export type DistanceProgress={elapsedSeconds:number;frames:number;imageUri:string;phase:'placing'|'warmup-cue'|'warmup'|'cue'|'waiting'|'walking';tracking?:string|null};
 export interface DistanceBridge{
  captureDistance(profile:string|null,release:string):Promise<CalibrationCapture>;beginDistance():Promise<void>;stop():Promise<void>;
+ captureReferenceDistance?(reference:string,release:string):Promise<CalibrationCapture>;
+ beginDistanceWarmup?():Promise<void>;
  addListener(event:'progress',listener:(event:DistanceProgress)=>void):{remove():void};
 }
 export function distanceBridge():DistanceBridge|null{

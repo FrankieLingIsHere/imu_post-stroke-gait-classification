@@ -1,0 +1,79 @@
+[
+  {
+    "action": "back"
+  },
+  {
+    "action": "scroll",
+    "value": "up"
+  },
+  {
+    "action": "scroll",
+    "value": "up"
+  },
+  {
+    "action": "scroll",
+    "value": "up"
+  },
+  {
+    "action": "tap",
+    "label": "My recordings"
+  },
+  {
+    "action": "tap-first-checkbox"
+  },
+  {
+    "action": "assert",
+    "label": "1 recordings selected"
+  },
+  {
+    "action": "tap",
+    "label": "Export selected CSV"
+  },
+  {
+    "action": "wait-visible",
+    "label": "Share",
+    "seconds": 180
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Delete selected recordings"
+  },
+  {
+    "action": "assert",
+    "label": "Delete recorded data?"
+  },
+  {
+    "action": "tap",
+    "label": "CANCEL"
+  },
+  {
+    "action": "assert",
+    "label": "1 recordings selected"
+  },
+  {
+    "action": "tap",
+    "label": "Storage"
+  },
+  {
+    "action": "tap",
+    "label": "Delete all recorded data"
+  },
+  {
+    "action": "assert",
+    "label": "Delete recorded data?"
+  },
+  {
+    "action": "tap",
+    "label": "CANCEL"
+  },
+  {
+    "action": "tap",
+    "label": "Back to home"
+  }
+]

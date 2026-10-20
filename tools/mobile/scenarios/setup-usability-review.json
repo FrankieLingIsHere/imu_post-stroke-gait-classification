@@ -1,0 +1,47 @@
+[
+  {
+    "action": "tap",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap",
+    "label": "Set up this phone"
+  },
+  {
+    "action": "assert",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "tap-if-present",
+    "label": "While using the app"
+  },
+  {
+    "action": "wait",
+    "seconds": 20
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "assert",
+    "label": "Cancel"
+  },
+  {
+    "action": "tap",
+    "label": "Cancel"
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  }
+]

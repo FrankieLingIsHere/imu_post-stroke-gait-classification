@@ -1,0 +1,86 @@
+[
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Start a walk"
+  },
+  {
+    "action": "assert",
+    "label": "Before your first walk"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Set up this phone"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Set up this phone"
+  },
+  {
+    "action": "assert",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "tap",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "wait",
+    "seconds": 3
+  },
+  {
+    "action": "assert-enabled",
+    "label": "Start calibration",
+    "value": "true"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Back"
+  },
+  {
+    "action": "tap",
+    "label": "Back"
+  },
+  {
+    "action": "assert",
+    "label": "Before your first walk"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Participants and profiles"
+  },
+  {
+    "action": "tap",
+    "label": "Add participant"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Cancel"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  }
+]

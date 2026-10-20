@@ -11,6 +11,7 @@ import BigButton from '../components/BigButton';
 import {Text,t} from '../i18n';
 import {speakQueued,stopSpeaking} from '../audio';
 import {calibrationBridge,latestCalibrationCapture,retainCalibrationCapture,retainCalibrationReport,hasCalibrationGeometry,latestNoiseCapture,retainNoiseCapture,type CalibrationCapture} from '../cameraCalibration';
+import {checkNoiseCapture} from '../noiseValidation';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {RootStackParamList} from '../../App';
 
@@ -19,7 +20,7 @@ export default function CameraCalibrationScreen({navigation}:NativeStackScreenPr
  const bridge=useRef(calibrationBridge()),alive=useRef(true),running=useRef(false),lastPhase=useRef('');
  const [busy,setBusy]=useState(false),[image,setImage]=useState(''),[phase,setPhase]=useState('ready'),[seconds,setSeconds]=useState(40),[error,setError]=useState(''),[saved,setSaved]=useState<CalibrationCapture|null>(null);
  const [geometry,setGeometry]=useState(false);
- const [mode,setMode]=useState<'board'|'noise'>('board'),[bag,setBag]=useState(true),[noise,setNoise]=useState<CalibrationCapture|null>(null);
+ const [mode,setMode]=useState<'board'|'noise'>('noise'),[bag,setBag]=useState(true),[noise,setNoise]=useState<CalibrationCapture|null>(null),[noiseReport,setNoiseReport]=useState<any>(null);
  const activeMode=useRef<'board'|'noise'>('board');
  useEffect(()=>{alive.current=true;void latestCalibrationCapture().then(async v=>{if(alive.current)setSaved(v);if(v){const valid=await hasCalibrationGeometry(v);if(alive.current)setGeometry(valid);}}).catch(e=>{if(alive.current)setError(String(e));});
   void latestNoiseCapture().then(v=>{if(alive.current)setNoise(v);}).catch(e=>{if(alive.current)setError(String(e));});
@@ -40,6 +41,7 @@ export default function CameraCalibrationScreen({navigation}:NativeStackScreenPr
     if(!running.current)return;
     const result=await bridge.current.captureNoise();const record=await retainNoiseCapture(result);
     if(alive.current){setNoise(record);setPhase('done');setError(result.error??'');await sayComplete('Sensor noise capture saved.');}
+    if(running.current&&alive.current&&JSON.parse(record.metadata).status==='completed'&&!record.error){setPhase('processing');const report=await checkNoiseCapture(record,()=>!alive.current||!running.current);if(alive.current){setNoiseReport(report);setPhase('done');}}
    }else{
     if(!bridge.current.captureWithOptics)throw new Error('Camera calibration needs the new Android APK.');
     const p=permission?.granted?permission:await requestPermission();if(!p.granted)throw new Error('Camera permission is required for this trial.');
@@ -52,6 +54,7 @@ export default function CameraCalibrationScreen({navigation}:NativeStackScreenPr
   finally{running.current=false;if(alive.current)setBusy(false);}
  }
  function cancel(){running.current=false;stopSpeaking();void bridge.current?.stop();}
+ async function retryNoise(){if(!noise||busy)return;setBusy(true);setError('');running.current=true;setPhase('processing');try{const report=await checkNoiseCapture(noise,()=>!alive.current||!running.current);if(alive.current){setNoiseReport(report);setPhase('done');}}catch(e){if(alive.current){setError(e instanceof Error?e.message:String(e));setPhase('done');}}finally{running.current=false;if(alive.current)setBusy(false);}}
  async function share(){const record=mode==='noise'?noise:saved;if(!record)return;try{if(!await Sharing.isAvailableAsync())throw new Error('File sharing is unavailable here.');await Sharing.shareAsync(record.uri,{mimeType:'application/zip',dialogTitle:t(mode==='noise'?'Export sensor noise':'Export calibration capture')});}catch(e){setError(e instanceof Error?e.message:String(e));}}
  async function importReport(){if(!saved)return;try{
   const pick=await DocumentPicker.getDocumentAsync({type:['application/json','text/plain','application/octet-stream'],copyToCacheDirectory:true});if(pick.canceled)return;
@@ -59,18 +62,20 @@ export default function CameraCalibrationScreen({navigation}:NativeStackScreenPr
   if(!info.exists||('size'in info&&info.size>256000))throw new Error('This calibration report did not pass processing.');
   const report=JSON.parse(await FileSystem.readAsStringAsync(asset.uri));await retainCalibrationReport(report,saved);setGeometry(true);setError('');
  }catch(e){setError(e instanceof Error?e.message:String(e));}}
- const captions:Record<string,string>={ready:mode==='noise'?'Leave the phone on a firm table for five minutes.':'Show the digital board on a fixed tablet or monitor.',starting:'Preparing capture.',still:'Hold still. Keep the board visible.',move:'Tilt and move slowly. Keep the board visible.',noise:'Keep the phone untouched on the table.',done:'Capture saved. Processing required.'};
+ const captions:Record<string,string>={ready:mode==='noise'?'Leave the phone on a firm table for five minutes.':'Show the digital board on a fixed tablet or monitor.',starting:'Preparing capture.',still:'Hold still. Keep the board visible.',move:'Tilt and move slowly. Keep the board visible.',noise:'Keep the phone untouched on the table.',processing:'Your computer is checking sensor noise.',done:'Capture saved.'};
  return <Screen title="Phone calibration" eyebrow="RESEARCHER SETUP" actions={<>
   {!busy&&<BigButton label={mode==='noise'?'Measure sensor noise (5 min)':'Capture calibration'} onPress={()=>void start()}/>}
   {busy&&<BigButton label="Cancel capture" variant="outline" onPress={cancel}/>}
   {!!(mode==='noise'?noise:saved)&&!busy&&<BigButton label={mode==='noise'?'Export sensor noise':'Export calibration capture'} onPress={()=>void share()}/>}
+  {mode==='noise'&&noise&&!busy&&<BigButton label="Check saved sensor noise" variant="outline" onPress={()=>void retryNoise()}/>}
   {mode==='board'&&!!saved&&!busy&&<BigButton label="Import processed calibration" variant="outline" onPress={()=>void importReport()}/>}
   <BigButton label="Back to home" variant="ghost" disabled={busy} onPress={()=>navigation.goBack()}/>
  </>}>{!busy&&<View accessibilityRole="tablist" style={{flexDirection:'row',gap:8}}>{(['board','noise'] as const).map(value=><Pressable key={value} accessibilityRole="tab" accessibilityState={{selected:mode===value}} onPress={()=>{setMode(value);setPhase('ready');setError('');}} style={{flex:1,padding:14,borderRadius:12,borderWidth:2,borderColor:c.primary,backgroundColor:mode===value?c.primary:c.surface}}><Text style={{color:mode===value?'white':c.textPrimary,fontWeight:'700'}}>{value==='board'?'Camera board':'Sensor noise'}</Text></Pressable>)}</View>}
  <Body>{captions[phase]}</Body>
+ {noiseReport&&mode==='noise'&&<Body>{noiseReport.whiteNoiseCandidateReady?'Short-term sensor noise checked. Distance accuracy still needs a walking trial.':'Sensor noise needs review. Keep the saved capture.'}</Body>}
  {!busy&&mode==='board'&&<Pressable accessibilityRole="checkbox" accessibilityState={{checked:bag}} onPress={()=>setBag(!bag)} style={{padding:12,borderWidth:2,borderRadius:12,borderColor:c.primary}}><Text>{bag?'☑ ':'☐ '}{t('Capture through the usual waist-bag window')}</Text></Pressable>}
   {image&&busy&&<Image source={{uri:image}} style={{width:'100%',height:230}} resizeMode="contain"/>}
-  {busy&&<Text style={ui.label}>{seconds} s</Text>}
+  {busy&&phase!=='processing'&&<Text style={ui.label}>{seconds} s</Text>}
   {phase==='ready'&&<Body>This belongs to the phone, not the participant.</Body>}
   {mode==='board'&&saved&&!busy&&<Body>{geometry?'Geometry saved. Walking-distance validation is still needed.':'No distance calibration is active yet.'}</Body>}
   {!!error&&<Text style={ui.error}>{t(error)}</Text>}

@@ -9,7 +9,7 @@ export const protocolGuides: Record<AssessmentProtocol, { title: string; short: 
     sourceUrl: 'https://www.sralab.org/rehabilitation-measures/10-meter-walk-test',
     title: '10-Meter Walk Test (10MWT)',
     short: 'Measures speed over a marked distance. This project uses 1 m to accelerate, 10 m timed, then 1 m to slow down.',
-    body: 'Use a marked 12 m path: 1 m to get moving, 10 m in the middle, then 1 m to slow down. Stand still at the start until you hear Go. At the end marker, stop and stand still until the phone saves. The phone cannot detect the two timed-zone marks; its speed is an experimental whole-walk estimate, not a clinical 10MWT result.',
+    body: 'Use a marked 12 m path: 1 m to build pace, 10 m for measurement, then 1 m to slow down. Wait for Go at the first mark. Stop at the final mark and stay still until you hear finished. Camera distance is processed afterwards. Any central 10 m speed is an experimental estimate, not a verified clinical result.',
   },
   '2mwt': {
     sourceUrl: 'https://www.sralab.org/rehabilitation-measures/2-minute-walk-test',

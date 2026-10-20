@@ -1,0 +1,32 @@
+{
+  "embeddedUpdateId": "8394c378-3133-4adc-872b-f722e38a72a9",
+  "bundleSha256": "25bf2e4e4ae0473ae132b71f8e05fccdec3810603ede0a3dabd34b76d990cf6e",
+  "runtimeVersion": "e3b6276c02e6ea24b45cf61fbab2dad505152a37",
+  "apkSha256": "b52f34054bc87313889f10a7be4b17fba525aa12063ca67303e78ca76ee0f736",
+  "appVersion": "0.3.16",
+  "nativeVersionCode": 28,
+  "certificateSha256": "e6b4b904939ddb670aaee857156f3e6345b410970b3c6b690ce70aaa34387fdc",
+  "package": "com.gaitsteps.app",
+  "channel": "preview",
+  "sourceRuntimeVerified": true,
+  "physicalLaunchVerified": false,
+  "activeEmbeddedUpdateVerified": false,
+  "physicalSetupValidated": false,
+  "independentDistanceValidated": false,
+  "publiclyPublished": false,
+  "installedApkMatchesLocal": false,
+  "workingTreeMatchesInstalledRelease": false,
+  "localSourceChangesNotPackaged": false,
+  "localReplayReport": "dist/on-device-checks/unified-boundaries/verification.json",
+  "localReleaseBlocked": true,
+  "localReleaseBlockers": [
+    "autonomous-first-phone-calibration-not-established",
+    "quiet-first-setup-not-physically-validated",
+    "main-distance-lifecycle-not-physically-validated",
+    "cross-phone-distance-accuracy-not-validated"
+  ],
+  "localPersonalPostureBaselineImplemented": true,
+  "tenMetreBoundaryVersion": "ten-metre-boundaries-v1",
+  "apkBytes": 74973826,
+  "physicalDeviceTestRequested": true
+}

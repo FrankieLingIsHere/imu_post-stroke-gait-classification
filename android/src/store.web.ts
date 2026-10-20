@@ -19,10 +19,12 @@ export async function toggleParticipantFavorite(id: string) { const p=participan
 export async function archiveParticipant(id: string) { const p=participants.get(id);if(p)await saveParticipant({...p,archived:true,updatedAt:new Date().toISOString()}); }
 export async function saveParticipantDistanceCalibration(id:string, distanceCalibration:DistanceCalibration) { const p=participants.get(id);if(!p)return undefined;const updated={...p,distanceCalibration,updatedAt:new Date().toISOString()};await saveParticipant(updated);return updated; }
 export function importReviewRecording(text: string) {
-  const session = parseReviewRecording(text); sessions.set(session.id, session); return session.id;
+  const session = parseReviewRecording(text); if(!sessions.has(session.id))sessions.set(session.id, session); return session.id;
 }
 export async function getSessions() { return [...sessions.values()].sort((a,b)=>b.date.localeCompare(a.date)); }
 export async function getSession(id:string) { return sessions.get(id); }
+export async function deleteSessions(ids:readonly string[]) { await getParticipants(); for(const id of ids)sessions.delete(id); }
+export async function clearRecordedData() { await getParticipants(); sessions.clear(); }
 export async function saveSession(session:SessionRecord) {
   if(flowLabEnabled&&session.id===FLOW_LAB_SESSION&&session.isPractice&&!session.recording){sessions.set(session.id,session);return;}
   if(session.recording?.platform !== 'web' || session.recording.acquisition?.api !== 'generic-sensor-api-v1') throw new Error('Only browser sensor recordings can be saved here.');

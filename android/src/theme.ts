@@ -2,7 +2,7 @@
 export const colours = {
   primary: '#176B63', primaryLight: '#238479', primaryDark: '#104D47', accent: '#E9B96A',
   good: '#176B63', acceptable: '#E9B96A', repeat: '#A33E37',
-  background: '#F6F5F0', surface: '#FFFFFF', surfaceAlt: '#E7F0EB', border: '#CBD8D1',
+  background: '#F6F5F0', surface: '#FFFFFF', surfaceAlt: '#E7F0EB', border: '#CBD8D1', inputBorder: '#71877D',
   textPrimary: '#173B35', textSecondary: '#52665F', textOnPrimary: '#FFFFFF',
   textOnRepeat: '#FFFFFF', textOnGood: '#FFFFFF', textOnAcceptable: '#3E3018',
   countdownBg: '#F7EEDC', recordingBg: '#E7F0EB', disabled: '#DEE4DF', disabledText: '#52665F',

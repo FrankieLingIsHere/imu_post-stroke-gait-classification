@@ -82,6 +82,69 @@ phone recordings in this batch.
 
 ## Verification contract
 
+### Integrated helper selection
+
+`Start phone calibration.cmd` explicitly selects `GAITTRACE_DISTANCE_PIPELINE=fixed-time-rows-quiet-v1`.
+`distance_pipeline.py` builds `/root/gaittrace-vio/distance-build-v3` and runs CTest;
+the old `reference-build` binary is preserved. Direct Python invocation defaults
+to `fixed-time-v2` for historical controls. Corrected configuration sets
+`fixed_time_row_correction: 1` and string-valued `replay_start_ns` from a continuous
+two-second native-IMU quiet interval before measured motion. Original images/IMU
+are retained. Features are extracted from the full capture; the wrapper excludes
+the prefix only at estimator input. No frame/IMU clock rescaling or marked-distance
+scale fitting. Absence of a qualifying baseline fails and retains the capture.
+
+`/api/distance-health` requires correction/window capabilities in corrected mode.
+Reports disclose source/backend/mode revision, binary hash and initialization.
+Job keys additionally bind the selected noise-profile bytes. An older completed
+report cannot silently substitute for new processing or noise settings.
+
+Fresh full-service executions and actual app TypeScript import/save/reload pass
+for five retained physical captures, using simulated phone storage. The altered
+start is excluded from accuracy; three of four remaining reported measured trials
+return estimates, latest confirmed 3 m at 3.15688 m (+5.23%). Blank synthetic
+footage withholds distance. 83 research checks pass. The normal local helper is
+active with the exact tested method. Prospective phone accuracy remains pending.
+
+
+### Fixed-time rolling-shutter investigation - 8 October 2026
+
+Historical isolated-candidate investigation. Integration above supersedes its pending helper work.
+
+The pinned estimator chooses `ProjectionFactor` when `estimate_td: 0`.
+That branch omits the row-time correction in upstream `ProjectionTdFactor`,
+even when a nonzero readout is loaded. Our original fixed-time distance replay
+therefore did **not** apply that row correction. The saved calibration itself
+has not been changed.
+
+Experimental YAML `fixed_time_row_correction: 1` corrects normalized image
+coordinates before they enter that fixed-time branch, using raw pixel rows,
+saved readout and normalized feature velocity. The default remains **0**.
+Online time-offset estimation with this option is rejected to prevent double
+correction. This implements the upstream first-order row model, not a complete
+motion-blur or exposure model. The upstream estimator remains unchanged.
+
+`ctest --test-dir HARNESS_BUILD --output-on-failure` runs 250 analytic cases
+against the actual pinned upstream factors. A separate fresh zero-readout
+analytic replay has identical states with the flag off/on and 559 initialized
+poses, rigid-only RMSE 0.00001035 m. These are synthetic consistency checks.
+
+Fresh isolated replays of five retained phone captures, followed by saved-state
+reassessment under the added pose-continuity guard, are recorded in the existing
+notebook. The latest confirmed 3 m walk changes from 3.24120 m to 3.15688 m.
+Two earlier rejected trials return complete candidate estimates. One still
+fails. The altered-start trial remains excluded from accuracy comparisons.
+No route-label scale fit, threshold relaxation or saved-result replacement.
+
+A separate notebook experiment excludes initial placement motion using the
+first two-second quiet interval before measured motion. It keeps the quiet
+baseline and practice, and does not prove anatomical placement. That selection
+rule is not yet a production adapter. The opt-in executable was built separately
+under `row-investigation-build`; the live helper executable is unchanged.
+Before further accuracy testing, integrate explicit opt-in/provenance into the
+helper and verify the same saved captures through its complete service path.
+Neither replay recovery nor a prospective trial is clinical validation.
+
 `test_vio_reference.py` checks clock convention, acceleration bracketing, profile
 identity, units and rotation direction. `vio_reference_fixture.py` supplies an
 analytic, non-gait, known-geometry control. It permits rigid gauge alignment only,

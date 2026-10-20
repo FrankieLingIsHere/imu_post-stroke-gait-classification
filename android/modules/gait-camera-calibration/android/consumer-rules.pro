@@ -1,0 +1,2 @@
+-keep class expo.modules.gaitcalibration.PhoneVio { *; }
+-keep class expo.modules.gaitcalibration.OnDeviceVio { *; }

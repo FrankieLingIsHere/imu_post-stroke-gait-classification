@@ -22,6 +22,14 @@ test('Reference output never grants metric readiness or accepts another device',
  assert.throws(()=>a.validateReferenceCalibration({...r,distanceReady:true},binding));assert.throws(()=>a.validateReferenceCalibration(r,{...binding,installationId:'other'}));
  assert.throws(()=>a.validateReferenceCalibration({...r,upstreamParameters:null},binding));
 });
+test('Experimental calibration import requires the exact verified build and retains review-only status',()=>{
+ const a=load(),binding={installationId:'one',captureId:'calibration-1'};
+ const r={schemaVersion:1,kind:'phone-reference-camera-imu-calibration-v1',method:'ikalibr-tro-2025',status:'reference-solved-review-required',cameraImuCandidateReady:false,fullCalibrationReady:false,distanceReady:false,independentDistanceValidation:false,binding,upstreamParameters:{CalibParam:{}},reviewRequired:['physical-bounds'],sourceSha256:'a'.repeat(64),software:{image:'sha256:e6b2e0e5dd4e88831560e1d3d3012d69673c00f2e58f0c6b0c85e3ba610f1b91',executableSha256:'b01cdfb24f098e6be0a35ead8b55932f6899cd892c07d4c1ac09738ae690b429',baseImage:'ulong2/ie_kalibr_image@sha256:2de8ac994a86951b6255e4b8485eae9982ea3ed03bac33dd9d0ee254e383587c',experimentalBackend:'cuda'}};
+ for(const backend of ['cpu','cuda'])assert.equal(a.validateReferenceCalibration({...r,software:{...r.software,experimentalBackend:backend}},binding).distanceReady,false);
+ for(const mutate of [x=>x.software.image='sha256:'+'a'.repeat(64),x=>x.software.executableSha256='b'.repeat(64),x=>x.software.baseImage='other',x=>x.software.experimentalBackend='unknown',x=>x.fullCalibrationReady=true,x=>x.independentDistanceValidation=true]){
+  const changed=JSON.parse(JSON.stringify(r));mutate(changed);assert.throws(()=>a.validateReferenceCalibration(changed,binding));
+ }
+});
 test('Optional computer feedback coalesces pending updates and stops cleanly without blocking the lens capture',async()=>{
  const calls=[];let release;
  const a=load({},async(url,options)=>{calls.push({url,options});return new Promise(r=>release=r);});

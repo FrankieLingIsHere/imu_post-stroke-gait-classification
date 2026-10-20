@@ -34,11 +34,12 @@ export default function GaitAssessmentForm({value:form,onChange,onSave,onBack,sa
     {!!error&&<Text accessibilityRole="alert" style={ui.error}>{error}</Text>}
     {!!notice&&<Text accessibilityLiveRegion="polite" style={ui.caption}>{notice}</Text>}
     {review?<>
+      <Button label="Next missing item" variant="outline" disabled={!summary.missingItems.length} onPress={()=>go((summary.missingItems[0]??1)-1)}/>
       <Text style={ui.caption}>Review in the same order as the paper form. Tap any item to edit. Missing observations remain unresolved; never guess a score.</Text>
       <Button label="Edit assessor details" variant="outline" onPress={()=>go(-1)}/>
       <Button label="Save & close" variant="outline" disabled={saving} onPress={()=>void onSave().then(ok=>{if(ok)onBack();})}/>
       {!summary.complete&&<Text style={ui.error}>Pending: check all 31 ratings, required directions, assessor, valid date, assessed limb and observation source.</Text>}
-      {gaitRubric.map(i=>{const r=form.ratings[String(i.id)],o=i.options.find(o=>o.id===r?.optionId);return <Pressable key={i.id} accessibilityRole="button" accessibilityLabel={`Review item ${i.id}: ${i.title}`} onPress={()=>go(i.id-1)} style={[ui.choice,{flexGrow:0,flexShrink:0,flexBasis:'auto',alignItems:'flex-start'}]}><Text style={ui.label}>{i.id}. {i.title}</Text><Text style={ui.caption}>{o?`Score ${o.score}${o.branch?' • '+o.branch:''}${r?.qualifiers?.length?' • '+r.qualifiers.join(', '):''}${summary.missingItems.includes(i.id)?' • Required directions missing':''}`:'Missing / not assessable'}</Text></Pressable>;})}
+      {gaitRubric.map(i=>{const r=form.ratings[String(i.id)],o=i.options.find(o=>o.id===r?.optionId);return <Pressable key={i.id} accessibilityRole="button" accessibilityLabel={`Review item ${i.id}: ${i.title}`} onPress={()=>go(i.id-1)} style={[ui.choice,{flexGrow:0,flexShrink:0,flexBasis:'auto',alignItems:'flex-start',padding:8,minHeight:48}]}><Text style={[ui.label,{fontSize:16}]}>{i.id}. {i.title}</Text><Text style={ui.caption}>{o?`Score ${o.score}${o.branch?' • '+o.branch:''}${r?.qualifiers?.length?' • '+r.qualifiers.join(', '):''}${summary.missingItems.includes(i.id)?' • Required directions missing':''}`:'Missing / not assessable'}</Text></Pressable>;})}
     </>:page<0?<>
       <Text style={ui.caption}>Required for each real gait recording. A trained observer completes the supplied 31-item, 62-point Appendix A. The phone does not assign clinical scores.</Text>
       <Text style={ui.caption}>This clinical form uses the original English criteria. Save a draft to pause and resume; raw data is already saved.</Text>

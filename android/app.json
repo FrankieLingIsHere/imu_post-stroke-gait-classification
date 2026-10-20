@@ -2,13 +2,16 @@
   "expo": {
     "name": "GaitTrace",
     "slug": "gait-steps",
-    "version": "0.3.6",
+    "version": "0.3.19",
     "icon": "./assets/branding/icon.png",
     "runtimeVersion": {
       "policy": "fingerprint"
     },
     "updates": {
       "url": "https://u.expo.dev/3db4ae90-2d4d-41f9-9689-f70f656ac581",
+      "requestHeaders": {
+        "expo-channel-name": "preview"
+      },
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
     },
@@ -27,7 +30,7 @@
     },
     "android": {
       "package": "com.gaitsteps.app",
-      "versionCode": 15,
+      "versionCode": 31,
       "permissions": [
         "android.permission.ACTIVITY_RECOGNITION"
       ],

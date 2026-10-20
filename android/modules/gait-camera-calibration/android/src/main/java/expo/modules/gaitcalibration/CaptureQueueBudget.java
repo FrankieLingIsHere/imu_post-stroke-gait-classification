@@ -11,6 +11,13 @@ public final class CaptureQueueBudget {
   private final AtomicInteger frames=new AtomicInteger(),sensors=new AtomicInteger();
   private final AtomicInteger peakFrames=new AtomicInteger(),peakSensors=new AtomicInteger();
   private final AtomicLong droppedFrames=new AtomicLong(),rejectedSensors=new AtomicLong();
+  private long lastSelectedFrame=Long.MIN_VALUE,sampledOutFrames=0;
+  /** Lens-only sampling occurs before YUV conversion/storage. Other captures use zero. */
+  public synchronized boolean selectFrame(long timestamp,long minimumIntervalNs){
+    if(minimumIntervalNs<0)throw new IllegalArgumentException("Invalid sampling interval");
+    if(minimumIntervalNs>0&&lastSelectedFrame!=Long.MIN_VALUE&&timestamp-lastSelectedFrame<minimumIntervalNs){sampledOutFrames++;return false;}
+    lastSelectedFrame=timestamp;return true;
+  }
   private long firstCamera=-1,lastCamera=-1,cameraCount=0,firstSaved=-1,lastSaved=-1,savedCount=0;
   private long maxCallbackDelay=0,maxQueueDelay=0,maxProcessing=0;
   public CaptureQueueBudget(int maxFrames,int maxSensors){
@@ -37,6 +44,7 @@ public final class CaptureQueueBudget {
     Map<String,Number> out=new LinkedHashMap<>();
     out.put("cameraMetadataFrames",cameraCount);out.put("savedFrames",savedCount);
     out.put("cameraMetadataHz",rate(cameraCount,firstCamera,lastCamera));out.put("savedCameraHz",rate(savedCount,firstSaved,lastSaved));
+    out.put("intentionallySampledOutImageCallbacks",sampledOutFrames);
     out.put("droppedImageCallbacks",droppedFrames.get());out.put("rejectedSensorCallbacks",rejectedSensors.get());
     out.put("pendingFrames",frames.get());out.put("pendingSensors",sensors.get());
     out.put("peakPendingFrames",peakFrames.get());out.put("peakPendingSensors",peakSensors.get());

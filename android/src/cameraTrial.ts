@@ -1,5 +1,6 @@
 import type {Recording} from './recording';
 import type {MotionWindow} from './movement';
+import {placementReady} from './movement';
 
 export const CAMERA_TRIAL_VERSION='front-camera-imu-trial-v1';
 export const cameraPlacementCue='Place the phone at your lower back, screen facing out. Stand still.';
@@ -72,7 +73,7 @@ export class CameraTrialCapture {
     const o=this.options,now=o.now(),m=o.engine.motionStatus;
     if(now-this.origin>=595000){this.finish('setup-limit');return;}
     if(this.stage==='placing'){
-      const settled=this.instructionsDone&&o.engine.allReceiving&&o.engine.baselineReady&&m.enough&&m.upright&&m.steady;
+      const settled=this.instructionsDone&&o.engine.allReceiving&&o.engine.baselineReady&&m.enough&&placementReady(m)&&m.steady;
       if(!settled){this.steadyAt=null;return;}
       this.steadyAt??=now;if(now-this.steadyAt<5000)return;
       o.engine.preserveSetupBaseline();this.stageTo('cue');

@@ -5,19 +5,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colours as c } from '../theme';
 
 /** Primary actions stay outside content scrolling; constrained areas scroll within their bounds. */
-export function Screen({ children, actions, title, eyebrow, fullScreen = false, scrollKey, translateTitle=true }: React.PropsWithChildren<{ actions?: React.ReactNode; title: string; eyebrow?: string; fullScreen?: boolean; scrollKey?:string|number;translateTitle?:boolean }>) {
-  const { height } = useWindowDimensions();
+export function Screen({ children, actions, title, eyebrow, fullScreen = false, scrollKey, translateTitle=true, navigation }: React.PropsWithChildren<{ actions?: React.ReactNode; title: string; eyebrow?: string; fullScreen?: boolean; scrollKey?:string|number;translateTitle?:boolean; navigation?:React.ReactNode }>) {
+  const { height, fontScale } = useWindowDimensions();
+  const inlineNavigation = height < 700 || fontScale > 1.2;
   const scroll=useRef<ScrollView>(null);
   useEffect(()=>{scroll.current?.scrollTo({y:0,animated:false});},[scrollKey]);
   const TitleText=translateTitle?Text:NativeText;
-  return <SafeAreaView edges={fullScreen ? ['top', 'left', 'right', 'bottom'] : ['left', 'right', 'bottom']} style={s.safe}>
+  return <SafeAreaView edges={fullScreen ? ['top', 'left', 'right', 'bottom'] : ['left', 'right', 'bottom']} style={[s.safe,fullScreen&&Platform.OS!=='web'&&{height,flex:0}]}>
     <KeyboardAvoidingView style={s.frame} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView ref={scroll} style={{flex:1,minHeight:0}} keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { gap: height < 700 ? 8 : 16, padding: height < 700 ? 16 : 20 }]}>
+      {navigation && !inlineNavigation && <View style={s.navigation}>{navigation}</View>}
+      <ScrollView testID="screen-content" ref={scroll} style={{flex:1,minHeight:0}} keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { gap: height < 700 ? 8 : 16, padding: height < 700 ? 16 : 20 }]}>
+        {navigation && inlineNavigation && <View>{navigation}</View>}
         {eyebrow && <TitleText style={s.eyebrow}>{eyebrow}</TitleText>}
         <TitleText accessibilityRole="header" style={s.title}>{title}</TitleText>
         {children}
       </ScrollView>
-      {actions && <ScrollView style={{flexGrow:0,flexShrink:0,maxHeight:'42%'}} keyboardShouldPersistTaps="handled" contentContainerStyle={s.actions}>{actions}</ScrollView>}
+      {actions && <ScrollView testID="screen-actions" style={{flexGrow:0,flexShrink:0,maxHeight:'30%'}} keyboardShouldPersistTaps="handled" contentContainerStyle={s.actions}>{actions}</ScrollView>}
     </KeyboardAvoidingView>
   </SafeAreaView>;
 }
@@ -32,6 +35,7 @@ export const ui = StyleSheet.create({
   selected: { backgroundColor: c.surfaceAlt, borderColor: c.primary, borderWidth: 2 },
 });
 const s = StyleSheet.create({
+  navigation: { paddingHorizontal:16,paddingVertical:8,borderBottomWidth:1,borderColor:c.border,backgroundColor:c.background },
   safe: { flex: 1, minHeight:0, backgroundColor: c.background }, frame: { flex: 1, minHeight:0, width: '100%', maxWidth: 600, alignSelf: 'center' },
   content: { padding: 20, flexGrow: 1 }, title: { fontSize: 28, fontWeight: '700', color: c.textPrimary, letterSpacing: -0.6 },
   eyebrow: { fontSize: 16, fontWeight: '700', color: c.primary, letterSpacing: 1.4 },

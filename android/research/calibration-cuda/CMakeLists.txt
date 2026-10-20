@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.17)
+project(gaittrace_calibration_cuda_probe LANGUAGES CXX)
+find_package(Ceres 2.2 REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+add_executable(solver_probe solver_probe.cpp)
+target_compile_features(solver_probe PRIVATE cxx_std_17)
+target_link_libraries(solver_probe PRIVATE Ceres::ceres CUDA::cudart)

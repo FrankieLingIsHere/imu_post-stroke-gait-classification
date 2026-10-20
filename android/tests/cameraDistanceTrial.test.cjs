@@ -31,11 +31,11 @@ test('Native ZIP aliases persist without self-copy, and recovery retains interru
 });
 const React=require('react'),renderer=require('react-test-renderer'),flush=()=>new Promise(r=>setImmediate(r));
 function screenFixture(withProfile=true){
- const spoken=[],calls=[],events={},native={captureDistance:async()=>{calls.push('capture');return await new Promise(r=>native.resolve=r);},beginDistance:async()=>calls.push('begin'),stop:async()=>calls.push('stop'),addListener:(_,fn)=>{events.progress=fn;return {remove(){}};}};
- const component=p=>React.createElement('Body',{},p.children),mocks={react:React,'react-native':{AppState:{addEventListener:(_,fn)=>{events.app=fn;return {remove(){}};}},BackHandler:{addEventListener:()=>({remove(){}})},Image:'Image',View:'View'},'expo-camera':{useCameraPermissions:()=>[{granted:true},async()=>({granted:true})]},'expo-keep-awake':{useKeepAwake(){}},'expo-document-picker':{},'expo-file-system':{},'expo-sharing':{},'../components/Screen':{Screen:p=>React.createElement('Screen',{},p.children,p.actions),Body:component,ui:{}},'../components/BigButton':p=>React.createElement('Button',p),'../i18n':{Text:component,t:s=>s},'../audio':{speakQueued:(s,o)=>{spoken.push({s,o});return Promise.resolve();},stopSpeaking:()=>{for(const v of spoken)if(!v.done){v.done=true;v.o.onStopped?.();}}},'../releaseInfo':{releaseInfo:()=>({appVersion:'0.3.3',buildNumber:'10',runtimeVersion:'fixture-only',updateId:null})},'../cameraCalibration':{latestCalibrationCapture:async()=>null},'../cameraDistanceTrial':{distanceBridge:()=>native,loadDistanceResearchProfile:async()=>withProfile?fixture().profile:null,latestDistanceTrial:async()=>null,distanceTrialSummary:()=>null,retainDistanceTrial:async s=>s}};
+ const spoken=[],calls=[],events={},native={captureReferenceDistance:async()=>{calls.push('capture');return await new Promise(r=>native.resolve=r);},beginDistanceWarmup:async()=>calls.push('warmup'),beginDistance:async()=>calls.push('begin'),stop:async()=>calls.push('stop'),addListener:(_,fn)=>{events.progress=fn;return {remove(){}};}};
+ const component=p=>React.createElement('Body',{},p.children),mocks={react:React,'react-native':{AppState:{addEventListener:(_,fn)=>{events.app=fn;return {remove(){}};}},BackHandler:{addEventListener:()=>({remove(){}})},Image:'Image',View:'View',Pressable:'Pressable'},'expo-camera':{useCameraPermissions:()=>[{granted:true},async()=>({granted:true})]},'expo-keep-awake':{useKeepAwake(){}},'expo-document-picker':{},'expo-file-system':{},'expo-sharing':{},'../components/Screen':{Screen:p=>React.createElement('Screen',{},p.children,p.actions),Body:component,ui:{}},'../components/BigButton':p=>React.createElement('Button',p),'../i18n':{Text:component,t:s=>s,useLanguage(){}},'../audio':{speakQueued:(s,o)=>{spoken.push({s,o});return Promise.resolve();},stopSpeaking:()=>{for(const v of spoken)if(!v.done){v.done=true;v.o.onStopped?.();}}},'../releaseInfo':{releaseInfo:()=>({appVersion:'0.3.3',buildNumber:'10',runtimeVersion:'fixture-only',updateId:null})},'../cameraCalibration':{},'../referenceCalibration':{calibrationComputer:async()=>({url:'http://192.168.1.2:8765'}),connectCalibrationComputer:async()=>({})},'../distanceValidation':{retainValidationRoute:async()=>{},validationRoute:async()=>3,validationGeometry:async()=> 'straight',distanceReference:async()=>withProfile?{}:null,distanceComputerReady:async()=>{},pendingDistanceValidation:async()=>null,savedDistanceValidation:async()=>null,submitDistanceValidation:async()=>{calls.push('upload');},pollDistanceValidation:async()=>{calls.push('poll');return {fullRouteCovered:false,reason:'not-initialized'};}},'../cameraDistanceTrial':{distanceBridge:()=>native,loadDistanceResearchProfile:async()=>withProfile?fixture().profile:null,latestDistanceTrial:async()=>null,distanceTrialSummary:()=>null,retainDistanceTrial:async s=>s}};
  const module={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/screens/CameraDistanceTrialScreen.tsx'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.React,esModuleInterop:true}}).outputText,{module,exports:module.exports,require:id=>mocks[id],console});
  let tree;renderer.act(()=>tree=renderer.create(React.createElement(module.exports.default,{navigation:{goBack(){}}})));
- return {tree,spoken,calls,events,native,finishVoice(index){spoken[index].done=true;spoken[index].o.onDone();},start(){const start=tree.root.findAllByType('Button').find(v=>v.props.label==='Start camera distance trial');renderer.act(()=>start.props.onPress());}};
+ return {tree,spoken,calls,events,native,finishVoice(index){spoken[index].done=true;spoken[index].o.onDone();},start(){const start=tree.root.findAllByType('Button').find(v=>v.props.label==='Start distance trial');renderer.act(()=>start.props.onPress());}};
 }
 test('Native trial starts only after prep speech; begin waits for the complete cue and repeated progress cannot duplicate it',async()=>{
  const f=screenFixture();await renderer.act(async()=>await flush());f.start();await renderer.act(async()=>await flush());assert.equal(f.calls.length,0);
@@ -48,22 +48,38 @@ test('Backgrounding during preparation cannot start native capture after cancell
  const f=screenFixture();await renderer.act(async()=>await flush());f.start();await renderer.act(async()=>await flush());
  await renderer.act(async()=>{f.events.app('background');await flush();});assert.equal(f.calls.includes('capture'),false);assert.equal(f.calls.includes('stop'),true);renderer.act(()=>f.tree.unmount());
 });
-test('Normal completion saves the capture and waits for the finish voice before re-enabling Start',async()=>{
+test('Practice speech and measured speech each finish once before their native transition',async()=>{
+ const f=screenFixture();await renderer.act(async()=>await flush());f.start();await renderer.act(async()=>await flush());
+ await renderer.act(async()=>{f.finishVoice(0);await flush();});
+ await renderer.act(async()=>{f.events.progress({phase:'warmup-cue',imageUri:''});f.events.progress({phase:'warmup-cue',imageUri:''});await flush();});
+ assert.equal(f.spoken.length,2);assert.equal(f.calls.includes('warmup'),false);assert.match(f.spoken[1].s,/practice.*return/i);
+ await renderer.act(async()=>{f.finishVoice(1);await flush();});assert.equal(f.calls.filter(c=>c==='warmup').length,1);
+ await renderer.act(async()=>{f.events.progress({phase:'cue',imageUri:''});f.events.progress({phase:'cue',imageUri:''});await flush();});
+ assert.equal(f.calls.includes('begin'),false);assert.equal(f.spoken.length,3);assert.match(f.spoken[2].s,/Practice complete/);
+ await renderer.act(async()=>{f.finishVoice(2);await flush();});assert.equal(f.calls.filter(c=>c==='begin').length,1);renderer.act(()=>f.tree.unmount());
+});
+test('No-walk capture is saved without sending idle data for a distance result',async()=>{
+ const f=screenFixture();await renderer.act(async()=>await flush());f.start();await renderer.act(async()=>await flush());
+ await renderer.act(async()=>{f.finishVoice(0);await flush();f.native.resolve({uri:'file:///idle.zip',metadata:JSON.stringify({captureId:'distance-trial-123',status:'no-walk'}),error:null});await flush();});
+ assert.equal(f.spoken[1].s,'No walking was detected. The trial is saved.');await renderer.act(async()=>{f.finishVoice(1);await flush();});
+ assert.equal(f.calls.includes('upload'),false);assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Retry distance processing'),false);renderer.act(()=>f.tree.unmount());
+});
+test('Normal completion saves capture, finishes voice, then transfers and polls the published reference',async()=>{
  const f=screenFixture();await renderer.act(async()=>await flush());f.start();await renderer.act(async()=>await flush());
  await renderer.act(async()=>{f.finishVoice(0);await flush();});
  await renderer.act(async()=>{f.events.progress({phase:'cue',imageUri:'file:///frame.jpg'});await flush();});
  await renderer.act(async()=>{f.finishVoice(1);await flush();});
  await renderer.act(async()=>{f.native.resolve({uri:'file:///native/distance-trial-123.zip',metadata:JSON.stringify({captureId:'distance-trial-123',kind:'front-camera-distance-research-v1',distanceReady:false}),error:null});await flush();});
  assert.equal(f.spoken.length,3);assert.equal(f.spoken[2].s,'Finished. You can take the phone out.');
- assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Start camera distance trial'),false);
+ assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Start distance trial'),false);
  await renderer.act(async()=>{f.finishVoice(2);await flush();});
- assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Start camera distance trial'),true);
+ assert.equal(f.calls.includes('upload'),true);assert.equal(f.calls.includes('poll'),true);assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='New trial'),true);
  assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Export distance trial'),true);renderer.act(()=>f.tree.unmount());
 });
 
-test('Missing research profile presents import first and cannot initiate distance capture',async()=>{
+test('Missing saved reference presents phone calibration without asking for a legacy profile',async()=>{
  const f=screenFixture(false);await renderer.act(async()=>await flush());
- assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Start camera distance trial'),false);
- assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Import phone research profile'),true);
+ assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Start distance trial'),false);
+ assert.equal(f.tree.root.findAllByType('Button').some(v=>v.props.label==='Phone calibration'),true);
  assert.equal(f.spoken.length,0);assert.equal(f.calls.length,0);renderer.act(()=>f.tree.unmount());
 });

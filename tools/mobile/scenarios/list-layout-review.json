@@ -1,0 +1,91 @@
+[
+  {
+    "action": "display-size",
+    "value": "720x1280"
+  },
+  {
+    "action": "font",
+    "value": "1.3"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "My recordings"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "assert-recording-visible"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Export or delete"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Done"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Select all recordings"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Clear selection"
+  },
+  {
+    "action": "tap",
+    "label": "Done"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Start a walk"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "tap",
+    "label": "Language and audio settings"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Done"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Done"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "font",
+    "value": "1"
+  },
+  {
+    "action": "display-size",
+    "value": "reset"
+  }
+]

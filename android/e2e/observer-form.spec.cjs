@@ -79,7 +79,7 @@ for(const [protocol,seconds] of [['10MWT',null],['TUG',null],['2MWT',120],['6MWT
  await page.getByRole('button',{name:'Preview hands-free flow',exact:true}).click();
  await page.getByRole('button',{name:new RegExp(`${protocol}$`)}).click();
  for(let i=0;i<3;i++)await page.getByRole('button',{name:'Next step',exact:true}).click();
- await expect(page.getByText('Move into the starting position and stay still. The phone will say Go when it settles. No button is needed.')).toBeVisible();
+  await expect(page.getByText('Stay still. No buttons are needed.')).toBeVisible();
  await page.clock.runFor(4000);
  await expect(page.getByRole('button',{name:'Preview finish event',exact:true})).toBeVisible();
  if(seconds)await page.clock.fastForward(seconds*1000+1000);
@@ -89,12 +89,15 @@ for(const [protocol,seconds] of [['10MWT',null],['TUG',null],['2MWT',120],['6MWT
 });
 test('Real UI: profile setup and per-test tutorials work without sensor access',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Start a walk',exact:true}).click();
- await page.getByLabel('Study ID or participant label',{exact:true}).fill('LAB-NEW');
+ await expect(page.getByText('Automatic study ID',{exact:true})).toBeVisible();
+ await expect(page.getByLabel('Study ID or participant label',{exact:true})).toHaveCount(0);
+ await expect(page.getByText(/^GT-[A-Z0-9]+$/)).toBeVisible();
  await page.getByLabel('Age in years',{exact:true}).fill('65');
  await page.getByRole('radio',{name:'Female',exact:false}).click();
  await page.getByRole('button',{name:'Continue',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Continue',exact:true})).toBeDisabled();
  for(const testName of ['10MWT','TUG','2MWT','6MWT']){
-  await page.getByRole('button',{name:/Change test:/}).click();
+  const change=page.getByRole('button',{name:/Change test:/});if(await change.count())await change.click();
   await page.getByRole('radio',{name:new RegExp(`${testName}$`)}).click();
   await page.getByRole('button',{name:'Show me how',exact:true}).click();
   await expect(page.getByRole('button',{name:'Next step',exact:true})).toBeVisible();

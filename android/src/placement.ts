@@ -1,5 +1,6 @@
 ﻿import type { Sample } from './recording';
 import type { MotionWindow } from './movement';
+import { placementReady } from './movement';
 
 /** Provisional magnitude pulses, not verified foot contacts. Never reuse pre-stage samples. */
 export function candidateStepsSince(samples: Sample[], since: number): number {
@@ -62,7 +63,7 @@ export class FitCheck {
       this.movementSince ??= now;
       if (now - this.movementSince >= 1000) this.movementSeen = true;
     } else this.movementSince = null;
-    if (this.movementSeen && motion.steady && motion.upright) this.settledSince ??= now;
+    if (this.movementSeen && motion.steady && placementReady(motion)) this.settledSince ??= now;
     else this.settledSince = null;
     return this.settledSince !== null && now - this.settledSince >= 3000 ? 'settled' : 'waiting';
   }

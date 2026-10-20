@@ -1,0 +1,60 @@
+[
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Export CSV"
+  },
+  {
+    "action": "assert",
+    "label": "Share"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Export features CSV"
+  },
+  {
+    "action": "assert",
+    "label": "Share"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Back to home"
+  },
+  {
+    "action": "tap",
+    "label": "Participants and profiles"
+  },
+  {
+    "action": "assert",
+    "label": "EMU-SYNTHETIC-NOT-PATIENT "
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Progress dashboard"
+  },
+  {
+    "action": "tap",
+    "label": "\u25cb EMU-SYNTHETIC-NOT-PATIENT"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Back to home"
+  }
+]

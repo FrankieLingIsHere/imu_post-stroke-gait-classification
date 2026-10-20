@@ -1,24 +1,34 @@
 """Convert device measurements to upstream iKalibr inputs. No calibration math.
 Runs inside the pinned reference image; raw ZIP is retained unchanged.
 """
-import hashlib,json,zipfile
+import hashlib,json,os,zipfile
 from pathlib import Path
 import numpy as np
 import yaml,rosbag,rospy
 from sensor_msgs.msg import Imu,CompressedImage,MagneticField
 
 ROOT=Path('/data');SOURCE=ROOT/'input.zip'
+threads=int(os.environ.get('GAITTRACE_REFERENCE_THREADS','2'))
+if not 1<=threads<=8:raise ValueError('Reference thread count must be between 1 and 8.')
+threads=min(threads,len(os.sched_getaffinity(0)) if hasattr(os,'sched_getaffinity') else (os.cpu_count() or 1))
 def rows(z,name):return [json.loads(r) for r in z.read(name).decode().splitlines() if r.strip()]
 def fail(reason):raise ValueError(reason)
 
 with zipfile.ZipFile(SOURCE) as z:
     if sum(i.file_size for i in z.infolist())>350*1024**2:fail('Capture is too large to process.')
     meta=json.loads(z.read('manifest.json'))
-    if meta.get('kind')!='phone-camera-imu-alignment-capture-v1' or meta.get('status')!='completed' or meta.get('error'):fail('A completed sensor-alignment capture is needed.')
+    rapid=meta.get('kind')=='phone-rapid-camera-imu-capture-v1'
+    if meta.get('kind') not in ['phone-camera-imu-alignment-capture-v1','phone-rapid-camera-imu-capture-v1'] or meta.get('status')!='completed' or meta.get('error'):fail('A completed sensor-alignment capture is needed.')
     if meta.get('timestampSource')!='realtime' or meta.get('units')!={'accelerometer':'m/s2','gyroscope':'rad/s','magnetometer':'uT'}:fail('The capture clocks or sensor units are not supported.')
-    lens=meta.get('lensProfile',{})
-    if lens.get('method')!='opencv-zhang-2000' or lens.get('lensReady') is not True or lens.get('distanceReady') is not False:fail('A matching lens calibration is needed.')
-    keys=['installationId','cameraId','width','height','imageAxes','sensorOrientationDegrees','capturePipeline','opticalSetup']
+    lens=json.loads((ROOT/'lens-seed.json').read_text()) if rapid else meta.get('lensProfile',{})
+    if rapid:
+        if (lens.get('kind')!='phone-learned-lens-seed-v1' or lens.get('method')!='geocalib-eccv2024-seed'
+            or lens.get('lensReady') is not False or lens.get('calibrationSeedReady') is not True
+            or lens.get('learned',{}).get('qualityAccepted') is not True or lens.get('distanceReady') is not False):fail('A checked experimental lens seed is needed.')
+        meta={**meta,'lensProfile':lens} # Derived processing metadata; original ZIP stays unchanged.
+    elif lens.get('method')!='opencv-zhang-2000' or lens.get('lensReady') is not True or lens.get('distanceReady') is not False:fail('A matching lens calibration is needed.')
+    keys=['installationId','cameraId','width','height','imageAxes','sensorOrientationDegrees','stabilizationRequested','capturePipeline','opticalSetup']
+    if rapid:keys.append('captureId')
     if any(lens.get('binding',{}).get(k)!=meta.get(k) for k in keys):fail('Lens parameters do not match this camera setup.')
     frames=rows(z,'frames.ndjson');results={r['timestampNs']:r for r in rows(z,'capture-results.ndjson')};imu=rows(z,'imu.ndjson')
     origin=int(meta.get('alignmentMovementStartedBootNs',0))
@@ -49,7 +59,7 @@ with zipfile.ZipFile(SOURCE) as z:
     for key in ['RadarTopics','LiDARTopics','RGBDTopics','EventTopics']:stream[key]=[]
     stream.update(ReferIMU='/gaittrace/imu',BagPath='/data/capture.bag',BeginTime=-1.,Duration=-1.,OutputPath='/data/output')
     c['Prior'].update(GravityNorm=9.80665,SpatTempPrioriPath='',OptTemporalParams=True,TimeOffsetPadding=.1,ReadoutTimePadding=.04)
-    c['Preference'].update(UseCudaInSolving=False,Outputs=['ParamInEachIter','VisualReprojErrors','AlignedInertialMes'],OutputDataFormat='JSON',ThreadsToUse=2)
+    c['Preference'].update(UseCudaInSolving=False,Outputs=['ParamInEachIter','VisualReprojErrors','AlignedInertialMes'],OutputDataFormat='JSON',ThreadsToUse=threads)
     (ROOT/'config.yaml').write_text(yaml.safe_dump(config,sort_keys=False));(ROOT/'output').mkdir(exist_ok=True)
     accel=groups['accelerometer'];at=np.array([r['timestampNs'] for r in accel],dtype=np.int64);av=np.array([[r[k] for k in ['x','y','z']] for r in accel])
     # Interpolate acceleration only to measured gyro timestamps with close real
@@ -78,4 +88,5 @@ with zipfile.ZipFile(SOURCE) as z:
             bag.write('/gaittrace/magnetometer',msg,msg.header.stamp)
     (ROOT/'provenance.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(SOURCE.read_bytes()).hexdigest(),'metadata':meta,
         'cameraClockConvention':'exposure-and-readout-midpoint; upstream RS_MID','imuConversion':'acceleration interpolated at real gyro timestamps','magnetometerUse':'retained; not an iKalibr input',
-        'noiseWeights':'equal provisional IMU weights; not a verified long-term noise model','imageRateHz':float(1e9/np.median(np.diff(times)))},indent=2))
+        'noiseWeights':'equal provisional IMU weights; not a verified long-term noise model','imageRateHz':float(1e9/np.median(np.diff(times))),
+        'solverThreads':threads,'solverBackend':'cpu'},indent=2))

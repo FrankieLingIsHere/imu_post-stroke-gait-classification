@@ -18,16 +18,26 @@ import { getLanguage, locale, translate } from './language';
 let speechRequest = 0;
 let queuedSpeech: Promise<void> = Promise.resolve();
 let queueGeneration = 0;
+const pendingSpeech = new Set<() => void>();
 /** Discard pending reminders while letting the currently audible sentence finish. */
 export function discardPendingSpeech(): void { queueGeneration += 1; }
 
 export async function ensureVoice() {
   const language = getLanguage();
-  const voices = await Speech.getAvailableVoicesAsync();
-  const matching = voices.find(v => v.language.toLowerCase() === locale(language).toLowerCase())
-    ?? voices.find(v => v.language.toLowerCase().split(/[-_]/)[0] === language);
-  if (!matching) throw new Error('Voice unavailable in this language. Install a matching phone voice, or use a helper with voice off.');
-  return matching;
+  // Android can return [] while its TTS service is still binding on first use.
+  // Poll readiness only while the list is empty; a genuinely missing language
+  // must still fail, and an already-ready engine incurs no extra delay.
+  for (let check = 0; check <= 32; check++) {
+    const voices = await Speech.getAvailableVoicesAsync();
+    if (voices.length) {
+      const matching = voices.find(v => v.language.toLowerCase() === locale(language).toLowerCase())
+        ?? voices.find(v => v.language.toLowerCase().split(/[-_]/)[0] === language);
+      if (matching) return matching;
+      break;
+    }
+    if (check < 32) await new Promise<void>(resolve => setTimeout(resolve, 250));
+  }
+  throw new Error('Voice unavailable in this language. Install a matching phone voice, or use a helper with voice off.');
 }
 
 // ─── Speech options ───────────────────────────────────────────────────────────
@@ -90,12 +100,13 @@ export function speakQueued(text: string, options?: Partial<Speech.SpeechOptions
   const task = queuedSpeech.then(() => new Promise<void>(resolve => {
     if (generation !== queueGeneration) { resolve(); return; }
     let settled = false;
-    const finish = () => { if (!settled) { settled = true; clearTimeout(timeout); resolve(); } };
+    const finish = () => { if (!settled) { settled = true; clearTimeout(timeout); pendingSpeech.delete(finish); resolve(); } };
     const timeout = setTimeout(() => {
       if (settled) return;
       options?.onError?.(new Error('Speech completion was not confirmed.'));
       stopSpeaking(); finish();
     }, 30000);
+    pendingSpeech.add(finish);
     void speak(text, {
       ...options,
       onDone: () => { options?.onDone?.(); finish(); },
@@ -114,6 +125,8 @@ export function stopSpeaking(): void {
   speechRequest += 1;
   queueGeneration += 1;
   queuedSpeech = Promise.resolve();
+  // Cancel the completion watchdog too: it must not interrupt a later retry.
+  for (const finish of pendingSpeech) finish();
   try {
     void Speech.stop().catch(() => {});
   } catch (error) {

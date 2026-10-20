@@ -1,0 +1,52 @@
+{
+  "appVersion": "0.3.19",
+  "nativeVersionCode": 31,
+  "package": "com.gaitsteps.app",
+  "channel": "preview",
+  "runtimeVersion": "7b8003b238a19ac35c4387219076cdd97cf27172",
+  "embeddedUpdateId": "8e25fd12-ee4d-476e-9d30-a622213f659d",
+  "bundleSha256": "ef3b8737389908fd9f782641e8d14b39df7116e51e7b09d3ba84b0e20919e6cf",
+  "apk": "android/dist/apk/GaitTrace-0.3.19-build31.apk",
+  "apkBytes": 75014786,
+  "apkSha256": "ba30aa191f4225673833bc48ff62d43a2c168565c98cdb0a024821aefef6efe7",
+  "certificateSha256": "e6b4b904939ddb670aaee857156f3e6345b410970b3c6b690ce70aaa34387fdc",
+  "sameUpdateSigningCertificate": true,
+  "sourceRuntimeVerified": true,
+  "physicalLaunchVerified": false,
+  "physicalSetupValidated": false,
+  "independentDistanceValidated": false,
+  "clinicalReadinessEstablished": false,
+  "publiclyPublished": false,
+  "installedApkMatchesLocal": false,
+  "localSourceChangesNotPackaged": false,
+  "emulatorEvidenceAppVersion": "0.3.19",
+  "emulatorEvidenceBuildNumber": 31,
+  "emulatorEvidenceIsDifferentArchitecture": true,
+  "nativeLibrarySha256": {
+    "libhermes.so": "73527674faf810ef75403849ee0e143a8371f6fd03330cc0dbd10d70e1a1f0f2",
+    "libreactnative.so": "5e69de65d1bc667c24238f57e146f8ac23e08c6c0270d666e2734c992ba6b46f",
+    "libexpo-modules-core.so": "516eb3a8f5885e254b2d7cb2add07f5f333484fd4768ac502f4160e2beabbfe4",
+    "libgait_openvins.so": "feb8a56d2029fca20d97a965bd1849072d5defb51373e8b6a5b83afc3c1b6548",
+    "libgait_phone_vio.so": "3650d72636674ef5432ccc2e5c8e6ba6129931726e29903ae931508b9d3d7a58",
+    "libopencv_java4.so": "144bbc9ad0b0bac4ba58f7d53198aead64379e5314f68200968c703d2c1c14ab"
+  },
+  "licenseAssets": [
+    "assets/licenses/Boost-1.84.0-LICENSE.txt",
+    "assets/licenses/Ceres-1.14.0-LICENSE.txt",
+    "assets/licenses/Commons-Math-3.6.1-LICENSE.txt",
+    "assets/licenses/Commons-Math-3.6.1-NOTICE.txt",
+    "assets/licenses/Eigen-3.3.7-MPL-2.0.txt",
+    "assets/licenses/OpenCV-4.12.0-LICENSE.txt",
+    "assets/licenses/OpenVINS-GPL-3.0.txt",
+    "assets/licenses/RESEARCH-LIBRARIES.txt"
+  ],
+  "otaEnabled": true,
+  "architecture": "arm64-v8a",
+  "zipIntegrity": true,
+  "localSoftwareEvidence": "dist/releases/0.3.19-build31/software-checks.txt",
+  "validationLimitations": [
+    "ARM64 phone launch not tested.",
+    "Heard TTS, actual distance, OEM behaviour and elderly usability unverified.",
+    "Residual calibration bias and independent on-phone accuracy admission remain unresolved."
+  ]
+}

@@ -30,3 +30,21 @@ add_executable(vins_reference
 target_include_directories(vins_reference PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${VS} ${OpenCV_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 target_compile_options(vins_reference PRIVATE -include ${CMAKE_CURRENT_SOURCE_DIR}/compat.h)
 target_link_libraries(vins_reference PRIVATE Eigen3::Eigen ${OpenCV_LIBS} ${CERES_LIBRARIES} pthread)
+
+add_executable(fixed_time_observation_check fixed_time_observation_check.cpp
+  ${VS}/factor/projection_factor.cpp ${VS}/factor/projection_td_factor.cpp ${VS}/utility/utility.cpp)
+target_include_directories(fixed_time_observation_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${VS} ${OpenCV_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
+target_compile_options(fixed_time_observation_check PRIVATE -include ${CMAKE_CURRENT_SOURCE_DIR}/compat.h)
+target_link_libraries(fixed_time_observation_check PRIVATE Eigen3::Eigen ${OpenCV_LIBS} ${CERES_LIBRARIES} pthread)
+enable_testing()
+add_test(NAME fixed_time_observation_model COMMAND fixed_time_observation_check)
+
+# Host execution of the exact Android frontend/runner for retained-capture checks.
+# This is a software replay, not an Android speed or physical-accuracy benchmark.
+get_target_property(REFERENCE_SOURCES vins_reference SOURCES)
+list(REMOVE_ITEM REFERENCE_SOURCES replay.cpp)
+add_executable(phone_vio_replay EXCLUDE_FROM_ALL ../../modules/gait-camera-calibration/android/src/main/cpp/phone_vio.cpp ${REFERENCE_SOURCES})
+target_compile_definitions(phone_vio_replay PRIVATE GAIT_HOST_CHECK)
+target_include_directories(phone_vio_replay PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${VS} ${OpenCV_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
+target_compile_options(phone_vio_replay PRIVATE -include ${CMAKE_CURRENT_SOURCE_DIR}/compat.h)
+target_link_libraries(phone_vio_replay PRIVATE Eigen3::Eigen ${OpenCV_LIBS} ${CERES_LIBRARIES} pthread)

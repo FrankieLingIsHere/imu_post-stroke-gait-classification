@@ -1,0 +1,71 @@
+[
+  {
+    "action": "tap",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap",
+    "label": "Choose JSON or CSV file"
+  },
+  {
+    "action": "tap-file-row",
+    "label": "EMU-six.json"
+  },
+  {
+    "action": "wait",
+    "seconds": 2
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "wait-visible",
+    "label": "Recording details",
+    "seconds": 120
+  },
+  {
+    "action": "assert",
+    "label": "Recording details"
+  },
+  {
+    "action": "tap",
+    "label": "Sensors"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Choose JSON or CSV file"
+  },
+  {
+    "action": "tap-file-row",
+    "label": "EMU-six.csv"
+  },
+  {
+    "action": "wait",
+    "seconds": 2
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "wait-visible",
+    "label": "Recording details",
+    "seconds": 180
+  },
+  {
+    "action": "assert",
+    "label": "Recording details"
+  },
+  {
+    "action": "tap",
+    "label": "Signals"
+  },
+  {
+    "action": "source"
+  }
+]

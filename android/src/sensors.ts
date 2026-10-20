@@ -15,7 +15,8 @@ export async function checkSensors(): Promise<void> {
     return;
   }
   for (const name of SENSOR_NAMES) {
-    const permission = await nativeHardware[name].requestPermissionsAsync();
+    const current = await nativeHardware[name].getPermissionsAsync?.();
+    const permission = current?.granted ? current : await nativeHardware[name].requestPermissionsAsync();
     if (!permission.granted) throw new Error(`Allow motion access in phone settings to use the ${name}.`);
     if (!await nativeHardware[name].isAvailableAsync()) throw new Error(`This phone has no available ${name}. All three sensors are required for this study recording.`);
   }
@@ -69,7 +70,8 @@ export class SensorRecorder {
       for (const a of ['x', 'y', 'z'] as const) this.gravity[a] = this.gravity[a] * 0.92 + m[a] * 0.08;
     }
     const g = Math.hypot(this.gravity.x, this.gravity.y, this.gravity.z);
-    const upright = now - this.accelAt < 250 && g > 0.85 && g < 1.15 && Math.abs(this.gravity.x) / g > 0.9;
+    // Gravity-projected yaw is usable at a stable lean; no 90-degree body requirement.
+    const upright = now - this.accelAt < 250 && g > 0.85 && g < 1.15;
     // Angular velocity about measured gravity works for either landscape orientation.
     const verticalRotation = g > 0 ? (m.x*this.gravity.x + m.y*this.gravity.y + m.z*this.gravity.z)/g : 0;
     if (this.startTime === null) {
@@ -116,10 +118,10 @@ export class SensorRecorder {
       const samples = this.recent[n].filter(s => now - s.elapsedMs <= 5000);
       return samples.length >= 3 && samples[samples.length - 1].elapsedMs - samples[0].elapsedMs >= 4500 &&
         samples.every((sample, index) => index === 0 || sample.elapsedMs - samples[index - 1].elapsedMs <= 500);
-    });
+    }) && (()=>{const a=this.recent.accelerometer.filter(s=>now-s.elapsedMs<=5000),g=this.recent.gyroscope.filter(s=>now-s.elapsedMs<=5000);const m=motionWindow(a,g,true);return m.enough&&m.placementReady===true&&m.steady;})();
   }
-  preserveSetupBaseline() {
-    if (this.baseline) return;
+  preserveSetupBaseline(refresh = false) {
+    if (this.startTime !== null || (this.baseline && !refresh)) return;
     const now = performance.now();
     const baselineStreams = emptyStreams();
     const mean = {} as NonNullable<Recording['baseline']>['mean'];
@@ -131,7 +133,9 @@ export class SensorRecorder {
     }
     // Baselines are optional for older/programmatic recordings; never invent absent samples.
     if (this.baselineReady) {
-      this.baseline = { version: 'stationary-reference-v1', requestedSeconds: 5, startedAt: new Date(Date.now() - 5000).toISOString(), streams: baselineStreams, mean, rawWalkingValuesCorrected: false };
+      const g=Math.hypot(mean.accelerometer.x,mean.accelerometer.y,mean.accelerometer.z);
+      this.baseline = { version: 'stationary-reference-v1', requestedSeconds: 5, startedAt: new Date(Date.now() - 5000).toISOString(), streams: baselineStreams, mean, rawWalkingValuesCorrected: false,
+        postureReference:{version:'personal-gravity-reference-v1',gravityUnit:{x:mean.accelerometer.x/g,y:mean.accelerometer.y/g,z:mean.accelerometer.z/g},phoneTiltFromLandscapeDegrees:Math.acos(Math.min(1,Math.abs(mean.accelerometer.x)/g))*180/Math.PI,anatomicalPostureVerified:false,interpretation:'phone-orientation-not-trunk-angle'} };
     }
   }
   begin() {

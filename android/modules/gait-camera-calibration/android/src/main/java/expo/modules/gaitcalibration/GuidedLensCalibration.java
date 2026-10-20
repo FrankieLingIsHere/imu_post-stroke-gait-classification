@@ -13,6 +13,12 @@ import org.opencv.objdetect.*;
  * The display must preserve the board's aspect ratio and remain flat. */
 public final class GuidedLensCalibration implements AutoCloseable {
   public static final int MIN_VIEWS=24;
+  public static final int MAX_VIEWS=48;
+  public static final long SAMPLE_INTERVAL_NS=250000000L;
+  private int detectedCorners=0;
+  private String frameStatus="waiting",lastFitFailure="";
+  private Runnable fitListener;
+  public void setFitListener(Runnable listener){fitListener=listener;}
   private final int width,height;
   private final CharucoBoard board=new CharucoBoard(new Size(9,7),1f,.75f,Objdetect.getPredefinedDictionary(Objdetect.DICT_4X4_100));
   private final CharucoDetector detector=new CharucoDetector(board);
@@ -20,7 +26,7 @@ public final class GuidedLensCalibration implements AutoCloseable {
   private long lastSample=Long.MIN_VALUE;
   private String hint="Point the front camera at the digital board.";
   private JSONObject report;
-  private int lastFitCount=0;
+  private int acceptedRevision=0,lastFitRevision=0,replacedViews=0;
   private static final class View {
     final MatOfPoint3f object;
     final MatOfPoint2f image;
@@ -41,13 +47,14 @@ public final class GuidedLensCalibration implements AutoCloseable {
 
   /** Work on the storage thread; never block the Camera2 or IMU callback thread. */
   public void observe(byte[] luma,long timestamp) throws JSONException {
-    if(ready() || (lastSample!=Long.MIN_VALUE && timestamp-lastSample<250000000L))return;
+    if(ready() || (lastSample!=Long.MIN_VALUE && timestamp-lastSample<SAMPLE_INTERVAL_NS))return;
     lastSample=timestamp;
     Mat gray=new Mat(height,width,CvType.CV_8UC1),corners=new Mat(),ids=new Mat(),lap=new Mat();
     MatOfDouble mean=new MatOfDouble(),sd=new MatOfDouble();
     try{
       gray.put(0,0,luma);detector.detectBoard(gray,corners,ids);
-      if(ids.rows()<20){hint="Keep the whole board in view.";return;}
+      detectedCorners=ids.rows();
+      if(ids.rows()<20){frameStatus="insufficient-corners";hint="Keep the whole board in view.";return;}
       // Measure board-region sharpness; bag edges/text outside the board must not
       // make a blurred board appear sharp.
       Point[] points=new Point[corners.rows()];int[] identifiers=new int[ids.rows()];
@@ -62,7 +69,8 @@ public final class GuidedLensCalibration implements AutoCloseable {
   /** Same admission/solver path used by native-image capture and JVM fixtures. */
   public boolean observePoints(Point[] points,int[] ids,double sharpness,long timestamp) throws JSONException {
     if(ready())return false;
-    if(points.length!=ids.length || points.length<20 || !Double.isFinite(sharpness) || sharpness<40){hint="Hold the phone steady for a clear view.";return false;}
+    detectedCorners=points.length;frameStatus="invalid-view";
+    if(points.length!=ids.length || points.length<20 || !Double.isFinite(sharpness) || sharpness<40){frameStatus="blur-or-insufficient-corners";hint="Hold the phone steady for a clear view.";return false;}
     MatOfPoint3f grid=board.getChessboardCorners();Point3[] all=grid.toArray(),objects=new Point3[points.length];grid.release();
     Set<Integer> unique=new HashSet<>();
     double minX=width,minY=height,maxX=0,maxY=0;
@@ -81,21 +89,91 @@ public final class GuidedLensCalibration implements AutoCloseable {
     try{Core.perspectiveTransform(quad,projected,homography);q=projected.toArray();}finally{quad.release();projected.release();homography.release();}
     double top=distance(q[0],q[1]),bottom=distance(q[3],q[2]),left=distance(q[0],q[3]),right=distance(q[1],q[2]);
     if(Math.min(Math.min(top,bottom),Math.min(left,right))<5){hint="Keep the whole board in view.";return false;}
-    double[] d={(minX+maxX)/2/width,(minY+maxY)/2/height,Math.sqrt((maxX-minX)*(maxY-minY)/(width*(double)height)),
+    // Describe the fixed board quadrilateral, not whichever corners survive bag
+    // occlusion. Changing visible subsets must not masquerade as a new viewpoint.
+    double cx=0,cy=0,area=0;
+    for(int i=0;i<4;i++){if(!Double.isFinite(q[i].x)||!Double.isFinite(q[i].y)){hint="Keep the whole board in view.";return false;}
+      cx+=q[i].x;cy+=q[i].y;Point next=q[(i+1)%4];area+=q[i].x*next.y-next.x*q[i].y;}
+    double[] d={cx/4/width,cy/4/height,Math.sqrt(Math.abs(area)/2/(width*(double)height)),
       (left-right)/(left+right),(top-bottom)/(top+bottom)};
+    int activeAxis=activeAxis();
+    boolean coverageGain=improvesMissingCoverage(d);
+    // After initial framing, count only views that help the current round.
+    // Mere translation/zoom cannot fill the pool while angles are missing.
+    if(views.size()>=4 && activeAxis>=0 && !improvesAxis(d,activeAxis)){
+      frameStatus="current-round-needed";hint=nextHint();return false;
+    }
     for(View old:views)if(Math.hypot(old.cx-d[0],old.cy-d[1])<.05 && Math.abs(old.scale-d[2])<.055 && Math.hypot(old.px-d[3],old.py-d[4])<.055){
-      hint=nextHint();return false;
+      if(!coverageGain){frameStatus="duplicate-view";hint=nextHint();return false;}
     }
-    views.add(new View(objects,points,d,timestamp));hint=nextHint();
-    if(views.size()>=MIN_VIEWS && sufficientCoverage() && views.size()-lastFitCount>=4){
-      lastFitCount=views.size();
+    if(views.size()==MAX_VIEWS){
+      int replace=replacementIndex(d,coverageGain);
+      if(replace<0){frameStatus="coverage-needed";hint=nextHint();return false;}
+      views.remove(replace).close();replacedViews++;
+    }
+    views.add(new View(objects,points,d,timestamp));frameStatus="accepted";hint=nextHint();
+    acceptedRevision++;
+    if(views.size()>=MIN_VIEWS && sufficientCoverage() && acceptedRevision-lastFitRevision>=4){
+      lastFitRevision=acceptedRevision;
+      frameStatus="fitting";hint="Checking lens parameters. You can hold the phone comfortably.";
+      if(fitListener!=null)fitListener.run();
       JSONObject candidate=fit();
+      lastFitFailure=candidate.optJSONArray("errors")==null?"":candidate.getJSONArray("errors").toString();
       if(candidate.optBoolean("lensReady")){report=candidate;hint="Lens parameters saved. Sensor alignment is still needed.";}
-      else hint="Try a clearer view from another angle.";
+      else {frameStatus="fit-rejected";hint="Try a clearer view from another angle.";}
     }
-    // Bound memory/optimizer cost while retaining early diverse views.
-    if(views.size()>48){views.remove(views.size()-1).close();hint="Try a clearer view from another angle.";}
     return true;
+  }
+  private static double component(View v,int axis){return axis==0?v.cx:axis==1?v.cy:axis==2?v.scale:axis==3?v.px:v.py;}
+  private double axisSpan(int axis){return span(axis==0?"x":axis==1?"y":axis==3?"px":"py");}
+  private int activeAxis(){for(int axis:new int[]{3,4,0,1})if(axisSpan(axis)<(axis==0?.25:axis==1?.20:.12))return axis;return -1;}
+  private boolean improvesAxis(double[] d,int axis){
+    double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;
+    for(View v:views){double n=component(v,axis);low=Math.min(low,n);high=Math.max(high,n);}
+    double extent=Math.max(high,d[axis])-Math.min(low,d[axis]),required=axis==0?.25:axis==1?.20:.12;
+    return extent-(high-low)>=.008 || (high-low<required && extent>=required);
+  }
+  public String activeRound(){
+    if(ready())return "complete";
+    if(frameStatus.equals("fitting"))return "fitting";
+    if(views.size()<4)return "framing";
+    switch(activeAxis()){case 3:return "side-angles";case 4:return "high-low-angles";case 0:return "horizontal";case 1:return "vertical";default:return "variety";}
+  }
+  private boolean improvesMissingCoverage(double[] d){
+    if(views.isEmpty())return false;
+    for(int axis:new int[]{0,1,3,4}){
+      double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;
+      for(View v:views){double n=component(v,axis);low=Math.min(low,n);high=Math.max(high,n);}
+      double required=axis==0?.25:axis==1?.20:.12;
+      if(high-low<required && Math.max(high,d[axis])-Math.min(low,d[axis])-(high-low)>=.008)return true;
+    }
+    return false;
+  }
+  private static double descriptorDistance(View a,double[] d){
+    double sum=0;for(int axis=0;axis<5;axis++){double delta=(component(a,axis)-d[axis])/(axis<2?.05:.055);sum+=delta*delta;}
+    return Math.sqrt(sum);
+  }
+  /** Keep a bounded pool. Preserve coverage extremes; replace redundant interior
+   * views when a candidate adds missing coverage or better viewpoint diversity.
+   * This is engineering view selection; every existing fit/admission gate remains. */
+  private int replacementIndex(double[] d,boolean coverageGain){
+    boolean[] protectedView=new boolean[views.size()];
+    for(int axis=0;axis<5;axis++){
+      int low=0,high=0;for(int i=1;i<views.size();i++){
+        if(component(views.get(i),axis)<component(views.get(low),axis))low=i;
+        if(component(views.get(i),axis)>component(views.get(high),axis))high=i;
+      }
+      protectedView[low]=true;protectedView[high]=true;
+    }
+    double candidateNovelty=Double.POSITIVE_INFINITY;
+    for(View v:views)candidateNovelty=Math.min(candidateNovelty,descriptorDistance(v,d));
+    int replace=-1;double redundancy=Double.POSITIVE_INFINITY;
+    for(int i=0;i<views.size();i++)if(!protectedView[i]){
+      View v=views.get(i);double[] current={v.cx,v.cy,v.scale,v.px,v.py};double nearest=Double.POSITIVE_INFINITY;
+      for(int j=0;j<views.size();j++)if(i!=j)nearest=Math.min(nearest,descriptorDistance(views.get(j),current));
+      if(nearest<redundancy){redundancy=nearest;replace=i;}
+    }
+    return coverageGain||candidateNovelty>redundancy?replace:-1;
   }
   private static double distance(Point a,Point b){return Math.hypot(a.x-b.x,a.y-b.y);}
   private double span(String value){
@@ -112,8 +190,23 @@ public final class GuidedLensCalibration implements AutoCloseable {
     if(span("y")<.20)return "Move the board toward the top and bottom of the view.";
     return "Move slowly to show a different view.";
   }
+  public String failureMessage(){
+    if(views.size()<4)return "Not enough different clear views were collected.";
+    if(span("px")<.12)return "Left and right viewing angles are still missing.";
+    if(span("py")<.12)return "Up and down viewing angles are still missing.";
+    if(span("x")<.25)return "Views near the left and right of the camera image are still missing.";
+    if(span("y")<.20)return "Views near the top and bottom of the camera image are still missing.";
+    if(views.size()<MIN_VIEWS)return "Not enough different clear views were collected.";
+    return "The lens fit did not pass its accuracy checks.";
+  }
   public JSONObject progress() throws JSONException {return new JSONObject().put("acceptedViews",acceptedViews()).put("targetViews",MIN_VIEWS)
-    .put("hint",hint).put("coverageReady",sufficientCoverage()).put("lensReady",ready());}
+    .put("poolLimit",MAX_VIEWS).put("replacedViews",replacedViews).put("acceptedRevision",acceptedRevision)
+    .put("activeRound",activeRound())
+    .put("coverageChecklist",new JSONObject().put("leftRightAngle",span("px")>=.12).put("upDownAngle",span("py")>=.12).put("horizontal",span("x")>=.25).put("vertical",span("y")>=.20))
+    .put("hint",hint).put("frameStatus",frameStatus).put("detectedCorners",detectedCorners)
+    .put("coverage",new JSONObject().put("horizontal",span("x")).put("vertical",span("y")).put("leftRightAngle",span("px")).put("upDownAngle",span("py")))
+    .put("lastFitFailure",lastFitFailure).put("missingRequirement",ready()?JSONObject.NULL:failureMessage())
+    .put("coverageReady",sufficientCoverage()).put("lensReady",ready());}
   private JSONObject fit() throws JSONException {
     JSONObject r=new JSONObject().put("schemaVersion",1).put("kind","phone-camera-lens-calibration-v1")
       .put("method","opencv-zhang-2000").put("methodDoi","10.1109/34.888718").put("opencvVersion",Core.VERSION)

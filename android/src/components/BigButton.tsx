@@ -107,7 +107,7 @@ export default function BigButton({
           />
         ) : icon ? (
           <Text
-            style={[styles.iconText, isDisabled && styles.disabledLabel]}
+            style={[styles.iconText,styles[`${variant}Label` as keyof typeof styles],isDisabled && styles.disabledLabel]}
             accessibilityElementsHidden
             importantForAccessibility="no"
           >
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   outline: {
-    backgroundColor: colours.surface,
+    backgroundColor: colours.surfaceAlt,
     borderWidth: 2,
     borderColor: colours.primary,
   },

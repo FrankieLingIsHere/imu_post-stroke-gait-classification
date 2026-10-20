@@ -1,5 +1,356 @@
 # GaitTrace release history
 
+## 0.3.19 / Android build 31 (local first-use and setup feedback correction)
+
+- Generate pseudonymous study IDs in walking setup and participant creation; retain optional worker overrides and returning-person selection.
+- Preserve an explicit motion-only alternative without measured camera distance; reset test-selection panels to the top.
+- Check for compatible phone setup before participant entry for automatic distance, return to the draft after calibration, and retain inputs after a late missing-profile check.
+- Consolidate participant details behind a named action, show an automatic ID without a manual input on the main page, tint secondary buttons and keep action icons readable.
+- Announce movement directions once; explain measured optical/alignment/timing uncertainty, native capture duration, stale/slow frames and changing fits. Preserve all admission thresholds and the open-ended capture.
+- Suppress obsolete queued guidance after native completion, preserve speech completion and prevent a final-complete display before the native movement clock finishes.
+- Signed ARM64 package, matching certificate/runtime and embedded versions verified locally. No Git push or OTA publication; actual phone convergence, distance and novice/elderly usability are not established by software tests.
+
+## 0.3.18 / Android build 30 (local collector package)
+
+- Package compact recording/assessment navigation and the current multilingual setup guidance.
+- Show a front-camera framing/voice check before capture; acknowledge measured movement directions and let slow users continue without the normal 120-second cutoff.
+- Correct display-axis guidance and Camera2 crop/pixel-centre optical priors.
+- Restore upstream visual outlier rejection (chi-square multiplier 1); keep FEJ, pixel noise and readiness bounds unchanged. Controlled bias is reduced, not eliminated.
+- Sign with the existing release certificate and bump app/native version consistently. New native runtime requires one APK installation; compatible subsequent OTA updates remain supported.
+- Existing records and saved calibration are not recomputed by installation. Physical ARM64 launch, audibility, distance, OEM and elderly usability remain unverified. Local only; no Git/OTA publication.
+
+## 0.3.17 / Android build 29 (local collector package)
+
+- Package the latest collector workflow: explicit test selection, returning-participant confirmation, required assessment-first review and separate Tools panel.
+- Add persistent field labels, stronger input outlines, pinned participant identity and compact export format selection. Language choices wrap on narrow displays.
+- Group worker measurements and optional observations; restore unfinished drafts and keep users on the screen after a save failure. Raw sensor streams remain unchanged.
+- Include whole-recording signal overview, import cancellation/progress and provisional-stop warning/resume behaviour from the latest local UI batch.
+- Signed ARM64 package and fresh runtime/bundle identity verified. Software checks pass; physical launch, audio and distance evidence remain separate. No publication.
+
+## 0.3.16 / Android build 28 (local candidate)
+
+- Unify 10MWT automatic stopping and saved speed around one native origin,
+  walking direction and interpolated 1 m, 11 m and 12 m crossing record.
+- Verify saved crossing evidence against continuous accepted poses; withhold
+  timed-zone speed if evidence is missing or inconsistent. Historical offline
+  results retain their original processing path.
+- Include the pending quiet-first setup, tracker lifecycle and personal standing
+  reference repairs. Stable natural lean is accepted; raw IMU axes remain intact.
+- Software tests do not establish physical distance accuracy or clinical validity.
+  Native changes require a new APK; no publication is implied by local packaging.
+
+## 0.3.15 / Android build 27 (local candidate)
+
+- Restore the actual estimator movement-start transition after completed guidance.
+- Give guided setup its full 50-second movement interval, replacing the premature
+  generic 40-second cutoff; incomplete guidance fails at the separate safety limit.
+- Log capture completion clocks and genuine sample counts for physical diagnosis.
+- Add production clock and estimator-handoff controls. Physical setup and distance
+  acceptance remain pending; no new OTA or publication.
+
+
+## 0.3.14 - real IMU startup handoff (build 26)
+
+Fixes the physically observed rolling-shutter coverage failure at camera startup.
+Early accelerometer/gyroscope samples are replayed after actual camera metadata
+constructs tracking. Only initially uncovered images may be withheld (bounded
+one second/20 frames), preserving raw observations and recording diagnostics.
+Later coverage failures still stop tracking. Saved timing offsets apply from
+startup. Native Java/Kotlin change requires one in-place APK update. Signed local
+APK, fresh fingerprint, update identity and existing certificate verified; 244
+app tests, TypeScript, 47 transport and 617 contract assertions pass. Installation
+and successful physical setup/distance acceptance remain pending. No publication.
+
+The approved build-25 OTA 01a12167 is physically active; its initial speech
+completion callback was verified before capture. It cannot deliver this native fix.
+
+## 0.3.13 - setup reliability and corrected native runtime (build 25)
+
+Includes completed-utterance gating, safe cancellation/retry, saved phone setup
+reuse and the clearly labelled computer-reference section described below.
+Home's app title now consistently says GaitTrace. The native tracking method,
+camera orientation and saved calibration binding are unchanged.
+
+Physical setup follow-up: the first scan stopped when Android's permission
+activity briefly paused the app. The compatible JS fix now waits for permission
+and foreground return before speaking/capturing, reuses existing camera grants,
+and preserves cancellation during active capture. All 241 app tests and
+TypeScript pass. The original installed build-25 bundle does not contain this
+follow-up until the corrected local package or an approved OTA is installed.
+No native version change is required for this fix. The first incremental package
+reused its embedded update ID and Expo loaded cached JavaScript. Regenerated
+update resources with fresh ID `03e822a3...` and added an APK identity guard.
+The real stale-ID package is rejected and the fresh package passes. Verify the
+active update ID before physical retesting. The Redmi now shows 03e822a3 with its
+exact installed APK verified. A cold speech-engine race stopped the first cue;
+a warm retry completed the cue but native capture failed during startup. Added
+bounded empty-voice readiness polling and native error diagnostics in JS.
+TypeScript and 244 app tests pass. These latest compatible changes remain local;
+successful setup and walking acceptance are still pending.
+
+Approved compatible preview OTA **01a12167...** now delivers the cold-voice
+readiness fix and native capture-error diagnostics to runtime `89e68fa8...`.
+Published `2026-10-09T16:03:40.034Z` from the verified Android export; no new assets,
+native code or raw captures uploaded. Active OTA and capture remain pending.
+No Git push was performed. This does not establish calibration/distance accuracy.
+
+Build 24's cached fingerprint did not match a fresh calculation from its source.
+Rebuilt update resources and packaged a signed build 25 with runtime
+`89e68fa8d1cbc1bfcd7133a318d7f10da6a42364`. Its actual APK fingerprint matches
+fresh source computation; manifest, signature, channel, bundled fixes and ZIP
+integrity pass. The certificate matches builds 23/24. A corrected installation
+is required once, preserving local records and profiles. OTA publication now
+checks the source against `releases/current-native.json` before sending an update.
+
+TypeScript, all 238 app tests and all 10 browser flow tests pass. Native ARM64
+assembly succeeds. Connected Redmi inspection confirms build 24 launches and
+Android exposes all three IMU sensors. Build 25 is now installed and launches on
+that Redmi. Its pulled APK digest and runtime match the verified local package;
+Android retains the original installation date. Full voice and measured walking
+acceptance remain pending. No push or OTA publication.
+
+## 0.3.12 - local phone-only camera distance (native code 24)
+
+### Local setup reliability follow-up - 9 October 2026
+
+Setup now requires the speech engine's completed-utterance callback before
+starting capture, beginning movement or enabling Continue. Failed voice cues
+stop the attempt. Cancellation waits for native capture to stop; stale permission,
+speech and capture completions cannot advance a retry. If native stop fails,
+another capture is blocked with a restart instruction. Cancelling speech clears
+its completion watchdog so an old timeout cannot interrupt a new prompt.
+
+A matching saved profile offers **Use saved phone setup**. Home distinguishes
+phone-only setup from **Advanced research tools (computer required)**. New text
+is translated in English, Malay and Chinese. These JavaScript changes keep
+0.3.12/native code 24 and require publication before an installed app receives
+them. No new APK, OTA or Git push was issued for this follow-up.
+
+Verification: TypeScript, all 238 app tests, all 10 Playwright browser flows and
+Android Hermes bundle export pass. Speech completion is tested at callback
+boundaries, not by listening on a physical phone. Build 24 installation is
+user-confirmed; mounted distance and physical performance remain unchecked.
+
+### Local phone-only implementation - 9 October 2026
+
+Local 0.3.12/native code 24 now implements first setup and walking tracking on
+Android, without a computer, pairing, target board, upload or paid API. The new
+**Set up this phone** screen also opens automatically if ordinary test setup
+finds no matching profile. Completed quiet/movement voice instructions gate real
+native capture. A failed or interrupted attempt preserves the previous profile.
+EN/MS/ZH text and speech are included. Setup belongs to the phone/camera/window,
+not each participant. Approximately ten seconds quiet and fifty seconds guided
+motion are captured, with checks afterwards. A guaranteed few-second scan is
+not claimed.
+
+The pinned OpenVINS core estimates eight camera parameters, camera/IMU alignment
+and time offset from actual front-camera/accelerometer/gyroscope measurements.
+Factory camera metadata supplies only a prior. Three-axis magnetometer capture
+is retained but not invented or fed into the visual-inertial solver. Admission
+requires real-time hardware clocks, all-axis excitation, bounded uncertainty,
+plausible geometry and a stable five-second tail. Poor scenes, missing data or
+unsettled fits cannot supply a profile. No route length is used to fit scale.
+
+Main recording runs tracking continuously. A tracked 10MWT uses 1 m approach,
+10 m timed zone and 1 m finish, with automatic estimated 12 m stopping. Quiet
+rests cannot replace that distance boundary. Camera-to-IMU time offset is
+accounted for, and boundary interpolation only uses adjacent accepted poses.
+Stale tracking, gaps, jumps, excessive uncertainty and route mismatch withhold
+complete distance. Saved live poses supply the final calculation rather than a
+second scaled estimator. TUG chair contact remains provisional and endurance
+stops remain duration-based. Existing profiles, assessment linkage, real sensor
+exports, old recording compatibility and permanent capture cleanup are retained.
+
+Executed evidence: 231 app tests and 617 native contract assertions pass.
+Actual host execution of the same core rejects blank footage and insufficient
+calibration excitation. A 45-second textured-scene/all-axis control converges,
+and the actual Java admission code accepts its stable tail. A perturbed-prior
+control also converges. A known-geometry 3 m control returns 2.98457 m. Reusing
+the newly admitted profile in a separate 3 m control and the actual app result
+validator returns **2.88629 m** (-0.11371 m, -3.79%), without scale fitting.
+These are newly executed synthetic software controls, not phone recordings,
+clinical validation, cross-device evidence or model training. The notebook saves
+results and provenance; generated frames, profiles and binaries remain local.
+
+The native port includes explicit serial initialization, recoverable invariant
+failures and a motion-cue handoff that prevents zero-motion updates from
+suppressing slow walking. Rotational rolling-shutter compensation uses measured
+readout timing and gyro data. Translation during readout is not modeled.
+Noise densities/bias random walk remain provisional. Numerical covariance and
+repeatability are not independent accuracy. Weaker-motion controls were rejected;
+this is a real observability/first-use usability limitation, not a reason to
+relax acceptance checks. No real cross-device few-shot network is trained.
+
+A release-signed ARM64 APK is now ready locally: **GaitTrace 0.3.12 / build 24**.
+Its certificate matches installed build 23, so it supports an in-place update
+without uninstalling. Packaged native libraries, licenses, version, EN/MS/ZH
+strings, preview request headers and fingerprint runtime are verified. The
+read-only update endpoint check returned 204 for this runtime: no compatible
+OTA is currently published. After installing this native binary, compatible
+JavaScript/asset updates can use preview; native changes still require an APK.
+Physical fresh-phone setup, mounted accuracy/failure-rate, audio and runtime
+acceptance remain. Production/clinical readiness is **not** claimed. No push,
+OTA or public release publication has occurred. The [phone checklist](research/DISTANCE_PHONE_CHECKS.md)
+sets out the remaining checks.
+
+
+## 0.3.11 - distance trial practice, boundaries and noise review
+
+- Integrated corrected computer processing: normal launcher explicitly selects fixed-time row compensation and a continuous native quiet initialization window, with a separate built/tested engine. Version/source/backend plus noise-profile digest identify jobs and preserve old reports. Fresh full-service replays and actual TypeScript import/save/reopen pass; blank synthetic footage withholds distance. 83 research tests and 250 factor cases pass. Existing build 23/calibration unchanged; no new APK or prospective/clinical accuracy claim.
+
+- Desktop investigation: fixed-time VINS branch was skipping row-timing correction. Added an explicit opt-in wrapper correction and 250-case regression against the pinned upstream factors; default/live executable remain unchanged. Fresh saved-capture candidates improve the latest measured 3 m result from 3.24120 m to 3.15688 m, but one of four reported measured attempts still fails. Added pose-discontinuity rejection using the existing 3 m/s plausibility bound. Placement-prefix exclusion is a notebook experiment, not an active helper feature. 74 research tests, actual CTest and fresh analytic control pass. No clinical validation, new APK, push or OTA.
+
+- Documentation/navigation-check follow-up: the checklist now starts with Home's **Import, research tools and app information**, identifies Research tools as a heading, explains scrolling to Research capture tools and lists EN/MS/ZH labels. Version/build marker is in expanded Home below Storage, not Settings. Two actual-component navigation checks pass. No app-code/native change or replacement APK for this correction.
+
+- Native research trial separates placement, fully spoken practice cue, practice movement/return to start, fully spoken measured cue, first-motion start and automatic quiet-stop. No walking produces a retained no-walk capture, never a zero-distance result. Sensor arrival order cannot falsely invalidate a fresh gyro/magnetometer sample.
+- Saved geometry/time stay fixed in the pinned VINS replay. Finishing standing time is excluded from distance; excessive standing drift, resets, gaps, partial tracking and incompatible route geometry withhold the full estimate. Straight routes use horizontal endpoint displacement; turns use a separately labelled smoothed horizontal path. These are research measures, not clinically validated distance or automatic clinical-test boundaries.
+- Five-minute stationary sensor capture transfers to the paired computer for short-term noise review. Only matching phone/device/pipeline candidates can supply per-sample measurement noise; long-term bias random walk remains provisional. Existing saved calibration is preserved.
+- EN/MS/ZH practice, route choices, no-walk and noise-feedback wording. Raw ZIP plus result JSON remain exportable; failed processing can retry the saved ZIP.
+- Fresh full HTTP/ZIP/estimator/actual-TypeScript negative control passes: blank footage returns not-initialized, not zero distance. The freshly executed non-gait analytic VINS control maintains 559 initialized poses, rigid-only position RMSE 0.0003602 m, no fitted scale. Synthetic controls do not establish physical accuracy.
+
+**Current native target: 0.3.11 / build 23.** Build 22 was superseded before release by the final translation and sensor-order fix. Build 21 was an unused remote version reservation. Build 23 is compiled and verified; artifact details follow. A new APK is required for the native boundary API. No source push or OTA publication has occurred.
+
+Physical acceptance checklist: [research/DISTANCE_PHONE_CHECKS.md](research/DISTANCE_PHONE_CHECKS.md).
+
+**Verified APK - 8 October 2026:** 0.3.11/build 23 finished successfully (`d64795ab-4667-455a-b6dd-113fb99759f1`). ZIP integrity, compiled version/package, runtime, new native practice/end-boundary API, bundled EN/MS/ZH guidance and cryptographic Android signature pass. Certificate matches build 20, supporting an in-place update. [Download build 23](https://expo.dev/artifacts/eas/L8EFVUNHKT1E4voE2EAAORAoVj3Z_mfykV_a0HqcaA0.apk). Local file: `android/dist/apk/GaitTrace-0.3.11-build23.apk` (233,387,998 bytes). SHA-256: `dc09ab82650aef3817cfff4ad6304cf0c136aa2e6cf606529b4ed9583008abf5`. Runtime: `9bc3827992f3c583d878767addc04dae0f3d3081`. Organized local release evidence: `android/dist/releases/0.3.11-build23/`. Physical checks remain; no source push or OTA publication.
+
+
+## 0.3.10 - local distance validation / permanent storage cleanup
+
+- Complete fresh camera/IMU processing validation: CPU 600.68 s / GPU-assisted 326.94 s including export on one retained capture. Exact experimental build import support added; all readiness flags remain false. Saved phone calibration and production defaults unchanged.
+- Desktop-only experimental CUDA Ceres/iKalibr build and two-per-backend real-capture comparison: median final solve 355.09 s -> 139.07 s, all stages converge. Numerical parity fails, so existing CPU defaults/profile are preserved; repeatability is recorded. No new APK or clinical distance claim.
+- Desktop-only fastest measured CPU default, archive import and batched Linux log/result transfer (353-frame replay 10.74 s -> 8.06 s, identical computed states). Four-thread calibration benchmark is faster but fails strict parity, so the two-thread default is retained.
+- Desktop-only CUDA corner/LK worker, verified startup kernels, persistent context/cache, Linux replay storage and per-stage provenance. No further APK needed after build 20. Measured warm CPU tracking remains faster than CUDA for the retained 353-frame/150-feature capture; VINS/iKalibr remain CPU. GPU support is not a claimed universal speedup.
+
+- Saved iKalibr reference -> separate native raw trial -> paired-computer pinned VINS processing, with result JSON and partial/reset rejection. New APK required.
+- Research tools reduced to Phone calibration and Distance validation; retired experimental screens removed from navigation.
+- Selectively delete recordings/videos, or clear all recorded data and large research/export/import files without an app backup. Profiles and compact calibration remain.
+- EN/MS/ZH interface coverage; reference-length persistence and resume/retry processing.
+- 200 app tests, TypeScript, 64 research checks and Android export pass; actual non-gait VINS control executed. Physical distance accuracy remains unvalidated.
+
+**Previous verified install - 8 October 2026: 0.3.10 / build 20**
+
+Build `0a0e43bf-ec5c-4726-ba0c-23dc7048d70b` finished successfully. Downloaded APK
+passes ZIP integrity, compiled package/version, new reference-capture method,
+bundled distance/deletion controls, runtime and Android apksigner verification.
+The signing certificate matches existing build 16/19, supporting an in-place
+update that preserves app data. Install the new APK once; build 19 cannot receive
+the added native capture API through OTA alone.
+
+[Download build 20](https://expo.dev/artifacts/eas/JaX9B4vKjCd0TlP9GugV-bbmB_zyu-vYQetz0jIdm0c.apk). Local file:
+`android/dist/apk/GaitTrace-0.3.10-build20.apk` (233,384,142 bytes).
+SHA-256: `a24a0e831e712e01c4333962e69460c56ec09e3598a86b25296b9be8f15a8053`.
+Runtime: `f4e32256af4ee4d49a052ca0fb23beef337a0648`.
+
+Restart `android/Start phone calibration.cmd`, reconnect its setup code in
+**Research tools > Distance validation**, and use your saved calibration. Choose
+3 m, tap Start, wait for the complete walking cue, walk to the marked finish and
+stand still until Finished. Transfer/result return is automatic with the paired
+computer available. Export trial ZIP and result JSON. An unavailable/partial
+result is not a full-distance measurement. Actual device distance accuracy,
+audio/automatic stop and permanent deletion still need physical acceptance checks.
+Source remains local for scope review; no Git push or new OTA has been published.
+
+
+**Previous verified build - 0.3.9/build 19**
+
+Version **0.3.9 / build 19** finished successfully on 7 October at 23:46 MYT
+(EAS `6748383e-9927-4e24-9ce6-e9e9599c3f11`). The signed APK was downloaded and verified on 8 October:
+ZIP integrity, manifest version/package, native calibration code, bundled round
+guidance, runtime fingerprint and Android apksigner verification all pass. Its
+signing certificate matches build 16, allowing an update over the existing app.
+
+[Download the build-19 APK](https://expo.dev/artifacts/eas/AZLeoHa2b78I0i_e7aD1bv7xEh1CmBTHnxhvC3Lp1FM.apk). Local copy:
+`android/dist/apk/GaitTrace-0.3.9-build19.apk` (233,380,614 bytes).
+SHA-256: `fc72d019f2641762b76cf226ac825c72bb201d7a136bb74f2442488eab1c13c0`.
+Runtime: `8e22ae58794f79ee93bc2e4838ac5c29f2893513`.
+
+Build 18 failed before native compilation because source-byte changes overlapped
+archive preparation. Build 19 used frozen native source, with all 14 module/plugin
+files checked against the upload archive; the runtime compatibility guard remained
+enabled. Install build 19 over the existing app and restart
+`android/Start phone calibration.cmd` for the updated computer guide.
+New physical calibration and independent distance validation are still pending.
+Source changes and generated artifacts remain local pending publication review.
+
+
+## 0.3.9 - guided calibration rounds (local, unpublished)
+
+Two actual build-16 ZIPs now establish the cause of the repeated 47-view stop:
+the UI lagged the final native count of 48, and a hard memory cap ended collection
+before missing angle coverage could be completed. Neither attempt stalled:
+camera metadata remained about 29.7 Hz, saved lens images about 3.7 Hz, and
+capture-queue drops and sensor rejections were zero. The latest attempt passed
+side-angle coverage (0.2224) but high/low coverage reached 0.1119, below 0.12.
+No fit was attempted by build 16. All three actual sensor streams were finite
+and monotonic (accelerometer/gyroscope about 210.5 Hz, magnetometer 50 Hz).
+
+Local 0.3.9/build 19 removes that count-based termination. After initial framing,
+view admission follows the first unfinished angle/position round; unrelated
+translations/zoom no longer inflate its count. Completed coverage is preserved.
+The retained pool stays bounded at 48 with useful-view replacement; count alone
+never admits a lens. Temporary board loss preserves collected views. The five-
+minute capture limit and camera-stall/quality checks remain. EN/MS/ZH round labels,
+brief action cues, spoken completion feedback and a computer movement example
+guide side angles, high/low angles, image positions and final view diversity.
+Speech finishes before the next cue; only the latest pending instruction is kept.
+
+Fresh desktop JNI replay of the latest actual ZIP selects 24 views and passes
+the unchanged fit/coverage checks: held-out p90 0.2530 px, training RMS
+0.1715 px. This is an artifact replay, not a new phone calibration or metric
+distance validation. It is saved with source/ZIP hashes in
+`notebooks/phone_camera_imu_calibration.ipynb`; raw images/ZIP remain local.
+192 app checks, TypeScript, Android export, 43 Python research checks and real
+OpenCV JNI fixtures pass. The known-answer lens p90 remains 0.1593 px. Headless
+browser checks with simulated progress verify round switching and no overflow
+at 1366x768; they do not validate physical camera/audio behavior.
+
+Build 17 (0.3.8, EAS 28c14a15-e0ef-4248-b40e-d594e6437af1) was canceled before
+completion because it lacked the final staged collector. Build 19 requires a
+replacement APK; build 16 cannot receive native collection changes via OTA.
+Build 18 failed; build 19 is the frozen-source retry (see current build status below). Source publication
+awaits user review. Reference calibration and independent distance validation
+remain separate, incomplete requirements.
+
+## 0.3.8 - superseded build
+
+Build 17 was canceled. Do not install it for the staged calibration fix.
+
+
+## 0.3.7 - calibration stall diagnostics (local, unpublished)
+
+Build 16 completed successfully on 7 October 2026 (EAS
+25ba329b-f230-4886-822d-e92b4c4e5ee8). Downloaded and verified local APK
+`android/dist/apk/GaitTrace-0.3.7-build16.apk`: 233,377,958 bytes, SHA-256
+4dac96ebed6f72daf1f65f61e8ca591c6333bfce534f5f5ced68f2affd21e562.
+Native compilation, APK ZIP integrity, package/version, new sampling/stall/fitting/
+saving/diagnostic code markers, camera permission, absence of microphone
+permission, four OpenCV ABIs, licences and fingerprint
+963b7871e24e5231cb07b5ade36c7ac3676be518 verified. A replacement APK is required.
+No physical freeze-resolution or clinical accuracy pass is claimed. Source
+publication remains pending review; the APK and generated proof stay local.
+
+
+Prepared replacement build 16 after the operator reported both previews freezing
+and repeated clear-view failure. Lens-only image selection now happens before
+YUV conversion/JPEG/storage at a maximum of 4 Hz, matching the existing detector
+interval. Intentional omissions are counted separately from queue drops. Walking
+and camera/IMU alignment retain their original acquisition path.
+
+Fitting and saving have explicit phone/computer states. A 15-second absence of
+camera images stops lens capture with a camera-stalled error. Timeout errors name
+missing view count, angle/position coverage, failed fit or unfinished fitting.
+The capture retains corner counts, coverage spans and fit rejection diagnostics;
+Export calibration attempt includes failed attempts after reopening. All new
+phone wording has Malay and Chinese translations. Existing lens admission gates
+and previous-profile preservation remain unchanged.
+
+190 app checks, TypeScript, Android export, 43 research checks and desktop Java/
+OpenCV checks pass. The lens known-answer residual remains 0.1593 px held-out p90.
+These are software checks. No physical freeze resolution or metric accuracy is
+claimed. Native runtime changes require a replacement APK; build 15 cannot receive
+the full repair by OTA. Git publication awaits review of this new scope.
+
 ## 0.3.6 - guided published calibration and local reference processor
 
 Published 7 October 2026 as source commit `2cce693`. Repository hygiene, web
@@ -312,3 +663,48 @@ processing; no patient-specific repeat or new walking-distance claim. Full noise
 geometry and native VIO remain incomplete; a longer stationary noise record may
 be needed. Do not enable clinical auto-stopping. Git/OTA publication still awaits
 review; dependencies, demo assets, APKs and generated reports remain local.
+
+
+## Computer reference-processing repair - 8 October 2026 (local)
+
+Working files now use a fresh Linux Docker volume rather than a Windows bind
+mount. The original ZIP is hash-checked before and after processing. All solver
+outputs, including failures, are copied back before the temporary volume is
+removed; if output transfer fails, its volume identity is retained for recovery.
+The published solver, raw measurements and quality checks are unchanged.
+The actual failed capture now completes in 9m33s, with GPU COLMAP registering
+169/195 measured images. 47 research checks pass. This is a computer-only
+change; installed app 0.3.9/build 19 does not need another APK.
+
+For the existing failed attempt: close the old computer processor window, reopen
+`android/Start phone calibration.cmd`, reconnect the new code on the phone, and
+tap **Resume calibration processing**. No new capture or ZIP export is needed.
+Expect **Reference parameters saved. Research review is still needed.**
+The result is saved for review, not validated metric tracking. Complete noise,
+repeatability and measured walking-distance checks are still pending. See the
+executed phone calibration notebook for actual timings/parameters and provenance.
+
+
+### 8 October - saved reference no longer prompts another alignment
+
+The user confirmed the recovered reference was imported on the actual phone,
+but its primary button still requested alignment. Source inspection confirmed
+the action ignored `referenceSaved`, and the idle help also incorrectly said
+sensor alignment was still needed. This was a UI-state defect, not processing
+failure or an instruction to recapture.
+
+The local fix makes **Back to home** the primary completed-state action, hides
+capture/framing instructions and explicitly states that alignment need not be
+repeated. **Repeat calibration** reveals deliberate repeat actions without
+starting capture. Both immediate completion and loading an existing saved
+reference use the same state. Pending newer processing retains precedence.
+New labels/help have English, Malay and Chinese translations. Reference saving
+still does not set `distanceReady` or admit metric tracking.
+
+193 app tests and TypeScript pass. Component tests cover successful alignment,
+resume, reopening, one exit action, no stale setup wording and repeat options
+that do not launch another capture. This is component-flow verification, not
+a physical run of the patched phone screen. The installed build-19 UI is not
+updated yet; the user can leave with **Back to home** now. This JavaScript UI
+change requires publication of a compatible update, not another APK. Source
+publication remains pending review, and generated artifacts stay local.

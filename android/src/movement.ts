@@ -1,6 +1,8 @@
 ﻿import type { Sample, Recording } from './recording';
 export interface MotionWindow {
   enough: boolean; upright: boolean; steady: boolean; strong: boolean;
+  /** Stable gravity can define a personal reference; does not verify body anatomy. */
+  placementReady?: boolean;
   accelerationRmsG: number; rotationRms: number;
   context: 'rest-or-quiet' | 'movement' | 'possible-handling' | 'uncertain' | 'missing-data';
   accelerationChangeRms: number;
@@ -47,7 +49,8 @@ export function motionWindow(accel: Sample[], gyro: Sample[], landscape = false)
   const magnitudeSd = Math.sqrt(magnitudes.reduce((sum, v) => sum + (v - magnitudeMean) ** 2, 0) / Math.max(1, magnitudes.length));
   // Legacy summaries retain portrait semantics. New belt setup accepts either landscape end up.
   const upright = g > 0.8 && g < 1.2 && (landscape ? Math.abs(mean.x) : mean.y) / g >= Math.cos(20 * Math.PI / 180);
-  return { enough, upright, steady: enough && magnitudeSd < 0.05 && accelerationRmsG < 0.06 && rotationRms < 0.15,
+  return { enough, upright, placementReady: enough && Number.isFinite(g) && g > 0.8 && g < 1.2,
+    steady: enough && magnitudeSd < 0.05 && accelerationRmsG < 0.06 && rotationRms < 0.15,
     strong, accelerationRmsG, rotationRms, accelerationChangeRms, context };
 }
 /** Conditions must hold continuously; this gate does not identify anatomical placement. */
@@ -55,12 +58,14 @@ export class SettlingGate {
   private since: number | null = null;
   constructor(private requiredMs = 3000) {}
   update(now: number, streamsReady: boolean, motion: MotionWindow) {
-    const suitable = streamsReady && motion.enough && motion.upright && motion.steady;
+    const suitable = streamsReady && motion.enough && placementReady(motion) && motion.steady;
     if (!suitable) this.since = null;
     else if (this.since === null) this.since = now;
     return this.since !== null && now - this.since >= this.requiredMs;
   }
 }
+/** Legacy fixtures/imports retain their old eligibility; live data uses gravity validity. */
+export function placementReady(motion: MotionWindow): boolean { return motion.placementReady ?? motion.upright; }
 export class StrongMotionTracker {
   private since: number | null = null;
   private lastCue = -Infinity;

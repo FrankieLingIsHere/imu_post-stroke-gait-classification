@@ -1,0 +1,70 @@
+[
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap",
+    "label": "Set up this phone"
+  },
+  {
+    "action": "tap",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "wait",
+    "seconds": 3
+  },
+  {
+    "action": "assert-enabled",
+    "label": "Start calibration",
+    "value": "true"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Play voice sample"
+  },
+  {
+    "action": "wait",
+    "seconds": 8
+  },
+  {
+    "action": "assert",
+    "label": "Play voice sample"
+  },
+  {
+    "action": "assert-enabled",
+    "label": "Start calibration",
+    "value": "true"
+  },
+  {
+    "action": "tap",
+    "label": "Start calibration"
+  },
+  {
+    "action": "wait",
+    "seconds": 20
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap-if-present",
+    "label": "Cancel"
+  },
+  {
+    "action": "tap-if-present",
+    "label": "Back"
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  }
+]

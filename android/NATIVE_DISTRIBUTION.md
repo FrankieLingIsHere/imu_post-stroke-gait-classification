@@ -1,6 +1,59 @@
 # Installable Android app
 
-## Current release configuration
+Current local collector package: **GaitTrace 0.3.19 / build 31**, embedded update **8e25fd12**, runtime `7b8003b238a19ac35c4387219076cdd97cf27172`. Signed ARM64 APK: `dist/apk/GaitTrace-0.3.19-build31.apk` (75,014,786 bytes). Certificate matches build 30 for an in-place update without uninstalling. Android and embedded Expo versions, signature, ZIP, native libraries/licenses, current bundle, preview update channel and fresh source runtime are verified. Nothing has been pushed or published through OTA. The added native final-check diagnostics require this new APK once.
+
+First use checks phone setup before participant entry for automatic camera distance. New participant study IDs are generated automatically; manual study labels remain available in worker details. Final-check speech identifies outstanding timing, uncertainty, slow/delayed frames and changing-fit requirements, with one movement-coverage announcement and no obsolete queued coaching after native completion. The software suite passes 296 app tests, TypeScript, native contracts and ten browser flows. Thirty-eight current-screen checks replay retained Android numerical traces; two fresh emulator interaction scenarios cover 39 controls. These are separate layers, not one physical end-to-end walking proof. Phone convergence, audible TTS, clinical distance and older-adult usability remain unverified. Older package notes below are historical.
+
+## Historical corrected release candidate - 9 October 2026
+
+**GaitTrace 0.3.13 / build 25** is signed and ready at
+`dist/apk/GaitTrace-0.3.13-build25.apk` (74,965,634 bytes). The same file has been
+copied to the connected Redmi's Downloads folder for normal installation over
+the existing app. Its signing certificate matches build 24; do not uninstall.
+The source runtime and the actual APK runtime both equal
+`89e68fa8d1cbc1bfcd7133a318d7f10da6a42364`, with preview update headers.
+
+This corrects stale cached fingerprint metadata found in build 24 and packages
+the local speech/retry/reuse changes. Although build 24 launches, it cannot be
+assumed to receive updates computed for the corrected source runtime. Install
+build 25 once; compatible updates can subsequently use its runtime. The workflow
+now verifies `releases/current-native.json` against a fresh source fingerprint.
+Signing/manifest/bundle/native packaging evidence is under
+`dist/releases/0.3.13-build25/`. No Git push or OTA has been published.
+
+ADB verified installed 0.3.13/build 25, launch without a startup error in inspected
+logs, camera/activity permissions and hardware availability for all three IMU
+sensors. This does not prove live recording quality, measured distance accuracy
+or audible completion. The actual installed APK SHA-256 and runtime match the
+signed local package, and the original 21 September installation date is retained.
+Full voice and measured walking acceptance remain pending.
+
+## Earlier local build 24 handoff - 9 October 2026
+
+A release-signed ARM64 APK is now ready locally: **GaitTrace 0.3.12 / build 24**.
+Its certificate matches installed build 23, so it supports an in-place update
+without uninstalling. Packaged native libraries, licenses, version, EN/MS/ZH
+strings, preview request headers and fingerprint runtime are verified. The
+read-only update endpoint check returned 204 for this runtime: no compatible
+OTA is currently published. After installing this native binary, compatible
+JavaScript/asset updates can use preview; native changes still require an APK.
+Physical fresh-phone setup, mounted accuracy/failure-rate, audio and runtime
+acceptance remain. Production/clinical readiness is **not** claimed. No push,
+OTA or public release publication has occurred.
+
+Local APK: `dist/apk/GaitTrace-0.3.12-build24.apk` (74,965,634 bytes).
+Version/certificate/runtime evidence is organized under
+`dist/releases/0.3.12-build24/`. Runtime: `8499000049e0e250de2ca546ab8a7c36c3f07261`.
+Use the [remaining physical checks](research/DISTANCE_PHONE_CHECKS.md) after
+installing over the existing app. Keep the current app and records; do not
+uninstall to perform this update.
+
+The source `updates.requestHeaders` explicitly selects `preview` for both local
+and EAS builds. [Expo update configuration](https://docs.expo.dev/eas-update/getting-started/)
+and [credential synchronization](https://docs.expo.dev/app-signing/syncing-credentials/)
+describe the maintainer setup. Signing material stays ignored locally.
+
+## Historical release configuration
 
 GaitTrace 0.2.0 uses the existing application ID and signing key so it can upgrade the first APK. EAS owns the monotonically increasing Android build number. The local legacy versionCode is not the authoritative installed number; the UI uses expo-application. Fingerprint policy separates incompatible native runtimes. JSON appRelease records the actual native version/build, runtime, channel and OTA update ID at capture.
 
@@ -54,3 +107,19 @@ Display name changed to GaitTrace, with a rendered two-shoe teal/cream launcher 
 ## [2026-09-21] GaitTrace 0.2.0 build 2 ready
 
 Replacement APK build 44f1af5a-436e-4613-82a0-66dd7f9bc99b completed successfully. [Install GaitTrace 0.2.0 (2)](https://expo.dev/artifacts/eas/L7skC5kknzsTjhhW1TFZiX2pHnAfzgDiBMRO0UDHJWo.apk). This supersedes the earlier 0.1.0 download for sharing. Update server returned HTTP 200 with the expected update ID on the matching runtime. Physical install/update and sensor validation are still pending. Source/workflow publication and GitHub EXPO_TOKEN configuration remain outstanding; initial OTA was published directly through the authenticated Expo account.
+# Local build 28 handoff — 10 October 2026
+
+Signed ARM64 APK: `dist/apk/GaitTrace-0.3.16-build28.apk` (74,973,826 bytes).
+Existing release certificate matches, so install over the app; no uninstall is
+needed. Source/APK runtime `e3b6276c02e6ea24b45cf61fbab2dad505152a37` and fresh
+embedded update `4174185c` are verified. This is a native update, requiring the
+APK rather than an OTA alone. No publication or phone installation was performed.
+
+Includes unified 1/11/12 m boundaries, personal standing reference and pending
+setup/tracker repairs. 249 app tests, TypeScript, native controls and production
+Java-to-TypeScript replay pass. Windows long-path CMake tasks were handled by
+building current tracking libraries in the existing short-path build and using
+their outputs in Gradle; unchanged Expo native libraries were reused. Build,
+signature, runtime and package evidence are in `dist/releases/0.3.16-build28/`
+and `dist/on-device-checks/unified-boundaries/`. Physical fresh-phone setup and
+independent mounted distance accuracy remain unvalidated.

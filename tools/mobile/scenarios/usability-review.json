@@ -1,0 +1,103 @@
+[
+  {
+    "action": "tap-if-present",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap",
+    "label": "Choose JSON or CSV file"
+  },
+  {
+    "action": "tap-file-row",
+    "label": "EMU-six.csv"
+  },
+  {
+    "action": "wait",
+    "seconds": 1
+  },
+  {
+    "action": "tap",
+    "label": "Cancel import"
+  },
+  {
+    "action": "wait",
+    "seconds": 1
+  },
+  {
+    "action": "assert",
+    "label": "Choose JSON or CSV file"
+  },
+  {
+    "action": "tap",
+    "label": "Choose JSON or CSV file"
+  },
+  {
+    "action": "tap-file-row",
+    "label": "EMU-six.csv"
+  },
+  {
+    "action": "wait-visible",
+    "label": "Recording details",
+    "seconds": 180
+  },
+  {
+    "action": "tap",
+    "label": "Signals"
+  },
+  {
+    "action": "assert",
+    "label": "Whole recording"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Inspect a moment in the recording"
+  },
+  {
+    "action": "scroll"
+  },
+  {
+    "action": "assert",
+    "label": "Previous 5 sec"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "scroll",
+    "value": "up"
+  },
+  {
+    "action": "tap",
+    "label": "Whole recording"
+  },
+  {
+    "action": "assert",
+    "label": "Inspect a moment in the recording"
+  },
+  {
+    "action": "tap",
+    "label": "Summary"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Open G.A.I.T. worker assessment"
+  },
+  {
+    "action": "tap",
+    "label": "Overview"
+  },
+  {
+    "action": "assert",
+    "label": "Next missing item"
+  },
+  {
+    "action": "tap",
+    "label": "Next missing item"
+  },
+  {
+    "action": "source"
+  }
+]

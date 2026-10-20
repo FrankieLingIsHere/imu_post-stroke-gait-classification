@@ -1,0 +1,58 @@
+[
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap",
+    "label": "Set up this phone"
+  },
+  {
+    "action": "assert",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "tap",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "assert",
+    "label": "Deny"
+  },
+  {
+    "action": "tap",
+    "label": "Deny"
+  },
+  {
+    "action": "assert",
+    "label": "Camera permission is needed for on-phone setup."
+  },
+  {
+    "action": "tap",
+    "label": "Try again"
+  },
+  {
+    "action": "assert",
+    "label": "While using the app"
+  },
+  {
+    "action": "tap",
+    "label": "While using the app"
+  },
+  {
+    "action": "assert",
+    "label": "Cancel"
+  },
+  {
+    "action": "tap",
+    "label": "Cancel"
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  }
+]

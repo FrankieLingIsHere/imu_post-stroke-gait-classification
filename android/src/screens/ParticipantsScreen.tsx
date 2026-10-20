@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,13 +8,14 @@ import BigButton from '../components/BigButton';
 import { Text, t } from '../i18n';
 import { colours } from '../theme';
 import { archiveParticipant, getParticipants, ParticipantProfile, saveParticipant, toggleParticipantFavorite, type ClinicalSide } from '../store';
-import { participantKey } from '../testParticipant';
+import { participantKey, automaticStudyLabel } from '../testParticipant';
 
 const Field: React.ComponentType<any> = TextInput ?? View;
-const inputStyle = { minHeight: 48, borderWidth: 1, borderColor: colours.border, borderRadius: 12, paddingHorizontal: 12, fontSize: 17, color: colours.textPrimary, backgroundColor: colours.surface };
+const inputStyle = { minHeight: 48, borderWidth: 1, borderColor: colours.inputBorder, borderRadius: 12, paddingHorizontal: 12, fontSize: 17, color: colours.textPrimary, backgroundColor: colours.surface };
 const aidText = { none: 'None', 'single-point-cane': 'Single-point cane', 'quad-cane': 'Quad cane', other: 'Other' } as const;
 export default function ParticipantsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Participants'>) {
   const [profiles, setProfiles] = useState<ParticipantProfile[]>([]);
+  const newProfileId=useRef('');
   const [adding, setAdding] = useState(false);
   const [editingProfile, setEditingProfile] = useState<ParticipantProfile | null>(null);
   const [search, setSearch] = useState('');
@@ -41,7 +42,7 @@ export default function ParticipantsScreen({ navigation }: NativeStackScreenProp
     if(!sex){setError('Choose a sex option, or choose Prefer not to say.');return;}
     const all = await getParticipants();
     const now = new Date().toISOString();
-    const profile: ParticipantProfile = { id: editingProfile?.id ?? `participant-${Date.now()}-${Math.random().toString(16).slice(2,6)}`, label: label.trim() || editingProfile?.label || `Participant ${String(all.length+1).padStart(3,'0')}`, favorite: editingProfile?.favorite ?? false, archived: false, createdAt: editingProfile?.createdAt ?? now, updatedAt: now,
+    const profile: ParticipantProfile = { id: editingProfile?.id ?? newProfileId.current, label: label.trim() || editingProfile?.label || automaticStudyLabel(all,newProfileId.current), favorite: editingProfile?.favorite ?? false, archived: false, createdAt: editingProfile?.createdAt ?? now, updatedAt: now,
       demographics: { ageYears: ageValue, sex, heightCm: heightValue, weightKg: weightValue },
       distanceCalibration: editingProfile?.distanceCalibration,
       clinical: { strokeType, lesionLocation: lesion, monthsSinceStroke: chronicityStatus==='unknown'?null:monthValue, chronicityStatus, affectedHemisphere:hemisphere, affectedBodySide:affectedSide, historySource, premorbidGaitNotes: premorbid, jointOrOrthopaedicNotes: orthopaedic, assistiveDevice: aid } };
@@ -51,26 +52,26 @@ export default function ParticipantsScreen({ navigation }: NativeStackScreenProp
   async function favorite(id: string) { await toggleParticipantFavorite(id); await refresh(); }
   async function archive(id: string) { await archiveParticipant(id); await refresh(); }
   return <Screen title="Participants" eyebrow="STORED ON THIS DEVICE" actions={<>
-    <BigButton label={adding ? (editingProfile ? 'Save profile changes' : 'Save participant') : 'Add participant'} onPress={() => adding ? void create().catch(()=>setError('Could not save participant. Try again.')) : setAdding(true)} />
+    <BigButton label={adding ? (editingProfile ? 'Save profile changes' : 'Save participant') : 'Add participant'} onPress={() => adding ? void create().catch(()=>setError('Could not save participant. Try again.')) : (()=>{newProfileId.current=`participant-${Date.now()}-${Math.random().toString(16).slice(2,10)}`;setLabel(automaticStudyLabel(profiles,newProfileId.current));setAdding(true);})()} />
     {adding && <BigButton label="Cancel" variant="outline" onPress={reset} />}
 
   </>}>
     {!adding&&<BigButton label="Progress dashboard" variant="outline" onPress={()=>navigation.navigate('Dashboard')}/>}
     {!!error&&<Text accessibilityRole="alert" style={ui.error}>{error}</Text>}
     <Body>Choose a person to prefill their details, or add a profile. Records stay on this phone.</Body>
-    {!adding && profiles.length > 0 && <Field value={search} onChangeText={setSearch} placeholder={t('Search participants by study ID')} accessibilityLabel={t('Search participants by study ID')} style={inputStyle}/>}
+    {!adding && profiles.length > 0 && <View style={{gap:6}}><Text style={ui.caption}>{t('Search participants by study ID')}</Text><Field value={search} onChangeText={setSearch} placeholder={t('Search participants by study ID')} accessibilityLabel={t('Search participants by study ID')} style={inputStyle}/></View>}
     {adding && <Card><Text style={ui.label}>New participant profile</Text>
-      <Field value={label} onChangeText={setLabel} placeholder={t('Study ID or display label (optional)')} style={inputStyle}/>
-      <View style={[ui.row,{flexWrap:'wrap'}]}><Field value={age} onChangeText={setAge} placeholder={t('Age')} keyboardType="number-pad" style={[inputStyle,ui.fill,{minWidth:100}]}/><Field value={height} onChangeText={setHeight} placeholder={t('Height cm')} keyboardType="decimal-pad" style={[inputStyle,ui.fill,{minWidth:100}]}/><Field value={weight} onChangeText={setWeight} placeholder={t('Weight kg')} keyboardType="decimal-pad" style={[inputStyle,ui.fill,{minWidth:100}]}/></View>
+      <View style={{gap:6}}><Text style={ui.caption}>{t('Study ID or display label (optional)')}</Text><Field value={label} onChangeText={setLabel} placeholder={t('Study ID or display label (optional)')} style={inputStyle}/></View>
+      <View style={{gap:12}}><View style={{gap:6}}><Text style={ui.caption}>{t('Age')}</Text><Field value={age} onChangeText={setAge} placeholder={t('Age')} keyboardType="number-pad" style={inputStyle}/></View><View style={{gap:6}}><Text style={ui.caption}>{t('Height cm')}</Text><Field value={height} onChangeText={setHeight} placeholder={t('Height cm')} keyboardType="decimal-pad" style={inputStyle}/></View><View style={{gap:6}}><Text style={ui.caption}>{t('Weight kg')}</Text><Field value={weight} onChangeText={setWeight} placeholder={t('Weight kg')} keyboardType="decimal-pad" style={inputStyle}/></View></View>
       <Text style={ui.caption}>Sex (self-reported)</Text><View style={[ui.row,{flexWrap:'wrap'}]}>{(['female','male','prefer-not-to-say'] as const).map(v=><Pressable key={v} style={[ui.choice,{minWidth:80},sex===v&&ui.selected]} onPress={()=>setSex(v)}><Text>{v==='prefer-not-to-say'?'Prefer not to say':v==='female'?'Female':'Male'}</Text></Pressable>)}</View>
-      <Field value={strokeType} onChangeText={setStrokeType} placeholder={t('Stroke type (optional)')} style={inputStyle}/><Field value={lesion} onChangeText={setLesion} placeholder={t('Lesion location (optional)')} style={inputStyle}/>
+      <View style={{gap:6}}><Text style={ui.caption}>{t('Stroke type (optional)')}</Text><Field value={strokeType} onChangeText={setStrokeType} placeholder={t('Stroke type (optional)')} style={inputStyle}/></View><View style={{gap:6}}><Text style={ui.caption}>{t('Lesion location (optional)')}</Text><Field value={lesion} onChangeText={setLesion} placeholder={t('Lesion location (optional)')} style={inputStyle}/></View>
       <Text style={ui.caption}>Affected brain hemisphere</Text><View style={[ui.row,{flexWrap:'wrap'}]}>{(['left','right','bilateral','unknown'] as const).map(v=><Pressable key={v} accessibilityRole="radio" accessibilityState={{selected:hemisphere===v}} style={[ui.choice,{flexBasis:110},hemisphere===v&&ui.selected]} onPress={()=>setHemisphere(v)}><Text>{t(v)}</Text></Pressable>)}</View>
       <Text style={ui.caption}>Affected body side</Text><View style={[ui.row,{flexWrap:'wrap'}]}>{(['left','right','bilateral','unknown'] as const).map(v=><Pressable key={v} accessibilityRole="radio" accessibilityState={{selected:affectedSide===v}} style={[ui.choice,{flexBasis:110},affectedSide===v&&ui.selected]} onPress={()=>setAffectedSide(v)}><Text>{t(v)}</Text></Pressable>)}</View>
       <Text style={ui.caption}>Time since stroke</Text><View style={[ui.row,{flexWrap:'wrap'}]}>{(['known','unknown'] as const).map(v=><Pressable key={v} accessibilityRole="radio" accessibilityState={{selected:chronicityStatus===v}} style={[ui.choice,{flexBasis:110},chronicityStatus===v&&ui.selected]} onPress={()=>setChronicityStatus(v)}><Text>{t(v)}</Text></Pressable>)}</View>
-      {chronicityStatus==='known'&&<Field value={months} onChangeText={setMonths} placeholder={t('Whole months since stroke')} keyboardType="number-pad" style={inputStyle}/>}
+      {chronicityStatus==='known'&&<View style={{gap:6}}><Text style={ui.caption}>{t('Whole months since stroke')}</Text><Field value={months} onChangeText={setMonths} placeholder={t('Whole months since stroke')} keyboardType="number-pad" style={inputStyle}/></View>}
       <Text style={ui.caption}>History source</Text><View style={[ui.row,{flexWrap:'wrap'}]}>{([['patient-or-caregiver-report','Patient or caregiver'],['clinician-record','Clinical record']] as const).map(([v,name])=><Pressable key={v} accessibilityRole="radio" accessibilityState={{selected:historySource===v}} style={[ui.choice,{flexBasis:120},historySource===v&&ui.selected]} onPress={()=>setHistorySource(v)}><Text>{t(name)}</Text></Pressable>)}</View>
       <Text style={ui.caption}>Usual walking aid</Text><View style={[ui.row,{flexWrap:'wrap'}]}>{([['none','None'],['single-point-cane','Single-point cane'],['quad-cane','Quad cane'],['other','Other']] as const).map(([v,name])=><Pressable key={v} style={[ui.choice,{flexBasis:110},aid===v&&ui.selected]} onPress={()=>setAid(v)}><Text>{name}</Text></Pressable>)}</View>
-      <Field value={premorbid} onChangeText={setPremorbid} placeholder={t('Pre-existing gait pattern/asymmetry')} style={inputStyle}/><Field value={orthopaedic} onChangeText={setOrthopaedic} placeholder={t('Joint conditions or orthopaedic history')} style={inputStyle}/>
+      <View style={{gap:6}}><Text style={ui.caption}>{t('Pre-existing gait pattern/asymmetry')}</Text><Field value={premorbid} onChangeText={setPremorbid} placeholder={t('Pre-existing gait pattern/asymmetry')} style={inputStyle}/></View><View style={{gap:6}}><Text style={ui.caption}>{t('Joint conditions or orthopaedic history')}</Text><Field value={orthopaedic} onChangeText={setOrthopaedic} placeholder={t('Joint conditions or orthopaedic history')} style={inputStyle}/></View>
       {!!error&&<Text style={ui.error}>{error}</Text>}
     </Card>}
     {!adding&&profiles.filter(p=>p.label.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).map(p=><Card key={p.id}><View style={ui.row}><Text style={[ui.label,ui.fill]}>{p.label} {p.favorite?'★':''}</Text><Pressable accessibilityRole="button" onPress={()=>void favorite(p.id)}><Text style={ui.label}>{p.favorite?'★':'☆'}</Text></Pressable></View>

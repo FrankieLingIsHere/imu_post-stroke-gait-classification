@@ -1,0 +1,97 @@
+[
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap",
+    "label": "Set up this phone"
+  },
+  {
+    "action": "tap",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "tap-if-present",
+    "label": "While using the app"
+  },
+  {
+    "action": "wait",
+    "seconds": 3
+  },
+  {
+    "action": "assert-enabled",
+    "label": "Start calibration",
+    "value": "true"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Play voice sample"
+  },
+  {
+    "action": "wait",
+    "seconds": 12
+  },
+  {
+    "action": "assert",
+    "label": "Voice is unavailable. Keep the phone reachable and try the voice sample again."
+  },
+  {
+    "action": "assert",
+    "label": "Calibration has not been saved."
+  },
+  {
+    "action": "assert-enabled",
+    "label": "Start calibration",
+    "value": "true"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Start calibration"
+  },
+  {
+    "action": "wait",
+    "seconds": 12
+  },
+  {
+    "action": "assert",
+    "label": "The voice instruction could not finish. Check your phone voice and try again."
+  },
+  {
+    "action": "assert",
+    "label": "Calibration has not been saved."
+  },
+  {
+    "action": "assert",
+    "label": "Start calibration"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Back"
+  },
+  {
+    "action": "assert",
+    "label": "Start phone setup"
+  },
+  {
+    "action": "tap",
+    "label": "Back"
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  }
+]

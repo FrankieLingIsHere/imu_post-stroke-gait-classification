@@ -16,7 +16,7 @@ export function Text({ children, accessibilityLabel, ...props }: TextProps) {
 }
 export function LanguagePicker() {
   const current = useLanguage();
-  return <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', gap: 8 }}>
-    {(['en','ms','zh'] as const).map((language, i) => <Pressable key={language} accessibilityRole="radio" accessibilityState={{ selected: current === language }} accessibilityLabel={['English','Bahasa Melayu','简体中文'][i]} onPress={() => { selectionChanged = true; setLanguage(language); void AsyncStorage.setItem('gait-language-v1', language).catch(() => {}); }} style={{ flex: 1, minHeight: 48, padding: 8, justifyContent: 'center', alignItems: 'center', borderWidth: current === language ? 2 : 1, borderColor: '#176B62', borderRadius: 12 }}><NativeText style={{ fontSize: 17, color: '#164E48', fontWeight: current === language ? '700' : '400' }}>{['English','Melayu','中文'][i]}</NativeText></Pressable>)}
+  return <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+    {(['en','ms','zh'] as const).map((language, i) => <Pressable key={language} accessibilityRole="radio" accessibilityState={{ selected: current === language }} accessibilityLabel={['English','Bahasa Melayu','简体中文'][i]} onPress={() => { selectionChanged = true; setLanguage(language); void AsyncStorage.setItem('gait-language-v1', language).catch(() => {}); }} style={{ flex: 1, minWidth: 100, minHeight: 48, padding: 8, justifyContent: 'center', alignItems: 'center', borderWidth: current === language ? 2 : 1, borderColor: '#176B62', borderRadius: 12 }}><NativeText style={{ fontSize: 17, color: '#164E48', fontWeight: current === language ? '700' : '400' }}>{['English','Melayu','中文'][i]}</NativeText></Pressable>)}
   </View>;
 }

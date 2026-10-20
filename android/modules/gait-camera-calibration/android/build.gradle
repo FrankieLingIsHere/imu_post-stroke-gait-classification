@@ -6,7 +6,16 @@ apply from: expoModulesCorePlugin
 applyKotlinExpoModulesCorePlugin()
 useCoreDependencies()
 useDefaultAndroidSdkVersions()
-android { namespace 'expo.modules.gaitcalibration' }
+android {
+  namespace 'expo.modules.gaitcalibration'
+  buildFeatures { prefab true }
+  externalNativeBuild { cmake { path 'src/main/cpp/CMakeLists.txt'; version '3.22.1' } }
+  defaultConfig {
+    consumerProguardFiles 'consumer-rules.pro'
+    ndk { abiFilters (*(findProperty('reactNativeArchitectures') ?: 'armeabi-v7a,arm64-v8a,x86,x86_64').split(',')) }
+    externalNativeBuild { cmake { cppFlags '-std=c++14'; arguments '-DANDROID_STL=c++_shared' } }
+  }
+}
 dependencies {
   implementation 'org.opencv:opencv:4.12.0'
   implementation 'org.apache.commons:commons-math3:3.6.1'

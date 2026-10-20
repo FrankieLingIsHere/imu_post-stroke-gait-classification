@@ -35,6 +35,11 @@ export interface Recording {
     startedAt: string; streams: Streams;
     mean: Record<SensorName, { x: number; y: number; z: number }>;
     rawWalkingValuesCorrected: false;
+    postureReference?: {
+      version: 'personal-gravity-reference-v1'; gravityUnit: {x:number;y:number;z:number};
+      phoneTiltFromLandscapeDegrees: number; anatomicalPostureVerified: false;
+      interpretation: 'phone-orientation-not-trunk-angle';
+    };
   };
   streams: Streams;
 }

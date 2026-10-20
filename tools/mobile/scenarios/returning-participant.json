@@ -1,0 +1,48 @@
+[
+  {
+    "action": "wait",
+    "seconds": 3
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Choose a saved person"
+  },
+  {
+    "action": "tap",
+    "label": "EMU-SYNTHETIC-NOT-PATIENT"
+  },
+  {
+    "action": "assert",
+    "label": "Your saved details are ready. Confirm your walking aid, then continue."
+  },
+  {
+    "action": "tap",
+    "label": "Quad cane"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Continue"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Edit participant details"
+  },
+  {
+    "action": "assert",
+    "label": "Age in years"
+  },
+  {
+    "action": "back"
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "action": "display-size",
+    "value": "720x1280"
+  },
+  {
+    "action": "font",
+    "value": "1.3"
+  },
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Choose JSON or CSV file"
+  },
+  {
+    "action": "tap-file-row",
+    "label": "EMU-partial-ten.json"
+  },
+  {
+    "action": "wait-visible",
+    "label": "Recording details",
+    "seconds": 60
+  },
+  {
+    "action": "assert",
+    "label": "Participant: EMU-SYNTHETIC-NOT-PATIENT"
+  },
+  {
+    "action": "assert-readable-layout"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Summary"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Signals"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Export recording"
+  },
+  {
+    "action": "tap",
+    "label": "Export recording"
+  },
+  {
+    "action": "assert",
+    "label": "Choose a file format."
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Done"
+  },
+  {
+    "action": "tap",
+    "label": "Done"
+  },
+  {
+    "action": "font",
+    "value": "1"
+  },
+  {
+    "action": "display-size",
+    "value": "reset"
+  }
+]

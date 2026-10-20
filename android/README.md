@@ -1,9 +1,37 @@
 # GaitTrace
 
+Current local collector package: **GaitTrace 0.3.19 / build 31**, embedded update **8e25fd12**, runtime `7b8003b238a19ac35c4387219076cdd97cf27172`. Signed ARM64 APK: `dist/apk/GaitTrace-0.3.19-build31.apk` (75,014,786 bytes). Certificate matches build 30 for an in-place update without uninstalling. Android and embedded Expo versions, signature, ZIP, native libraries/licenses, current bundle, preview update channel and fresh source runtime are verified. Nothing has been pushed or published through OTA. The added native final-check diagnostics require this new APK once.
+
+First use checks phone setup before participant entry for automatic camera distance. New participant study IDs are generated automatically; manual study labels remain available in worker details. Final-check speech identifies outstanding timing, uncertainty, slow/delayed frames and changing-fit requirements, with one movement-coverage announcement and no obsolete queued coaching after native completion. The software suite passes 296 app tests, TypeScript, native contracts and ten browser flows. Thirty-eight current-screen checks replay retained Android numerical traces; two fresh emulator interaction scenarios cover 39 controls. These are separate layers, not one physical end-to-end walking proof. Phone convergence, audible TTS, clinical distance and older-adult usability remain unverified. Older package notes below are historical.
+
+**Historical build-25 implementation notes.**
+First-time **Set up this phone** uses the front camera and real IMU readings on
+the phone, with no computer, board, upload or paid service. The main recorder
+tracks live and has automatic estimated 1 + 10 + 1 m 10MWT boundaries. This is
+an unpublished candidate; production and clinical acceptance are pending.
+See [the method/evidence](research/ON_DEVICE_DISTANCE.md) and
+[remaining phone checks](research/DISTANCE_PHONE_CHECKS.md).
+
 Sensor-free shared-UI preview and automated flow checks: [FLOW_TESTING.md](FLOW_TESTING.md). Observer G.A.I.T. form: results > Gait assessment form > Open item-by-item G.A.I.T. form.
 
 
-Current source release: **0.3.0**. See [CHANGELOG.md](CHANGELOG.md) for maintained release notes, version/build distinctions and installation requirements. The Google distance comparison needs a new native APK; it does not work in Expo Go or previously installed APKs through an OTA update. Native compilation and actual-phone validation remain pending. See the [experiment guide](modules/gait-google-recording/README.md) for setup and validation exports.
+Current local target: **0.3.13 / version code 25**. Missing or incompatible setup
+opens **Set up this phone** automatically before a normal test. A completed
+profile is reused across participants. **Phone distance** keeps computation on
+Android, uses a single complete-tracking/integrity rule, and never substitutes
+height, Google or GPS after camera failure. Result/Details, participant history,
+mandatory G.A.I.T. and JSON/CSV remain linked. The release-signed ARM64 APK is ready locally and matches the build-23 signing
+certificate, allowing an in-place update. Physical acceptance remains.
+Build 25 includes setup speech/retry/reuse fixes and corrects build 24's stale
+cached runtime. Install its signed APK once over the existing application;
+do not uninstall or redo board calibration. The fresh source and actual APK
+fingerprints match. Later compatible updates use its preview runtime, checked
+by [the native release contract](releases/README.md).
+
+Legacy desktop calibration remains in developer research tools for historical
+comparison. It is not the ordinary new-phone setup or a product prerequisite.
+No real cross-device neural calibration model is trained. Source remains local
+pending the user's publication review.
 
 The notes below preserve earlier iterations and historical validation counts. They are not the current setup/protocol specification; use the release history and [current product specification](../docs/REHAB_ASSESSMENT_PRODUCT_SPEC.md) for current behavior and limitations.
 

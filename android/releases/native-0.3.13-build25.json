@@ -1,0 +1,36 @@
+{
+  "appVersion": "0.3.13",
+  "nativeVersionCode": 25,
+  "package": "com.gaitsteps.app",
+  "runtimeVersion": "89e68fa8d1cbc1bfcd7133a318d7f10da6a42364",
+  "channel": "preview",
+  "apkSha256": "00de2e4d9e120fc9c17697848394e98272e7d0552af64eb21bb8f8d10435ed18",
+  "certificateSha256": "e6b4b904939ddb670aaee857156f3e6345b410970b3c6b690ce70aaa34387fdc",
+  "sourceRuntimeVerified": true,
+  "physicalLaunchVerified": true,
+  "activeEmbeddedUpdateVerified": true,
+  "physicalSetupValidated": false,
+  "publiclyPublished": false,
+  "independentDistanceValidated": false,
+  "embeddedUpdateId": "03e822a3-11df-49a8-bf8f-10938a3d0f7c",
+  "bundleSha256": "cfa7225f0fdac0ba59eb18947f671498bb8c4cdf0a481a66247cceb8f89ea94a",
+  "latestCompatibleOta": {
+    "id": "01a12167-e782-7896-9ef8-7196b06afb9b",
+    "group": "de402a52-5b3c-457e-8ca6-4df2e96af900",
+    "channel": "preview",
+    "createdAt": "2026-10-09T16:03:40.034Z",
+    "userApproved": true,
+    "physicalActiveVerified": true
+  },
+  "physicalSpeechStartupVerified": true,
+  "physicalCaptureFailure": {
+    "captureId": "calibration-1791562292167",
+    "error": "Missing rolling shutter IMU coverage",
+    "frames": 4,
+    "sensorCounts": {
+      "accelerometer": 151,
+      "gyroscope": 151,
+      "magnetometer": 35
+    }
+  }
+}

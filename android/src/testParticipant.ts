@@ -11,6 +11,14 @@ export interface TestParticipantInput {
 }
 export const participantKey = (label: string) => label.trim().normalize('NFKC').toLocaleLowerCase();
 
+/** Stable pseudonymous label; no names/demographics or shared global counter. */
+export function automaticStudyLabel(profiles: ParticipantProfile[], id: string): string {
+  const base='GT-'+id.replace(/[^a-zA-Z0-9]/g,'').slice(-12).toUpperCase();
+  let label=base,index=2;
+  while(profiles.some(p=>participantKey(p.label)===participantKey(label)&&p.id!==id))label=base+'-'+index++;
+  return label;
+}
+
 /** A study label identifies a person. Demographic similarity never does. */
 export function resolveTestParticipant(profiles: ParticipantProfile[], input: TestParticipantInput, now = new Date().toISOString()): ParticipantProfile {
   if (!input.label.trim()) throw new Error('Enter a study ID or participant label.');

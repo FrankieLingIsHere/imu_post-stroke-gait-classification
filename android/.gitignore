@@ -2,6 +2,9 @@ node_modules/
 .expo/
 dist/
 .metro-cache/
+modules/**/android/build/
+modules/**/.gradle/
+modules/**/.cxx/
 *.apk
 *.aab
 *.jks

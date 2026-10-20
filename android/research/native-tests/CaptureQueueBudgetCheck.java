@@ -5,6 +5,14 @@ import java.util.*;
 public class CaptureQueueBudgetCheck {
   private static void check(boolean b){if(!b)throw new AssertionError();}
   public static void main(String[] args)throws Exception{
+    CaptureQueueBudget lens=new CaptureQueueBudget(4,10);
+    int selected=0;
+    for(int i=0;i<300;i++)if(lens.selectFrame(1_000_000_000L+i*33_333_333L,250_000_000L))selected++;
+    check(selected==38);
+    check(lens.snapshot().get("intentionallySampledOutImageCallbacks").intValue()==262);
+    CaptureQueueBudget continuous=new CaptureQueueBudget(4,10);
+    for(int i=0;i<300;i++)check(continuous.selectFrame(1_000_000_000L+i*33_333_333L,0));
+    check(continuous.snapshot().get("intentionallySampledOutImageCallbacks").intValue()==0);
     CaptureQueueBudget q=new CaptureQueueBudget(4,10);
     for(int i=0;i<4;i++)check(q.reserveFrame());check(!q.reserveFrame());
     for(int i=0;i<4;i++)q.releaseFrame();

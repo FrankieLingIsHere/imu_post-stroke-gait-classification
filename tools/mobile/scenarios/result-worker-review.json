@@ -1,0 +1,150 @@
+[
+  {
+    "action": "assert",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap-if-present",
+    "label": "Tools and help"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Choose JSON or CSV file"
+  },
+  {
+    "action": "tap-file-row",
+    "label": "EMU-partial-ten.json"
+  },
+  {
+    "action": "wait-visible",
+    "label": "Recording details",
+    "seconds": 60
+  },
+  {
+    "action": "assert",
+    "label": "Gait assessment form"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Test outcomes and worker notes"
+  },
+  {
+    "action": "assert",
+    "label": "Recording saved"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Modified"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Timed interval seconds"
+  },
+  {
+    "action": "type",
+    "label": "Timed interval seconds",
+    "value": "12"
+  },
+  {
+    "action": "dismiss-keyboard"
+  },
+  {
+    "action": "tap",
+    "label": "Save worker draft"
+  },
+  {
+    "action": "wait",
+    "seconds": 1
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Test outcomes and worker notes"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Save assessment to this phone"
+  },
+  {
+    "action": "wait",
+    "seconds": 1
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Test outcomes and worker notes"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Modified"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Worker: experimental timing"
+  },
+  {
+    "action": "assert",
+    "label": "Hide experimental timing"
+  },
+  {
+    "action": "tap",
+    "label": "Hide experimental timing"
+  },
+  {
+    "action": "tap",
+    "label": "Notes"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Summary"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Signals"
+  },
+  {
+    "action": "assert",
+    "label": "Protocol capture timing"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Export recording"
+  },
+  {
+    "action": "assert",
+    "label": "Choose a file format."
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Done"
+  },
+  {
+    "action": "tap",
+    "label": "Done"
+  }
+]

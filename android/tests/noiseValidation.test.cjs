@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),ts=require('typescript');
+function load(mocks={}){const module={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/noiseValidation.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{module,exports:module.exports,require:id=>mocks[id]??{},setTimeout});return module.exports;}
+function fixture(){const meta={kind:'phone-imu-noise-capture-v1',status:'completed',captureId:'imu-noise-123',installationId:'p',device:{model:'test'},capturePipeline:'native-camera-imu-v2'};return {meta,result:{schemaVersion:1,kind:'phone-imu-noise-report-v1',status:'white-noise-candidate',binding:meta,sourceSha256:'a'.repeat(64),whiteNoiseCandidateReady:true,biasRandomWalkReady:false,fullCalibrationReady:false,distanceReady:false,errors:[]}};}
+test('Stationary noise report remains phone-bound and cannot promote distance or random-walk readiness',()=>{
+ const {meta,result}=fixture(),a=load();assert.equal(a.validateNoiseResult(result,meta),result);
+ for(const mutate of [r=>r.binding={...r.binding,installationId:'other'},r=>r.biasRandomWalkReady=true,r=>r.distanceReady=true,r=>r.whiteNoiseCandidateReady=false,r=>r.sourceSha256='bad']){const r=JSON.parse(JSON.stringify(result));mutate(r);assert.throws(()=>a.validateNoiseResult(r,meta));}
+});
+test('Noise capture upload, polling and saved report use the authenticated paired helper',async()=>{
+ const {meta,result}=fixture(),calls=[],a=load({'./referenceCalibration':{calibrationComputer:async()=>({url:'http://192.168.1.2:8765',token:'fixture'})},'./distanceValidation':{researchRequest:async(c,p)=>p==='/api/health'?{distanceValidationVersion:2}:{status:'completed',result}},'expo-file-system':{documentDirectory:'file:///app/',makeDirectoryAsync:async()=>{},FileSystemUploadType:{BINARY_CONTENT:0},uploadAsync:async(url,uri,options)=>{calls.push(options);return {status:202,body:JSON.stringify({id:'b'.repeat(24)})};},writeAsStringAsync:async(p,v)=>calls.push(p)}});
+ assert.equal((await a.checkNoiseCapture({uri:'file:///noise.zip',metadata:JSON.stringify(meta)},()=>false)).whiteNoiseCandidateReady,true);
+ assert.equal(calls[0].headers.Authorization,'Bearer fixture');assert.equal(calls[1],'file:///app/camera-imu-noise/imu-noise-123-report.json');assert.equal(calls[2],'file:///app/camera-calibration/noise.json');
+});

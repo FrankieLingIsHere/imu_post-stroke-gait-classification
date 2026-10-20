@@ -74,6 +74,15 @@ class ReferenceContractTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'SI units'):
                 export_capture(self.fixture(p,bad_units=True),p/'out')
 
+    def test_explicit_reviewed_adapter_takes_precedence_over_embedded_legacy_guess(self):
+        with tempfile.TemporaryDirectory() as temp:
+            p=Path(temp);source=self.fixture(p)
+            with zipfile.ZipFile(source) as z:adapter=json.loads(z.read('research-profile.json'))
+            adapter['rotationTiming']['residualTimeOffsetSeconds']=.012
+            (p/'adapter.json').write_text(json.dumps(adapter))
+            export_capture(source,p/'out',p/'adapter.json')
+            self.assertEqual(json.loads((p/'out/profile.json').read_text())['rotationTiming']['residualTimeOffsetSeconds'],.012)
+
     def test_rejects_wrong_camera_profile(self):
         with tempfile.TemporaryDirectory() as temp:
             p=Path(temp)

@@ -15,6 +15,57 @@ function load(name, mocks = {}, globals = {}, cache = {}) {
   return module.exports;
 }
 const pure = load('recording');
+
+test('Worker outcomes never turn incomplete 10MWT into a full-distance speed',()=>{
+ const {workerOutcome,workerOutcomeError}=load('workerOutcome');
+ const session={assessmentSetup:{protocol:'10mwt',timedDistanceM:10}};
+ const base={completionStatus:'completed',completed:true,distanceWalkedM:10,timedZoneSeconds:12,lapCount:null};
+ assert.equal(workerOutcome(session,base).speedMps,10/12);
+ for(const completionStatus of ['modified','not-completed']) {
+   const outcome=workerOutcome(session,{...base,completionStatus});
+   assert.equal(outcome.completed,false);assert.equal(outcome.distanceWalkedM,null);assert.equal(outcome.speedMps,null);
+ }
+ assert.match(workerOutcomeError(session,{...base,timedZoneSeconds:null}),/stopwatch/);
+ assert.equal(workerOutcome({assessmentSetup:{protocol:'tug'}},base).speedMps,null);
+ const legacy={...session,id:'legacy-partial',windows:[],assessment:{...base,completionStatus:'modified',speedMps:10/12,distanceSource:'measured-course'}};
+ const json=JSON.parse(exporting.exportJSON(legacy));
+ assert.equal(json.workerOutcome.speedMps,null);assert.equal(json.workerOutcome.distanceWalkedM,null);
+ assert.equal(json.session.assessment.speedMps,10/12,'original imported metadata is retained for audit');
+ const rows=exporting.exportFeatureCSV(legacy).trim().split('\r\n').map(row=>row.slice(1,-1).split('","'));
+ assert.equal(rows[1][rows[0].indexOf('measured_speed_mps')],'');
+ assert.equal(rows[1][rows[0].indexOf('measured_distance_m')],'');
+});
+test('Endurance worker outcomes require full intervals and preserve partial notes',()=>{
+ const {workerOutcome,workerOutcomeError}=load('workerOutcome');
+ const base={completionStatus:'completed',completed:true,distanceWalkedM:3,lapCount:4,timedZoneSeconds:null};
+ for(const [protocol,seconds] of [['2mwt',120],['6mwt',360]]) {
+   const session={assessmentSetup:{protocol,courseLengthM:10},protocolExecution:{elapsedFromGoSeconds:seconds+0.1}};
+   assert.equal(workerOutcomeError(session,base),null);
+   const result=workerOutcome(session,base,true);
+   assert.equal(result.distanceWalkedM,43);assert.equal(result.timedZoneSeconds,seconds);assert.equal(result.speedMps,43/seconds);
+   assert.equal(workerOutcome(session,result).distanceWalkedM,43,'reopening must not add laps twice');
+   assert.match(workerOutcomeError(session,{...base,timedZoneSeconds:20}),/full test interval/);
+   const short={...session,protocolExecution:{elapsedFromGoSeconds:20}};
+   assert.match(workerOutcomeError(short,base),/full test interval/);assert.equal(workerOutcome(short,base).speedMps,null);
+   const partial=workerOutcome(short,{...base,completionStatus:'modified',timedZoneSeconds:20},true);
+   assert.equal(partial.completed,false);assert.equal(partial.distanceWalkedM,43);assert.equal(partial.speedMps,null);
+ }
+});
+
+test('Bounded native file reads preserve Unicode at every chunk edge and reject malformed text',async()=>{
+  const text='Patient 中文 / Melayu é / 🦶\r\n',bytes=Buffer.from(text),api={EncodingType:{Base64:'base64'}};
+  const {Utf8Chunks}=load('boundedFileRead',{'expo-file-system':api});
+  for(let edge=1;edge<bytes.length;edge++){
+    const decoder=new Utf8Chunks();assert.equal(decoder.decode(bytes.subarray(0,edge).toString('base64'))+decoder.decode(bytes.subarray(edge).toString('base64'),true),text);
+  }
+  assert.throws(()=>new Utf8Chunks().decode(Buffer.from([0xc0,0x80]).toString('base64'),true),/UTF-8/);
+  assert.throws(()=>new Utf8Chunks().decode(Buffer.from([0xe4,0xb8]).toString('base64'),true),/incomplete/);
+  const large=Buffer.from(text.repeat(12000));let reads=0;
+  const {readBoundedUtf8}=load('boundedFileRead',{'expo-file-system':{...api,getInfoAsync:async()=>({exists:true,isDirectory:false,size:large.length}),readAsStringAsync:async(_,options)=>{reads++;assert.equal(options.encoding,'base64');assert.ok(options.length<=256*1024);return large.subarray(options.position,options.position+options.length).toString('base64');}}});
+  const progress=[];assert.equal(await readBoundedUtf8('fixture',large.length,f=>progress.push(f)),large.toString('utf8'));assert.ok(reads>1);
+  assert.equal(progress[0],0);assert.equal(progress.at(-1),1);assert.ok(progress.every((p,i)=>p>=0&&p<=1&&(!i||p>=progress[i-1])));
+  await assert.rejects(readBoundedUtf8('fixture',large.length-1),/size limit/);
+});
 test('Phone protocol speed includes timed rests and does not become a verified 10MWT result',()=>{
   const {protocolPhoneEstimate}=load('distanceEstimation');
   const estimate={distanceM:60,speedMps:0.8,status:'experimental-step-model',method:'candidate-peaks',reason:null};
@@ -24,6 +75,25 @@ test('Phone protocol speed includes timed rests and does not become a verified 1
   const ten=protocolPhoneEstimate(estimate,'10mwt',30);
   assert.equal(ten.meanSpeedMps,0.8);
   assert.match(ten.speedDefinition,/not-clinical-timed-zone/);
+});
+
+test('Cancelled file reads stop between chunks and do not return partial text',async()=>{
+ const controller=new AbortController();let reads=0;
+ const {readBoundedUtf8}=load('boundedFileRead',{'expo-file-system':{EncodingType:{Base64:'base64'},getInfoAsync:async()=>({exists:true,size:600000}),readAsStringAsync:async()=>{reads++;return Buffer.alloc(256*1024,65).toString('base64');}}});
+ await assert.rejects(readBoundedUtf8('fixture',600000,p=>{if(p>0)controller.abort();},controller.signal),/cancelled/);
+ assert.equal(reads,1);
+});
+
+test('Cooperative CSV import matches the sync parser and cancellation creates no recording',async()=>{
+ const {parseReviewRecordingCsv,parseReviewRecordingCsvAsync}=load('reviewRecording',{}, {setTimeout});
+ const recording=recordFixture();for(const name of pure.SENSOR_NAMES)recording.streams[name]=Array.from({length:1200},(_,i)=>({...recording.streams[name][0],elapsedMs:i}));
+ const session={id:'cancel-fixture',date:'2026-10-11T00:00:00Z',duration:10,isPractice:true,windows:[],quality:'repeat',windowCount:0,recording};
+ const csv=exporting.exportCSV(session);
+ assert.equal(JSON.stringify(await parseReviewRecordingCsvAsync(csv)),JSON.stringify(parseReviewRecordingCsv(csv)));
+ const controller=new AbortController(),files=new Map(),values=new Map();
+ const store=load('store',{'@react-native-async-storage/async-storage':{getItem:async k=>values.get(k)??null,setItem:async(k,v)=>values.set(k,v)},'expo-file-system':{documentDirectory:'/documents/',makeDirectoryAsync:async()=>{},writeAsStringAsync:async(k,v)=>files.set(k,v),readAsStringAsync:async k=>files.get(k)}},{setTimeout});
+ const pending=store.importReviewRecording(csv,'csv',controller.signal);setTimeout(()=>controller.abort(),0);
+ await assert.rejects(pending,/cancelled/);assert.equal(files.size,0);assert.equal(values.size,0);
 });
 test('GPS cross-check rejects poor fixes and reports only aggregate location quality', () => {
   const {ForegroundDistanceTracker}=load('locationDistance');
@@ -91,6 +161,13 @@ test('All three sensors must be available and permitted', async () => {
   await assert.rejects(r.api.checkSensors(), /magnetometer/);
   r.sensors.Magnetometer.available = true; r.sensors.Gyroscope.permission = false;
   await assert.rejects(r.api.checkSensors(), /motion access/);
+});
+test('Granted native permissions are checked without reopening the permission activity',async()=>{
+ const r=rig();let requests=0;
+ for(const sensor of Object.values(r.sensors)){sensor.getPermissionsAsync=async()=>({granted:true});sensor.requestPermissionsAsync=async()=>{requests++;return {granted:true};};}
+ await r.api.checkSensors();assert.equal(requests,0);
+ r.sensors.Gyroscope.getPermissionsAsync=async()=>({granted:false});
+ await r.api.checkSensors();assert.equal(requests,1);
 });
 test('Nine axes, independent rates, unmodified native timestamp and partial tails survive capture', () => {
   const r = rig(); const recorder = new r.api.SensorRecorder({ guidanceEnabled: false, voiceEnabled: true }, () => {});
@@ -604,6 +681,23 @@ test('Native and browser storage recover linked profiles and persist explicit as
  }
 });
 
+test('Duplicate imports cannot erase newer local assessments or participant assignments',async()=>{
+ const values=new Map(),files=new Map();
+ const storage={async getItem(k){return values.get(k)??null},async setItem(k,v){values.set(k,v)}};
+ const disk={documentDirectory:'/documents/',async makeDirectoryAsync(){},async writeAsStringAsync(k,v){files.set(k,v)},async readAsStringAsync(k){return files.get(k)}};
+ const native=load('store',{'@react-native-async-storage/async-storage':storage,'expo-file-system':disk}),web=load('store.web');
+ const older={id:'duplicate-preservation',date:'2026-10-10T00:00:00Z',duration:10,isPractice:true,windows:[],quality:'repeat',windowCount:0,recording:{...recordFixture(),source:'device'}};
+ for(const store of [native,web]){
+   const newer={...older,participantId:'LOCAL-PARTICIPANT',participantLabel:'Local participant',assessment:{completed:false,clinicianNotes:'Newer local observations'}};
+   await store.importReviewRecording(exporting.exportJSON(newer));
+   await store.importReviewRecording(exporting.exportJSON(older));
+   if(store===native)await store.importReviewRecording(exporting.exportCSV(older),'csv');
+   assert.equal((await store.getSession(older.id)).assessment.clinicianNotes,'Newer local observations');
+   assert.equal((await store.getSession(older.id)).participantId,'LOCAL-PARTICIPANT');
+   assert.equal((await store.getSessions()).filter(s=>s.id===older.id).length,1);
+ }
+});
+
 test('Six-minute JSON recordings remain importable with a finite duration bound',()=>{
  const session={id:'six-minute',date:'2026-09-17T00:00:00Z',duration:360,isPractice:false,windows:[],recording:{...recordFixture(),source:'device',elapsedSeconds:360}};
  assert.equal(load('reviewRecording').parseReviewRecording(exporting.exportJSON(session)).recording.elapsedSeconds,360);
@@ -635,6 +729,30 @@ test('Protocol Go offset and completion provenance survive JSON and raw CSV expo
   assert.deepEqual(JSON.parse(JSON.stringify(parsed.protocolExecution)),execution);
   assert.equal(parsed.assessment,undefined);
  }
+});
+
+test('Hands-free clinical CSV restores current endpoint and silent Go provenance',()=>{
+ const api=load('reviewRecording');
+ for(const end of ['auto-stop-estimate','distance-ended','duration']){
+  const execution={version:'protocol-flow-v1',protocol:'10mwt',goOffsetMs:2,goSource:'automatic-silent-cue',elapsedFromGoSeconds:20,end,clinicalOutcomeVerified:false};
+  const session={id:'hands-free',date:'2026-09-17T00:00:00Z',duration:180,isPractice:true,windows:[],recording:recordFixture(),assessmentSetup:{protocol:'10mwt'},protocolExecution:execution};
+  const parsed=api.parseReviewRecordingCsv(exporting.exportCSV(session));assert.deepEqual(JSON.parse(JSON.stringify(parsed.protocolExecution)),execution);
+ }
+});
+
+test('CSV import recomputes quality and rejects cross-row protocol changes and unbounded capture',()=>{
+ const api=load('reviewRecording'),r=recordFixture();
+ const session={id:'quality',date:'2026-09-17T00:00:00Z',duration:180,isPractice:true,windows:[],recording:r,assessmentSetup:{protocol:'tug'},protocolExecution:{version:'protocol-flow-v1',protocol:'tug',goOffsetMs:2,goSource:'automatic-silent-cue',elapsedFromGoSeconds:20,end:'auto-stop-estimate',clinicalOutcomeVerified:false}};
+ const csv=exporting.exportCSV(session),parsed=api.parseReviewRecordingCsv(csv);
+ assert.equal(parsed.quality,pure.recordingIssues(parsed.recording).length?'repeat':'good');
+ const lines=csv.split('\n');lines[2]=lines[2].replace('auto-stop-estimate','distance-ended');assert.throws(()=>api.parseReviewRecordingCsv(lines.join('\n')));
+ assert.throws(()=>api.parseReviewRecordingCsv(exporting.exportCSV({...session,recording:{...r,elapsedSeconds:601}})));
+});
+
+test('JSON review accepts a valid old pretty export above 20 MB but retains the 40 MB bound',()=>{
+ const api=load('reviewRecording'),session={id:'wide',date:'2026-09-17T00:00:00Z',duration:10,isPractice:true,windows:[],recording:recordFixture()};
+ const json=exporting.exportJSON(session);assert.equal(api.parseReviewRecording(json+' '.repeat(21*1024*1024)).id,'wide');
+ assert.throws(()=>api.parseReviewRecording(json+' '.repeat(40*1024*1024)));
 });
 
 

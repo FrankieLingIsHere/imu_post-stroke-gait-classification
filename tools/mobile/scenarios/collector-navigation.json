@@ -1,0 +1,93 @@
+[
+  {
+    "action": "assert-in-bounds",
+    "label": "Start a walk"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "My recordings"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Participants and profiles"
+  },
+  {
+    "action": "tap",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap",
+    "label": "Choose a saved person"
+  },
+  {
+    "action": "tap",
+    "label": "EMU-SYNTHETIC-NOT-PATIENT"
+  },
+  {
+    "action": "tap",
+    "label": "Continue"
+  },
+  {
+    "action": "assert-enabled",
+    "label": "Continue",
+    "value": "false"
+  },
+  {
+    "action": "assert",
+    "label": "Walking speed over 10 metres"
+  },
+  {
+    "action": "tap",
+    "label": "TUG"
+  },
+  {
+    "action": "assert",
+    "label": "Change test: TUG"
+  },
+  {
+    "action": "tap",
+    "label": "Change test: TUG"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "2MWT"
+  },
+  {
+    "action": "assert",
+    "label": "Change test: 2MWT"
+  },
+  {
+    "action": "tap",
+    "label": "Change test: 2MWT"
+  },
+  {
+    "action": "tap",
+    "label": "10MWT"
+  },
+  {
+    "action": "assert",
+    "label": "Change test: 10MWT"
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Tools and help"
+  },
+  {
+    "action": "assert-in-bounds",
+    "label": "Done"
+  },
+  {
+    "action": "assert",
+    "label": "Progress dashboard"
+  },
+  {
+    "action": "assert",
+    "label": "How to use the app"
+  },
+  {
+    "action": "source"
+  }
+]

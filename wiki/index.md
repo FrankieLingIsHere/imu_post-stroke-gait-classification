@@ -324,3 +324,7 @@ Actual calibration ZIP: [[gait-app-collection-workflow#Actual calibration captur
 Second phone calibration: [[gait-app-collection-workflow#Current camera processing investigation|row-timed rotation/timing candidate passes internal checks]]; full translation calibration and metric distance remain unavailable. Original angular-rate results are preserved as historical diagnostics.
 
 Current camera-distance retry (7 October): [[gait-app-collection-workflow#Camera-distance retry implementation - 0.3.4 / build 11|profile prerequisite and same-scale map renewal]]. Retained development walk replay follows 151 poses but rejects scale. Two actual profile-loaded build-11 trials reject reprojection. Better mounting improves one pose/0.23 s to six poses/0.72 s with 25 renewed points, but general live tracking and metric distance remain unsuccessful. 173 app/21 Python/six JNI checks and web export pass. Native build 11 finished and downloaded APK package/version, ZIP, growing-map method, profile gate and license assets are verified; exact source scope awaits review before push.
+
+## Current app delivery - 20 October 2026
+
+First-use correction (20 October 2026): [[gait-app-collection-workflow#First-use and final-check corrections - 20 October 2026|automatic study IDs, early phone setup and measured final-check guidance; local build 31]]. Publication scope grouped for review; physical calibration remains unverified.

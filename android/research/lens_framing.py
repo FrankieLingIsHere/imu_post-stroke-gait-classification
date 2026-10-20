@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-def frame_outline(jpeg):
+def preview_gray(jpeg):
     if not isinstance(jpeg,str) or len(jpeg)>1400000:raise ValueError('Invalid preview.')
     data=base64.b64decode(jpeg,validate=True)
     if len(data)>1024**2:raise ValueError('Invalid preview.')
@@ -18,6 +18,19 @@ def frame_outline(jpeg):
             raise ValueError('Invalid preview dimensions.')
     gray=cv2.imdecode(np.frombuffer(data,np.uint8),cv2.IMREAD_GRAYSCALE)
     if gray is None:raise ValueError('Invalid preview.')
+    return gray,width,height
+
+def scene_outline(jpeg):
+    gray,width,height=preview_gray(jpeg)
+    corners=cv2.goodFeaturesToTrack(gray,100,.01,15)
+    points=np.empty((0,2)) if corners is None else corners.reshape(-1,2)
+    sharpness=float(cv2.Laplacian(gray,cv2.CV_64F).var())
+    return {'width':width,'height':height,'corners':(points/[width,height]).tolist(),'outline':[],
+            'sharpness':sharpness,'clearSceneHint':sharpness>=20 and len(points)>=40,
+            'kind':'display-only-scene-framing','calibrationAuthority':False}
+
+def frame_outline(jpeg):
+    gray,width,height=preview_gray(jpeg)
     board=cv2.aruco.CharucoBoard((9,7),1.,.75,cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100))
     corners,ids,_,_=cv2.aruco.CharucoDetector(board).detectBoard(gray)
     points=[] if ids is None else corners.reshape(-1,2)

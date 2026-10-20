@@ -1,0 +1,167 @@
+[
+  {
+    "action": "sensor",
+    "label": "acceleration",
+    "value": "9.81:0:0"
+  },
+  {
+    "action": "sensor",
+    "label": "gyroscope",
+    "value": "0:0:0"
+  },
+  {
+    "action": "sensor",
+    "label": "magnetic-field",
+    "value": "25:0:-45"
+  },
+  {
+    "action": "tap",
+    "label": "Start a walk"
+  },
+  {
+    "action": "tap-if-present",
+    "label": "Record motion only"
+  },
+  {
+    "action": "tap",
+    "label": "Walking aid and health details"
+  },
+  {
+    "action": "type",
+    "label": "Study ID or participant label",
+    "value": "EMU-SYNTHETIC-{runId}"
+  },
+  {
+    "action": "dismiss-keyboard"
+  },
+  {
+    "action": "tap",
+    "label": "Done"
+  },
+  {
+    "action": "dismiss-keyboard"
+  },
+  {
+    "action": "type",
+    "label": "Age in years",
+    "value": "67"
+  },
+  {
+    "action": "dismiss-keyboard"
+  },
+  {
+    "action": "tap",
+    "label": "\u25cb Female"
+  },
+  {
+    "action": "tap",
+    "label": "Language and audio settings"
+  },
+  {
+    "action": "set-switch",
+    "label": "Voice guidance",
+    "value": "false"
+  },
+  {
+    "action": "assert-checked",
+    "label": "Voice guidance",
+    "value": false
+  },
+  {
+    "action": "set-switch",
+    "label": "Practice walk",
+    "value": "true"
+  },
+  {
+    "action": "assert-checked",
+    "label": "Practice walk",
+    "value": true
+  },
+  {
+    "action": "tap",
+    "label": "Done"
+  },
+  {
+    "action": "tap",
+    "label": "Continue"
+  },
+  {
+    "action": "tap-scroll",
+    "label": "Research walk"
+  },
+  {
+    "action": "set-switch",
+    "label": "Phone distance",
+    "value": "false"
+  },
+  {
+    "action": "tap",
+    "label": "Walk for 10 seconds"
+  },
+  {
+    "action": "tap",
+    "label": "Continue"
+  },
+  {
+    "action": "tap",
+    "label": "I can walk without hands-on help, using my usual cane or quad stick if needed. The path is clear and I agree to save movement data."
+  },
+  {
+    "action": "tap",
+    "label": "Start test"
+  },
+  {
+    "action": "tap-if-present",
+    "label": "Allow"
+  },
+  {
+    "action": "wait",
+    "seconds": 20
+  },
+  {
+    "action": "assert",
+    "label": "Short movement check"
+  },
+  {
+    "action": "sensor-wave",
+    "seconds": 5
+  },
+  {
+    "action": "wait",
+    "seconds": 12
+  },
+  {
+    "action": "assert",
+    "label": "Ready to begin"
+  },
+  {
+    "action": "sensor-wave",
+    "seconds": 15
+  },
+  {
+    "action": "wait",
+    "seconds": 8
+  },
+  {
+    "action": "assert",
+    "label": "Recording saved"
+  },
+  {
+    "action": "tap",
+    "label": "View summary & signals"
+  },
+  {
+    "action": "tap",
+    "label": "Signals"
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Sensors"
+  },
+  {
+    "action": "source"
+  }
+]

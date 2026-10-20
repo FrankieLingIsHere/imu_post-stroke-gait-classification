@@ -1,0 +1,32 @@
+[
+  {
+    "action": "tap",
+    "label": "Participants and profiles"
+  },
+  {
+    "action": "assert",
+    "label": "EMU-SYNTHETIC-NOT-PATIENT "
+  },
+  {
+    "action": "back"
+  },
+  {
+    "action": "tap",
+    "label": "Progress dashboard"
+  },
+  {
+    "action": "tap",
+    "label": "\u25cb EMU-SYNTHETIC-NOT-PATIENT"
+  },
+  {
+    "action": "assert",
+    "label": "5 assessments saved on this device."
+  },
+  {
+    "action": "source"
+  },
+  {
+    "action": "tap",
+    "label": "Back to home"
+  }
+]

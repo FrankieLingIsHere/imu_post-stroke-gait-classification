@@ -1,10 +1,53 @@
 import { protocolMessages } from './protocolMessages';
+import {gaitDistanceMessages} from './gaitDistanceMessages';
 import { gaitMessages } from './gaitMessages';
 import { cameraMessages } from './cameraMessages';
+import { researchMessages } from './researchMessages';
+import {rapidMessages} from './rapidMessages';
+import {phoneSetupMessages} from './phoneSetupMessages';
 import { patientMessages } from './patientSummary';
 import { experienceMessages } from './experienceMessages';
 /** English source -> Bahasa Melayu, Simplified Chinese. Export schema remains English. */
 export const messages: Record<string, readonly [string, string]> = {
+  'Saved on this phone': ['Disimpan pada telefon ini', '已保存在这部手机上'],
+  'Saved after a pause. A worker needs to confirm the test finish.': ['Disimpan selepas berhenti seketika. Petugas perlu mengesahkan penamat ujian.', '暂停后的记录已保存。工作人员需要确认测试是否完成。'],
+  'You can rest now. Your worker will review this recording.': ['Anda boleh berehat sekarang. Petugas akan menyemak rakaman ini.', '现在可以休息了。工作人员会核查这份记录。'],
+  'STEP 4 · SAVED': ['LANGKAH 4 · DISIMPAN', '第4步 · 已保存'],
+  'Your recording is saved on this phone.': ['Rakaman anda disimpan pada telefon ini.', '您的记录已保存在这部手机上。'],
+  'Saving a recording does not confirm a completed clinical test. Your worker will review the test and its signals.': ['Rakaman yang disimpan tidak mengesahkan ujian klinikal telah lengkap. Petugas anda akan menyemak ujian dan isyaratnya.', '保存记录并不代表临床测试已完成。工作人员会核查测试及其信号。'],
+  'Worker: experimental timing': ['Petugas: pemasaan eksperimen', '工作人员：实验性时间分析'],
+  'Hide experimental timing': ['Sembunyikan pemasaan eksperimen', '收起实验性时间分析'],
+  'The full test interval was not recorded. Choose Modified or Not completed.': ['Tempoh ujian penuh tidak dirakam. Pilih Modified atau Not completed.', '未记录完整测试时段。请选择Modified或Not completed。'],
+  'Tap the graph to zoom.': ['Ketik graf untuk zum.', '点击图表放大。'],
+  'Export CSV, JSON or features': ['Eksport CSV, JSON atau ciri', '导出CSV、JSON或特征'],
+  "If you are resting, you may continue. If you have finished, stay still. The recording will save shortly.": ["Jika sedang berehat, anda boleh terus berjalan. Jika sudah selesai, kekal diam. Rakaman akan disimpan sebentar lagi.", "如果您在休息，可以继续走。如果已完成，请保持不动。记录很快就会保存。"],
+  "Recording saved after a pause. Rest safely. The test finish still needs checking.": ["Rakaman disimpan selepas berhenti seketika. Berehat dengan selamat. Penamat ujian masih perlu disemak.", "暂停后的记录已保存。请安全休息。测试是否完成仍需核查。"],
+  "The finish warning could not be played. Capture continues until the time limit.": ["Amaran penamat tidak dapat dimainkan. Rakaman diteruskan sehingga had masa.", "结束提示未能播放。记录将继续至时间上限。"],
+  "Test finish needs checking": ["Penamat ujian perlu disemak", "测试结束需核查"],
+  "The recording saved after a pause. This does not confirm that you reached the finish. A worker should review the test before using its result.": ["Rakaman disimpan selepas berhenti seketika. Ini tidak mengesahkan anda tiba di penamat. Petugas perlu menyemak ujian sebelum menggunakan hasilnya.", "记录在暂停后保存。这不能确认您已到达终点。工作人员应核查测试后再使用结果。"],
+  "Your saved details are ready. Confirm your walking aid, then continue.": ["Maklumat anda telah tersedia. Sahkan alat bantuan berjalan, kemudian teruskan.", "已载入您的资料。请确认助行工具，然后继续。"],
+  "Edit participant details": ["Edit maklumat peserta", "编辑参与者资料"],
+  "No walking aid": ["Tiada alat bantuan berjalan", "无需助行工具"],
+  "Whole recording": ["Seluruh rakaman", "完整记录"],
+  "5-second detail": ["Butiran 5 saat", "5秒细节"],
+  "Tap the graph to inspect that moment. The overview preserves peaks; it is not a clinical score.": ["Ketik graf untuk melihat saat tersebut. Gambaran keseluruhan mengekalkan puncak; ini bukan skor klinikal.", "点击图表查看该时刻。概览保留峰值，不代表临床评分。"],
+  "Inspect a moment in the recording": ["Lihat satu saat dalam rakaman", "查看记录中的时刻"],
+  "Cancel import": ["Batalkan import", "取消导入"],
+  "Import cancelled.": ["Import dibatalkan.", "已取消导入。"],
+  'Getting the phone ready…': ['Menyediakan telefon…', '正在准备手机…'],
+  'Stand comfortably and let the phone settle.': ['Berdiri dengan selesa dan biarkan telefon stabil.', '请舒适地站好，让手机稳定下来。'],
+  'Keep still for a moment.': ['Kekal diam sebentar.', '请保持不动片刻。'],
+  'Phone check. Stand comfortably and keep still. You can use your usual walking aid.': ['Semakan telefon. Berdiri dengan selesa dan kekal diam. Anda boleh menggunakan alat bantuan berjalan biasa.', '检查手机。请舒适地站好并保持不动。可以使用平时的助行器。'],
+  'Reading file: {0}%': ['Membaca fail: {0}%', '正在读取文件：{0}%'],
+  'Checking and saving the recording…': ['Menyemak dan menyimpan rakaman…', '正在检查并保存记录…'],
+  'Phone check. Keep the pouch secure at your lower back, screen facing out. Stand in your usual comfortable posture, using your usual walking aid. No need to straighten your back.': ['Semakan telefon. Pastikan sarung kemas di belakang pinggang, skrin menghadap keluar. Berdiri dalam postur biasa yang selesa, dengan alat bantuan berjalan biasa. Tidak perlu meluruskan belakang.', '检查手机。将腰包固定在下背部，屏幕朝外。保持平时舒适的站姿，可使用平时的助行器，无需强行挺直背部。'],
+  'Stay in your usual comfortable posture. Let the phone settle in its pouch. You can rest.': ['Kekalkan postur biasa yang selesa. Biarkan telefon stabil dalam sarung. Anda boleh berehat.', '保持平时舒适的姿势，让手机在腰包内稳定下来，可以休息。'],
+  'Waiting for a stable gravity reference.': ['Menunggu rujukan graviti yang stabil.', '正在等待稳定的重力参考。'],
+  'Secure the pouch at your lower back, screen facing out. Stand comfortably with your usual walking aid. The phone check waits for you.': ['Pastikan sarung kemas di belakang pinggang, skrin menghadap keluar. Berdiri dengan selesa menggunakan alat bantuan berjalan biasa. Semakan telefon akan menunggu anda.', '将腰包固定在下背部，屏幕朝外。使用平时的助行器，舒适地站稳。手机检查会等待您准备好。'],
+  ...phoneSetupMessages,
+  ...rapidMessages,
+  ...gaitDistanceMessages,
+  ...researchMessages,
   ...cameraMessages,
   '{0} recordings need G.A.I.T. assessment. Unfinished records appear first.': ['{0} rakaman memerlukan penilaian G.A.I.T. Rekod belum lengkap dipaparkan dahulu.', '{0}份记录需要完成G.A.I.T.评估。未完成的记录优先显示。'],
   'Complete required G.A.I.T. assessment': ['Lengkapkan penilaian G.A.I.T. wajib', '完成必需的G.A.I.T.评估'],
@@ -197,7 +240,8 @@ export const messages: Record<string, readonly [string, string]> = {
   "Preview hands-free flow": ["Pratonton aliran tanpa sentuhan", "预览免操作流程"],
   "Review an exported recording": ["Semak rakaman yang dieksport", "查看导出的记录"],
   "Open a JSON file from the Android app. It stays in this browser tab and is cleared when you refresh. No upload.": ["Buka fail JSON daripada aplikasi Android. Fail kekal dalam tab ini dan dipadam apabila halaman dimuat semula. Tiada muat naik.", "打开安卓应用导出的JSON文件。文件仅保留在当前浏览器标签页，刷新后清除，不会上传。"],
-  "Choose a valid Gait Steps device JSON export (up to 20 MB).": ["Pilih fail JSON peranti Gait Steps yang sah (sehingga 20 MB).", "请选择有效的Gait Steps设备JSON导出文件（不超过20 MB）。"],
+  "Choose a valid Gait Steps device JSON export (up to 40 MB).": ["Pilih fail JSON peranti Gait Steps yang sah (sehingga 40 MB).", "请选择有效的Gait Steps设备JSON导出文件（不超过40 MB）。"],
+  "File is too large. Choose a CSV export up to 128 MB.": ["Fail terlalu besar. Pilih eksport CSV sehingga 128 MB.", "文件过大。请选择不超过128 MB的CSV导出文件。"],
   "Explore the phone interface and review your own exported files. Real sensor recording requires the Android app.": ["Terokai antara muka telefon dan semak fail eksport anda. Rakaman penderia sebenar memerlukan aplikasi Android.", "浏览手机界面并查看您自己的导出文件。实际传感器采集需要安卓应用。"],
   "Mount the phone": ["Pasang telefon", "固定手机"],
   "The Android app gives 20 seconds to secure the phone at the lower back. This browser walkthrough does not check placement.": ["Aplikasi Android memberi 20 saat untuk memasang telefon di belakang pinggang. Pratonton ini tidak memeriksa kedudukan.", "安卓应用提供20秒将手机固定在下背部。此浏览器演示不会检查放置位置。"],
@@ -439,6 +483,9 @@ export const messages: Record<string, readonly [string, string]> = {
   'Stay comfortably still. Do not walk until you hear begin. {0} seconds.': ['Berdiri dengan selesa. Jangan berjalan sehingga mendengar arahan mula. {0} saat.', '请舒适地站稳。听到开始提示前不要走。还有{0}秒。'],
   'Baseline check complete. Move comfortably for a short moment. When you hear stop, stop and stand still until I say the movement check is complete. You can rest; do not touch the phone.': ['Pemeriksaan bacaan asas selesai. Bergerak dengan selesa seketika. Apabila dengar arahan berhenti, berhenti dan berdiri diam sehingga saya mengatakan pemeriksaan pergerakan selesai. Anda boleh berehat; jangan sentuh telefon.', '基线检查完成。请舒适地移动一小会儿。听到“停止”后，请停下并站稳，直到我说动作检查完成。您可以休息；不要触碰手机。'],
   'Movement check complete. Stop and stand still. The recording will start shortly.': ['Pemeriksaan pergerakan selesai. Berhenti dan berdiri diam. Rakaman akan bermula sebentar lagi.', '动作检查完成。请停下并站稳，记录即将开始。'],
+  'Stand still while camera tracking starts.': ['Berdiri diam sementara penjejakan kamera bermula.', '相机跟踪正在启动，请站稳。'],
+  'Movement check complete. Stay still while camera tracking starts.': ['Pemeriksaan pergerakan selesai. Berdiri diam sementara penjejakan kamera bermula.', '动作检查完成。相机跟踪正在启动，请保持站稳。'],
+  'Camera tracking could not start. No test started. Rest, then check the phone when safe.': ['Penjejakan kamera tidak dapat bermula. Ujian belum bermula. Berehat, kemudian periksa telefon apabila selamat.', '相机跟踪未能启动，测试尚未开始。请先休息，安全停稳后再检查手机。'],
   'Recording complete. Stop safely.': ['Rakaman selesai. Berhenti dengan selamat.', '记录完成。请安全停下。'],
   'Begin walking now. The recording starts when you take your first step.': ['Mula berjalan sekarang. Rakaman bermula apabila anda mengambil langkah pertama.', '现在开始走。您迈出第一步时才会开始记录。'],
   'Begin walking now. The recording starts when your first step is detected.': ['Mula berjalan sekarang. Rakaman bermula apabila langkah pertama anda dikesan.', '现在开始走。检测到您的第一步时才会开始记录。'],

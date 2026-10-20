@@ -68,3 +68,12 @@ test('Automatic lens result recovery rejects interrupted captures and preserves 
  f.set(f.directory+'lens.json',JSON.stringify(v.report));assert.equal((await a.currentLensReport(v.binding)).lensReady,true);
  assert.equal(await a.currentLensReport({...v.binding,opticalSetup:'clear-lens'}),null);
 });
+
+test('Failed lens attempts can be exported after reopening; unrelated and empty captures are skipped',async()=>{
+ const f=storageFixture(),a=api(f.storage);
+ for(const [id,mode,status] of [['calibration-100','guided-lens-zhang','completed'],['calibration-200','guided-lens-zhang','quality-time-limit'],['calibration-300','targetless-alignment','completed']]){
+  f.set(f.directory+id+'.zip','native zip');f.set(f.directory+id+'/manifest.json',JSON.stringify({schemaVersion:1,captureId:id,captureMode:mode,status,error:status==='quality-time-limit'?'Missing angles':null}));
+ }
+ f.set(f.directory+'calibration-400.zip','');
+ const result=await a.latestLensCapture();assert.equal(JSON.parse(result.metadata).captureId,'calibration-200');assert.equal(result.error,'Missing angles');assert.equal(f.copies.length,0);
+});

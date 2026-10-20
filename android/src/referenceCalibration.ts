@@ -1,5 +1,6 @@
 import * as FileSystem from 'expo-file-system';
 import type {CalibrationCapture} from './cameraCalibration';
+import type {LensRound} from './lensGuidance';
 
 export type CalibrationComputer={kind:'gaittrace-local-calibration-pair-v1';url:string;token:string};
 const directory=()=>{if(!FileSystem.documentDirectory)throw new Error('Phone storage is unavailable.');return FileSystem.documentDirectory+'camera-calibration/';};
@@ -30,9 +31,10 @@ export async function showComputerBoard(computer:CalibrationComputer,html:string
  try{const response=await fetch(computer.url+'/api/board',{method:'POST',headers:{Authorization:'Bearer '+computer.token,'Content-Type':'application/json'},body:JSON.stringify({png,mode}),signal:controller.signal});
  if(!response.ok)throw new Error('Could not connect to the calibration computer.');}finally{clearTimeout(timeout);}
 }
-export type LensFeedback={acceptedViews:number;hint:string;status:'checking'|'completed'|'stopped'|'failed'};
+export type LensCoverage={leftRightAngle:boolean;upDownAngle:boolean;horizontal:boolean;vertical:boolean};
+export type LensFeedback={acceptedViews:number;hint:string;status:'checking'|'fitting'|'saving'|'completed'|'stopped'|'failed';coverageChecklist?:LensCoverage;activeRound?:LensRound};
 /** Optional display feedback only. Coalesce updates; never block or influence calibration. */
-export function createLensFeedback(computer:CalibrationComputer){
+export function createLensFeedback(computer:CalibrationComputer,sceneEnrollment=false){
  let latest:{value:LensFeedback;imageUri?:string}|null=null,closed=false,busy=false,lastStart=0,timer:ReturnType<typeof setTimeout>|undefined,controller:AbortController|undefined;
  async function flush(){
   timer=undefined;if(closed||busy||!latest)return;
@@ -42,12 +44,22 @@ export function createLensFeedback(computer:CalibrationComputer){
    let jpeg:string|undefined;
    if(update.imageUri?.startsWith('file:')){try{const encoded=await FileSystem.readAsStringAsync(update.imageUri,{encoding:FileSystem.EncodingType.Base64});if(encoded.length<=1400000)jpeg=encoded;}catch{/* Display metadata still works if a preview file is unavailable. */}}
    if(closed||controller.signal.aborted)return;
-   await fetch(computer.url+'/api/lens-progress',{method:'POST',headers:{Authorization:'Bearer '+computer.token,'Content-Type':'application/json'},body:JSON.stringify({...update.value,...(jpeg?{jpeg}:{})}),signal:controller.signal});
+   await fetch(computer.url+'/api/lens-progress',{method:'POST',headers:{Authorization:'Bearer '+computer.token,'Content-Type':'application/json'},body:JSON.stringify({...update.value,...(sceneEnrollment?{sceneEnrollment:true}:{}),...(jpeg?{jpeg}:{})}),signal:controller.signal});
   }
   catch{/* A lost computer display must not discard a phone's lens capture. */}
   finally{clearTimeout(timeout);busy=false;if(latest&&!closed)void flush();}
  }
  return {send(value:LensFeedback,imageUri?:string){if(closed)return;latest={value,imageUri};if(!busy&&!timer)void flush();},close(){closed=true;latest=null;clearTimeout(timer);controller?.abort();}};
+}
+function referenceSoftwareVerified(software:any){
+ const base='ulong2/ie_kalibr_image@sha256:2de8ac994a86951b6255e4b8485eae9982ea3ed03bac33dd9d0ee254e383587c';
+ if(!/^[0-9a-f]{64}$/.test(software?.executableSha256??''))return false;
+ if(software.image===base)return true;
+ // Admit only the locally verified experimental build as a review candidate.
+ // Its identity is distinct from the authors' original binary/image.
+ return software.image==='sha256:e6b2e0e5dd4e88831560e1d3d3012d69673c00f2e58f0c6b0c85e3ba610f1b91'
+  &&software.executableSha256==='b01cdfb24f098e6be0a35ead8b55932f6899cd892c07d4c1ac09738ae690b429'
+  &&software.baseImage===base&&['cpu','cuda'].includes(software.experimentalBackend);
 }
 export function validateReferenceCalibration(report:any,binding:any){
  const keys=['installationId','captureId','cameraId','width','height','imageAxes','sensorOrientationDegrees','stabilizationRequested','capturePipeline','opticalSetup'];
@@ -55,8 +67,7 @@ export function validateReferenceCalibration(report:any,binding:any){
   ||report.status!=='reference-solved-review-required'||report.cameraImuCandidateReady!==false||report.fullCalibrationReady!==false||report.distanceReady!==false
   ||report.independentDistanceValidation!==false||!binding.installationId||keys.some(k=>report.binding?.[k]!==binding[k])
   ||!report.upstreamParameters?.CalibParam||!Array.isArray(report.reviewRequired)||!report.reviewRequired.length
-  ||!/^ulong2\/ie_kalibr_image@sha256:2de8ac994a86951b6255e4b8485eae9982ea3ed03bac33dd9d0ee254e383587c$/.test(report.software?.image??'')
-  ||!/^[0-9a-f]{64}$/.test(report.software?.executableSha256??'')||!/^[0-9a-f]{64}$/.test(report.sourceSha256??''))throw new Error('The reference result did not pass import checks.');
+  ||!referenceSoftwareVerified(report.software)||!/^[0-9a-f]{64}$/.test(report.sourceSha256??''))throw new Error('The reference result did not pass import checks.');
  return report;
 }
 export async function submitAlignment(computer:CalibrationComputer,capture:CalibrationCapture){
@@ -69,12 +80,14 @@ export async function submitAlignment(computer:CalibrationComputer,capture:Calib
 }
 export async function pendingReference(){return read('pending-reference.json');}
 export async function savedReference(lens:any){
- const report=await read('reference.json');if(!report||!lens)return null;
+ if(!lens)return null;
+ for(const name of ['reference.json','rapid-profile.json']){const report=await read(name);if(!report)continue;
  try{validateReferenceCalibration(report,report.binding);
-  if(report.lensProfile?.binding?.captureId!==lens.binding?.captureId)return null;
-  for(const key of ['installationId','cameraId','width','height','capturePipeline','opticalSetup'])if(report.binding[key]!==lens.binding[key])return null;
+  if(report.lensProfile?.binding?.captureId!==lens.binding?.captureId)continue;
+  if(['installationId','cameraId','width','height','imageAxes','sensorOrientationDegrees','stabilizationRequested','capturePipeline','opticalSetup'].some(key=>report.binding[key]!==lens.binding[key]))continue;
   return report;
- }catch{return null;}
+ }catch{/* Keep the previous profile and inspect the separate candidate. */}}
+ return null;
 }
 export async function pollReference(computer:CalibrationComputer,cancelled:()=>boolean){
  const pending=await pendingReference();if(!pending||!/^[0-9a-f]{24}$/.test(pending.id))throw new Error('No calibration processing is waiting.');

@@ -1,6 +1,85 @@
 # Rehabilitation assessment product specification
 
-Updated 2026-10-07. This specification expands the client brief from a research walk recorder into a rehabilitation assessment workflow. Native camera-distance research remains separate from clinical assessment.
+Updated 2026-10-11. Current delivery is a polished standard-walk-test gait collector. The rehabilitation companion remains a future product direction.
+
+## Current milestone and deferred rehabilitation workflow - 11 October 2026
+
+User-confirmed scope: complete a dependable, presentable gait collection app for standard walking tests. Product polish and elderly-friendly voice-led operation remain current requirements. Do not add a new daily rehabilitation programme, prescription system or extra patient questionnaires to this milestone.
+
+Current flow: choose or create participant -> choose standard test -> brief test-specific preparation -> phone readiness and natural-standing reference -> mounted-phone voice-led capture -> save recording -> required worker G.A.I.T./test review -> participant-linked history, signals and export.
+
+Prioritise 10MWT, TUG and 2MWT; retain 6MWT as the existing secondary option. Preserve the configured 1 + 10 + 1 m 10MWT variant, natural-posture reference, participant demographics/history and assessment requirements. Technical research tools should remain outside the ordinary test flow. Preserve raw signals, acquisition/version provenance, explicit partial-test status and measured-versus-estimated outcomes. A polished presentation must not imply that unvalidated endpoints or distances are clinically verified.
+
+The supported-phone, local-device, lower-back placement and no-paid-service requirements below remain applicable. This scope decision defers rehabilitation programme features; it does not waive outstanding physical measurement validation.
+
+### Future rehabilitation companion - retained proposal, not current implementation
+
+Proposed future patient flow: open app -> today's walking plan -> brief readiness check -> mount phone -> guided practice with permitted rests -> short experience check-in -> readable progress summary.
+
+Retain these proposed capabilities for a later milestone:
+
+1. Therapist-configured, locally stored practice plan with suitable walking aid, duration, rest arrangements and assessment schedule.
+2. Patient and worker views, with a Start today's walk primary patient action and prescriptions/clinical review in the worker area.
+3. Separate daily walking practice from periodic standardized assessments; standard-test administration must not be changed by unstandardized coaching.
+4. Brief daily change/check-in questions, avoiding repeated demographic entry and long questionnaires.
+5. Truthful completion feedback first; validated behaviour-based encouragement and within-person trends later. Corrective cues require therapist-approved rules and validated measurements.
+6. Scheduled assessments, worker review of concerning changes and versioned revisions to the participant's plan.
+7. Reliable measurement modules and labelled patient data before adaptive/few-shot personalization; evaluate software reliability, measurement accuracy and clinical usefulness separately.
+
+The proposed distinction between full observer G.A.I.T. review for assessments and a shorter check-in for future daily practice is also deferred. The current requirement for recording assessments is unchanged; no practice exemption is being introduced now.
+
+## Current delivery requirement: every supported phone works independently
+
+The user has superseded permission to use a computer for one-time calibration.
+New-phone setup, calibration/adaptation, capture, distance/speed calculation,
+test boundaries, saving and viewing results must run on the phone. No computer,
+Docker, pairing code, desktop processing or research ZIP exchange may be a
+prerequisite for an ordinary user. Research tools remain developer evidence,
+not a substitute for the delivered workflow. There must be no paid service.
+
+Placement remains horizontal at the lower back in the existing sport waist bag,
+with the front camera facing the room and the existing partial lens obstruction.
+Rear-camera access cannot be assumed. Patient guidance remains voice-led and
+multilingual. The 10MWT course remains 1 m approach + 10 m measured + 1 m finish.
+
+**Local 0.3.12/native code 24 now implements independent-phone setup and live
+tracking, but production acceptance is still pending.** The new Android native
+OpenVINS path uses factory optical priors plus scene/IMU self-calibration, real
+hardware timing, explicit uncertainty/excitation/stability admission, reusable
+phone/window profiles and live 1 + 10 + 1 m boundaries. It does not invoke the
+computer enrollment paths. The actual local implementation and executed software
+evidence are documented in [the current method](../android/research/ON_DEVICE_DISTANCE.md).
+
+The release-signed ARM64 build 24 is ready locally and supports an in-place
+update over build 23. Remaining acceptance requirements are prospective phone
+acceptance. Observability is still a practical setup constraint: weak-motion
+controls fail, while stronger all-axis controls pass. Numerical convergence is
+not independent accuracy. Rotational row compensation omits translational
+rolling-shutter effects, noise assumptions need validation, TUG chair contact is
+provisional and no real cross-device few-shot model is trained. A focal-only
+model cannot replace those geometry/timing/scale checks. Supported hardware and
+setup success must be demonstrated rather than promising every phone.
+
+Release acceptance must exercise installation and initial setup on a fresh
+supported phone with no computer and no imported calibration, followed by the
+complete mounted-phone tests. Independently measured routes must establish
+distance/speed error and failure rate, including failed trials, alongside
+runtime/heat, voice timing, interruptions, recovery and permanent deletion.
+The previously proposed 3 m/30 cm pilot tolerance alone does not validate a
+production 10MWT or clinical gait-speed result. Clinical acceptance thresholds
+must be agreed before evaluating the final release.
+
+Google's [ARCore front-camera documentation](https://developers.google.com/ar/reference/java/com/google/ar/core/CameraConfig.FacingDirection)
+explicitly pauses camera tracking and returns an identity display pose. It
+cannot replace this missing front-camera distance pipeline. Published
+[VINS self-calibration analysis](https://arxiv.org/abs/2201.09170) supports
+online calibration in principle but requires sufficiently excited motion and
+describes degeneracies. It is evidence for implementation constraints, not
+proof that a brief waist walk calibrates every phone. Existing Android factory
+metadata is optional and has not been verified as a complete camera/IMU profile.
+
+The dated sections below preserve earlier implementation and research evidence.
+Their computer-based onboarding instructions are superseded for product delivery.
 
 ## Camera distance research trial - 7 October 2026
 
@@ -783,3 +862,9 @@ processing; no patient-specific repeat or new walking-distance claim. Full noise
 geometry and native VIO remain incomplete; a longer stationary noise record may
 be needed. Do not enable clinical auto-stopping. Git/OTA publication still awaits
 review; dependencies, demo assets, APKs and generated reports remain local.
+
+## First-use implementation clarification - 20 October 2026
+
+Automatic camera distance checks phone setup before participant entry and returns to the same preparation draft after completion. Camera setup is device/optics-specific, separate from each walk's personal standing baseline. New participant study labels are generated automatically, with optional worker overrides inside details. Final setup guidance distinguishes movement coverage from remaining numerical, clock and stable-window requirements; delayed readings are a phone condition, not an instruction to make bigger movements. Existing quality/admission thresholds remain unchanged. Current milestone remains a collector; physical convergence/accuracy and independent elderly use are not established by the software evidence. See tools/mobile/APP_ACCEPTANCE.md for procedure and limits.
+
+The explicit Record motion only path preserves existing sensor-only collection without camera calibration; it cannot supply measured camera distance. The camera-distance path retains its setup and quality gates.
